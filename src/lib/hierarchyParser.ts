@@ -64,16 +64,32 @@ export class HierarchyParser {
   }
 
   static nodeToMarkup(node: ContentNode): string {
+    const content = node.content.trim();
+    
+    // Check if content already starts with headers - if so, use it as-is
+    if (content.startsWith('#')) {
+      let markup = content;
+      
+      // Add children markup if any
+      if (node.children && node.children.length > 0) {
+        const childrenMarkup = node.children.map(child => this.nodeToMarkup(child)).join('\n');
+        markup += '\n' + childrenMarkup;
+      }
+      
+      return markup;
+    }
+    
+    // Original logic for plain content
     const indent = '#'.repeat(node.depth + 1);
     const tags = node.tags && node.tags.length > 0 ? ` [${node.tags.join(', ')}]` : '';
-    const header = `${indent} ${node.content.split('\n')[0]}${tags}`;
+    const header = `${indent} ${content.split('\n')[0]}${tags}`;
     
-    const additionalContent = node.content.split('\n').slice(1).join('\n');
-    const content = additionalContent ? `\n${additionalContent}` : '';
+    const additionalContent = content.split('\n').slice(1).join('\n');
+    const contentPart = additionalContent ? `\n${additionalContent}` : '';
     
-    let markup = header + content;
+    let markup = header + contentPart;
     
-    if (node.children) {
+    if (node.children && node.children.length > 0) {
       const childrenMarkup = node.children.map(child => this.nodeToMarkup(child)).join('\n');
       markup += '\n' + childrenMarkup;
     }
