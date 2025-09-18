@@ -24,7 +24,8 @@ const parseHierarchicalContent = (content: string): ContentSection[] => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const headingMatch = line.match(/^(#{1,10})\s*(.+?)(?:\s*\[(.*?)\])?$/);
+    // Support up to 30 levels of headers
+    const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
     
     if (headingMatch) {
       // Process any accumulated content for the previous section
@@ -81,26 +82,27 @@ const ContentSectionComponent: React.FC<{
 
   const getHeadingClass = (level: number) => {
     const baseClasses = "font-semibold text-foreground";
-    switch (level) {
-      case 1: return `${baseClasses} text-2xl`;
-      case 2: return `${baseClasses} text-xl`;
-      case 3: return `${baseClasses} text-lg`;
-      case 4: return `${baseClasses} text-base`;
-      default: return `${baseClasses} text-sm`;
-    }
+    if (level <= 1) return `${baseClasses} text-2xl`;
+    if (level <= 2) return `${baseClasses} text-xl`;
+    if (level <= 3) return `${baseClasses} text-lg`;
+    if (level <= 4) return `${baseClasses} text-base`;
+    return `${baseClasses} text-sm`;
   };
 
-  const getIndentClass = (depth: number) => {
-    return `ml-${Math.min(depth * 4, 20)}`; // Cap indentation at ml-20
-  };
+  // Calculate indentation: 16px base + 20px per level
+  const indentationPx = depth * 20;
+  const contentIndentationPx = indentationPx + 24; // Additional 24px to align with header text (after the 24px wide button)
 
   return (
-    <div className={`${depth > 0 ? getIndentClass(depth) : ''}`}>
-      <div className="flex items-start gap-2 group">
+    <div>
+      <div 
+        className="flex items-start gap-2 group"
+        style={{ marginLeft: `${indentationPx}px` }}
+      >
         {(hasChildren || hasContent) && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex-shrink-0 mt-1 p-1 hover:bg-accent rounded transition-colors"
+            className="flex-shrink-0 mt-1 p-1 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-center"
             aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
             {isExpanded ? (
@@ -137,6 +139,7 @@ const ContentSectionComponent: React.FC<{
           {hasContent && (
             <div 
               className="prose prose-slate dark:prose-invert max-w-none prose-sm mb-4"
+              style={{ marginLeft: `${contentIndentationPx}px` }}
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(section.content.trim()) 
               }}
