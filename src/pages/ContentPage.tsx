@@ -1,0 +1,212 @@
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { WikiLayout } from "@/components/WikiLayout";
+import { ContentService, ContentNode, NavigationNode } from "@/services/contentService";
+import { HierarchicalContent } from "@/components/HierarchicalContent";
+import { SimpleActionMenu } from "@/components/SimpleActionMenu";
+import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
+import { SimpleNavigationModal } from "@/components/SimpleNavigationModal";
+import { SimpleBreadcrumb } from "@/components/SimpleBreadcrumb";
+import { renderMarkdown } from "@/lib/markdownRenderer";
+import { TagManager } from "@/lib/tagManager";
+
+const ContentPage = () => {
+  const location = useLocation();
+  const [content, setContent] = useState<ContentNode | null>(null);
+  const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
+  const [allContentNodes, setAllContentNodes] = useState<ContentNode[]>([]);
+  const [filteredContent, setFilteredContent] = useState<ContentNode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [showDocumentEditor, setShowDocumentEditor] = useState(false);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [showNavigationManager, setShowNavigationManager] = useState(false);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+
+  // Load navigation structure on mount
+  useEffect(() => {
+    const loadNavigationStructure = async () => {
+      const structure = await ContentService.getNavigationStructure();
+      setNavigationStructure(structure);
+    };
+    
+    loadNavigationStructure();
+  }, []);
+
+  // Load content when route changes
+  useEffect(() => {
+    const loadContent = async () => {
+      setLoading(true);
+      
+      // Get current path
+      const currentPath = location.pathname;
+      
+      // Load content for this path
+      const contentData = await ContentService.getContentByPath(currentPath);
+      setContent(contentData);
+      
+      // Load all content nodes for sidebar
+      const allNodes = await ContentService.getAllContentNodes();
+      setAllContentNodes(allNodes);
+      setFilteredContent(allNodes);
+      
+      setLoading(false);
+    };
+
+    loadContent();
+  }, [location.pathname]);
+
+  const handleFilter = (filters: {
+    searchTerm: string;
+    selectedTags: string[];
+    dateRange: { start: Date | null; end: Date | null };
+  }) => {
+    let filtered = [...allContentNodes];
+
+    // Apply search filter
+    if (filters.searchTerm) {
+      filtered = TagManager.filterByContent(filtered, filters.searchTerm);
+    }
+
+    // Apply tag filter
+    if (filters.selectedTags.length > 0) {
+      filtered = TagManager.filterByTags(filtered, filters.selectedTags);
+    }
+
+    setFilteredContent(filtered);
+  };
+
+  const handleContentNodeClick = (nodeId: string) => {
+    setActiveNodeId(nodeId);
+    const element = document.getElementById(nodeId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handleNodeUpdate = (updatedNode: ContentNode) => {
+    // Update local state optimistically
+    setAllContentNodes(prevNodes => 
+      prevNodes.map(node => 
+        node.id === updatedNode.id ? updatedNode : node
+      )
+    );
+    
+    // TODO: Implement database update
+    console.log('Update node:', updatedNode.id, updatedNode);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Loading content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no content found for this route, show 404-like message
+  if (!content) {
+    return (
+      <WikiLayout 
+        navigationStructure={navigationStructure}
+        contentNodes={filteredContent}
+        onContentNodeClick={handleContentNodeClick}
+        activeNodeId={activeNodeId}
+      >
+        <div className="text-center py-16">
+          <h1 className="text-4xl font-bold text-foreground mb-4">Content Not Found</h1>
+          <p className="text-muted-foreground mb-8">
+            The requested page doesn't exist yet. You can create it using the document editor.
+          </p>
+          <button 
+            onClick={() => setShowDocumentEditor(true)}
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Create Page
+          </button>
+        </div>
+      </WikiLayout>
+    );
+  }
+
+  return (
+    <>
+      <WikiLayout 
+        navigationStructure={navigationStructure}
+        contentNodes={filteredContent}
+        onContentNodeClick={handleContentNodeClick}
+        activeNodeId={activeNodeId}
+      >
+        <div className="space-y-6">
+          <SimpleActionMenu 
+            editMode={editMode}
+            onToggleEdit={() => setEditMode(!editMode)}
+            onToggleDocumentEditor={() => setShowDocumentEditor(!showDocumentEditor)}
+            onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
+            onToggleNavigation={() => setShowNavigationManager(!showNavigationManager)}
+          />
+
+          <SimpleBreadcrumb path={content.path} />
+
+          <div className="bg-card rounded-lg border border-border p-8">
+            <h1 className="text-3xl font-bold text-foreground mb-6">{content.title}</h1>
+            
+            {content.content && (
+              <div 
+                className="prose prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(content.content) }}
+              />
+            )}
+
+            {content.children && content.children.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-foreground mb-4">Subsections</h2>
+                {content.children.map((child) => (
+                  <HierarchicalContent
+                    key={child.id}
+                    node={child}
+                    showTags={true}
+                    editMode={editMode}
+                    onNodeUpdate={handleNodeUpdate}
+                  />
+                ))}
+              </div>
+            )}
+
+            {content.tags && content.tags.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <div className="flex flex-wrap gap-2">
+                  {content.tags.map((tag) => (
+                    <span 
+                      key={tag}
+                      className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </WikiLayout>
+
+      <SimpleNavigationModal 
+        isOpen={showNavigationManager}
+        onClose={() => setShowNavigationManager(false)}
+      />
+
+      <SimpleFilterPanel 
+        isOpen={showFilterPanel}
+        onClose={() => setShowFilterPanel(false)}
+        onFilter={handleFilter}
+        allTags={TagManager.getAllTags(allContentNodes)}
+      />
+    </>
+  );
+};
+
+export default ContentPage;

@@ -1,4 +1,4 @@
-import { ContentNode } from "@/components/HierarchicalContent";
+import { ContentNode } from "@/services/contentService";
 
 export interface TagFilter {
   includeTags: string[];
@@ -35,23 +35,13 @@ export class TagManager {
     return tagIndex;
   }
 
-  static filterNodes(nodes: ContentNode[], filter: TagFilter): ContentNode[] {
-    const { includeTags, excludeTags } = filter;
+  static filterByTags(nodes: ContentNode[], includeTags: string[]): ContentNode[] {
+    if (includeTags.length === 0) return nodes;
     
-    if (includeTags.length === 0 && excludeTags.length === 0) {
-      return nodes;
-    }
-
     const filterNode = (node: ContentNode): ContentNode | null => {
-      const hasIncludedTag = includeTags.length === 0 || 
-        includeTags.some(tag => node.tags?.includes(tag));
-      const hasExcludedTag = excludeTags.some(tag => node.tags?.includes(tag));
-      
-      if (hasExcludedTag) return null;
-      
+      const hasIncludedTag = includeTags.some(tag => node.tags?.includes(tag));
       const filteredChildren = node.children?.map(filterNode).filter(Boolean) as ContentNode[] || [];
       
-      // Include node if it matches filter OR has matching children
       if (hasIncludedTag || filteredChildren.length > 0) {
         return {
           ...node,
@@ -63,6 +53,31 @@ export class TagManager {
     };
 
     return nodes.map(filterNode).filter(Boolean) as ContentNode[];
+  }
+
+  static filterByContent(nodes: ContentNode[], searchTerm: string): ContentNode[] {
+    if (!searchTerm) return nodes;
+    
+    const search = searchTerm.toLowerCase();
+    const filterNode = (node: ContentNode): ContentNode | null => {
+      const matchesContent = node.content?.toLowerCase().includes(search) || false;
+      const filteredChildren = node.children?.map(filterNode).filter(Boolean) as ContentNode[] || [];
+      
+      if (matchesContent || filteredChildren.length > 0) {
+        return {
+          ...node,
+          children: filteredChildren
+        };
+      }
+      
+      return null;
+    };
+
+    return nodes.map(filterNode).filter(Boolean) as ContentNode[];
+  }
+
+  static getAllTags(nodes: ContentNode[]): string[] {
+    return this.extractAllTags(nodes);
   }
 
   static getTagSuggestions(currentInput: string, allTags: string[]): string[] {
@@ -80,3 +95,6 @@ export class TagManager {
       });
   }
 }
+
+// Export instance for easier usage
+export const tagManager = new TagManager();

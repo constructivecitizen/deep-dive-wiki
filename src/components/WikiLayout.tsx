@@ -1,11 +1,9 @@
-import { DocumentSidebar, DocumentStructure } from "./DocumentSidebar";
-import { ContentNavigationSidebar } from "./ContentNavigationSidebar";
-import { documentStructure } from "@/data/sampleDocument";
-import { ContentNode } from "@/components/HierarchicalContent";
+import { DatabaseDocumentSidebar } from "./DatabaseDocumentSidebar";
+import { NavigationNode, ContentNode } from "@/services/contentService";
 
 interface WikiLayoutProps {
   children: React.ReactNode;
-  navigationStructure?: DocumentStructure[];
+  navigationStructure?: NavigationNode[];
   contentNodes?: ContentNode[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
@@ -13,7 +11,7 @@ interface WikiLayoutProps {
 
 export const WikiLayout = ({ 
   children, 
-  navigationStructure = documentStructure, 
+  navigationStructure = [], 
   contentNodes = [],
   onContentNodeClick,
   activeNodeId
@@ -31,7 +29,7 @@ export const WikiLayout = ({
       
       <div className="flex h-[calc(100vh-80px)]">
         <aside className="w-80 flex-shrink-0 border-r border-border">
-          <DocumentSidebar 
+          <DatabaseDocumentSidebar 
             structure={navigationStructure} 
             contentNodes={contentNodes}
             onContentNodeClick={onContentNodeClick}

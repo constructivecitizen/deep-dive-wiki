@@ -3,12 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import ContentPage from "./pages/ContentPage";
 import NotFound from "./pages/NotFound";
-import HierarchySystemsPage from "./pages/HierarchySystemsPage";
-import TaggingStrategiesPage from "./pages/TaggingStrategiesPage";
-import GettingStartedPage from "./pages/GettingStartedPage";
-import IntroductionPage from "./pages/IntroductionPage";
 
 const queryClient = new QueryClient();
 
@@ -19,16 +15,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/hierarchy-systems" element={<HierarchySystemsPage />} />
-          <Route path="/tagging-strategies" element={<TaggingStrategiesPage />} />
-          <Route path="/getting-started" element={<GettingStartedPage />} />
-          <Route path="/getting-started/intro" element={<IntroductionPage />} />
-          <Route path="/getting-started/setup" element={<GettingStartedPage />} />
-          <Route path="/knowledge-management" element={<Index />} />
-          <Route path="/advanced-topics" element={<Index />} />
-          <Route path="/deep-structures" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Dynamic content routes - handles all wiki content */}
+          <Route path="/" element={<ContentPage />} />
+          <Route path="/getting-started" element={<ContentPage />} />
+          <Route path="/getting-started/intro" element={<ContentPage />} />
+          <Route path="/getting-started/setup" element={<ContentPage />} />
+          <Route path="/hierarchy-systems" element={<ContentPage />} />
+          <Route path="/tagging-strategies" element={<ContentPage />} />
+          <Route path="/knowledge-management" element={<ContentPage />} />
+          <Route path="/advanced-topics" element={<ContentPage />} />
+          <Route path="/deep-structures" element={<ContentPage />} />
+          {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
