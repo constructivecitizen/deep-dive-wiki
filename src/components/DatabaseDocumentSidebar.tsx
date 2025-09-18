@@ -10,6 +10,7 @@ interface DatabaseDocumentSidebarProps {
   contentNodes?: ContentNode[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
+  currentPath?: string;
 }
 
 interface TreeNodeProps {
@@ -18,12 +19,14 @@ interface TreeNodeProps {
   contentNodes?: ContentNode[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
+  currentPath?: string;
 }
 
-const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId }: TreeNodeProps) => {
+const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId, currentPath }: TreeNodeProps) => {
   const [expanded, setExpanded] = useState(level < 2);
   const navigate = useNavigate();
   const hasChildren = node.children && node.children.length > 0;
+  const isActive = currentPath === node.path;
 
   const toggleExpanded = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,8 +38,9 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
     e.preventDefault();
     
     if (node.type === 'folder') {
-      // For folders, toggle expansion
-      toggleExpanded(e);
+      // For folders, navigate to the folder page and toggle expansion
+      navigate(node.path);
+      setExpanded(!expanded);
     } else {
       // For documents, navigate to the path
       navigate(node.path);
@@ -50,7 +54,11 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
   return (
     <>
       <div
-        className="flex items-center gap-2 py-2 px-2 hover:bg-accent/50 cursor-pointer rounded-md group transition-colors"
+        className={`flex items-center gap-2 py-2 px-2 cursor-pointer rounded-md group transition-colors ${
+          isActive 
+            ? 'bg-primary/10 text-primary border-l-2 border-primary' 
+            : 'hover:bg-accent/50'
+        }`}
         style={indentationStyle}
         onClick={handleNodeClick}
       >
@@ -81,7 +89,9 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
         </div>
 
         {/* Title */}
-        <span className="flex-1 text-sm text-foreground group-hover:text-foreground/80 truncate">
+        <span className={`flex-1 text-sm truncate ${
+          isActive ? 'text-primary font-medium' : 'text-foreground group-hover:text-foreground/80'
+        }`}>
           {node.title}
         </span>
 
@@ -102,6 +112,7 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
               contentNodes={contentNodes}
               onContentNodeClick={onContentNodeClick}
               activeNodeId={activeNodeId}
+              currentPath={currentPath}
             />
           ))}
         </div>
@@ -114,7 +125,8 @@ export const DatabaseDocumentSidebar = ({
   structure, 
   contentNodes = [],
   onContentNodeClick,
-  activeNodeId
+  activeNodeId,
+  currentPath
 }: DatabaseDocumentSidebarProps) => {
   return (
     <div className="h-full flex flex-col">
@@ -137,6 +149,7 @@ export const DatabaseDocumentSidebar = ({
               contentNodes={contentNodes}
               onContentNodeClick={onContentNodeClick}
               activeNodeId={activeNodeId}
+              currentPath={currentPath}
             />
           ))
         ) : (

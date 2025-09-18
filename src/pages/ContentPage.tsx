@@ -107,7 +107,7 @@ const ContentPage = () => {
     );
   }
 
-  // If no content found for this route, show 404-like message
+  // If no content found for this route, show 404-like message with better fallback
   if (!content) {
     return (
       <WikiLayout 
@@ -115,6 +115,7 @@ const ContentPage = () => {
         contentNodes={filteredContent}
         onContentNodeClick={handleContentNodeClick}
         activeNodeId={activeNodeId}
+        currentPath={location.pathname}
       >
         <div className="text-center py-16">
           <h1 className="text-4xl font-bold text-foreground mb-4">Content Not Found</h1>
@@ -139,6 +140,7 @@ const ContentPage = () => {
         contentNodes={filteredContent}
         onContentNodeClick={handleContentNodeClick}
         activeNodeId={activeNodeId}
+        currentPath={location.pathname}
       >
         <div className="space-y-6">
           <SimpleActionMenu 
@@ -164,15 +166,33 @@ const ContentPage = () => {
             {content.children && content.children.length > 0 && (
               <div className="mt-8">
                 <h2 className="text-xl font-semibold text-foreground mb-4">Subsections</h2>
-                {content.children.map((child) => (
-                  <HierarchicalContent
-                    key={child.id}
-                    node={child}
-                    showTags={true}
-                    editMode={editMode}
-                    onNodeUpdate={handleNodeUpdate}
-                  />
-                ))}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {content.children.map((child) => (
+                    <div key={child.id} className="border border-border rounded-lg p-4 hover:bg-accent/10 transition-colors">
+                      <h3 className="font-medium text-foreground mb-2">{child.title}</h3>
+                      {child.content && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {child.content.replace(/[#*`]/g, '').substring(0, 100)}...
+                        </p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex gap-1">
+                          {child.tags?.slice(0, 2).map((tag) => (
+                            <span key={tag} className="px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <button 
+                          onClick={() => window.location.href = child.path}
+                          className="text-xs text-primary hover:underline"
+                        >
+                          View →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

@@ -7,6 +7,7 @@ interface WikiLayoutProps {
   contentNodes?: ContentNode[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
+  currentPath?: string;
 }
 
 export const WikiLayout = ({ 
@@ -14,7 +15,8 @@ export const WikiLayout = ({
   navigationStructure = [], 
   contentNodes = [],
   onContentNodeClick,
-  activeNodeId
+  activeNodeId,
+  currentPath
 }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
@@ -34,6 +36,7 @@ export const WikiLayout = ({
             contentNodes={contentNodes}
             onContentNodeClick={onContentNodeClick}
             activeNodeId={activeNodeId}
+            currentPath={currentPath}
           />
         </aside>
         
