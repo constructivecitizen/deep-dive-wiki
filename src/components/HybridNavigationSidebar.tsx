@@ -397,8 +397,16 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  // Only show top-level nodes, no nested structure
-  const topLevelNodes = structure.filter(node => !node.parent_id);
+  // Only show top-level nodes that have document sections (children)
+  const topLevelNodes = structure.filter(node => {
+    if (node.parent_id) return false;
+    
+    // Check if this node has associated content with sections
+    const associatedContent = contentNodes?.find(content => content.path === node.path);
+    const documentSections = associatedContent ? parseDocumentSections(associatedContent.content || '') : [];
+    
+    return documentSections.length > 0;
+  });
 
   return (
     <div className="h-full flex flex-col">
