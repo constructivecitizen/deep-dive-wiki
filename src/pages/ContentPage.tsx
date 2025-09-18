@@ -243,19 +243,36 @@ const ContentPage = () => {
               children: content.children || []
             }] : []
           }
-          onSave={async (nodes) => {
+          onSave={async (nodes, originalMarkup) => {
             console.log('ContentPage onSave called with nodes:', nodes);
+            console.log('Original markup:', originalMarkup);
             const currentPath = location.pathname;
             console.log('Saving to path:', currentPath);
-            const success = await ContentService.saveDocumentContent(currentPath, nodes);
-            console.log('Save result:', success);
-            if (success) {
-              toast.success("Content saved successfully");
-              // Refresh the content
-              const contentData = await ContentService.getContentByPath(currentPath);
-              setContent(contentData);
+            
+            // If we have original markup, save that directly
+            if (originalMarkup) {
+              console.log('Using original markup for save');
+              const success = await ContentService.saveDocumentContent(currentPath, nodes, originalMarkup);
+              console.log('Save result:', success);
+              if (success) {
+                toast.success("Content saved successfully");
+                // Refresh the content
+                const contentData = await ContentService.getContentByPath(currentPath);
+                setContent(contentData);
+              } else {
+                toast.error("Failed to save content");
+              }
             } else {
-              toast.error("Failed to save content");
+              // Fallback to old method
+              const success = await ContentService.saveDocumentContent(currentPath, nodes);
+              console.log('Save result:', success);
+              if (success) {
+                toast.success("Content saved successfully");
+                const contentData = await ContentService.getContentByPath(currentPath);
+                setContent(contentData);
+              } else {
+                toast.error("Failed to save content");
+              }
             }
             setShowDocumentEditor(false);
           }}

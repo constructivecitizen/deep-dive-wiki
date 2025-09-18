@@ -277,46 +277,86 @@ export class ContentService {
     return true;
   }
 
-  static async saveDocumentContent(path: string, nodes: any[]): Promise<boolean> {
+  static async saveDocumentContent(path: string, nodes: any[], originalMarkup?: string): Promise<boolean> {
     try {
-      console.log('saveDocumentContent called with path:', path, 'nodes:', nodes);
+      console.log('saveDocumentContent called with path:', path, 'originalMarkup provided:', !!originalMarkup);
       
       // First, try to get existing content
       const existingContent = await this.getContentByPath(path);
       console.log('Existing content found:', existingContent);
       
-      if (nodes.length === 0) {
-        console.log('No nodes to save, returning true');
-        return true; // Nothing to save
+      if (!originalMarkup && nodes.length === 0) {
+        console.log('No content to save, returning true');
+        return true;
       }
 
-      // Get the main node (first one should be the page content)
-      const mainNode = nodes[0];
-      const title = mainNode.content?.split('\n')[0]?.replace(/^#+\s*/, '') || 'Untitled';
-      const content = mainNode.content || '';
-      const tags = mainNode.tags || [];
+      let fullContent = '';
+      let title = 'Untitled';
+      let allTags: string[] = [];
+      
+      if (originalMarkup) {
+        // Use the original markup directly
+        console.log('Using original markup:', originalMarkup.substring(0, 200) + '...');
+        fullContent = originalMarkup.trim();
+        
+        // Extract title from the first line
+        const firstLine = fullContent.split('\n')[0];
+        const titleMatch = firstLine.match(/^#+\s*(.+?)(?:\s*\[.*?\])?$/);
+        title = titleMatch ? titleMatch[1].trim() : firstLine.replace(/^#+\s*/, '').trim() || 'Untitled';
+        
+        // Extract tags from the first line if they exist (format: [tag1, tag2])
+        const tagMatch = firstLine.match(/\[(.*?)\]/);
+        if (tagMatch) {
+          allTags = tagMatch[1].split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+        }
+        
+        console.log('Extracted from markup:', { title, tags: allTags });
+      } else {
+        // Fallback to reconstructing from nodes
+        const reconstructMarkdown = (nodeList: any[], currentDepth = 0): string => {
+          let result = '';
+          for (const node of nodeList) {
+            if (node.content) {
+              const headingLevel = '#'.repeat(Math.max(1, currentDepth + 1));
+              const content = node.content.trim();
+              
+              if (!content.startsWith('#')) {
+                result += `${headingLevel} ${content}\n\n`;
+              } else {
+                result += `${content}\n\n`;
+              }
+              
+              if (node.tags && node.tags.length > 0) {
+                allTags.push(...node.tags);
+              }
+            }
+            
+            if (node.children && node.children.length > 0) {
+              result += reconstructMarkdown(node.children, currentDepth + 1);
+            }
+          }
+          return result;
+        };
 
-      console.log('Processing node:', { title, content: content.substring(0, 100) + '...', tags });
+        fullContent = reconstructMarkdown(nodes).trim();
+        const firstLine = fullContent.split('\n')[0];
+        title = firstLine.replace(/^#+\s*/, '').replace(/\[.*?\]/g, '').trim() || 'Untitled';
+        allTags = [...new Set(allTags)];
+      }
 
       if (existingContent) {
         console.log('Updating existing content with id:', existingContent.id);
-        // Update existing content
         const success = await this.updateContentNode(existingContent.id, {
           title,
-          content,
-          tags: tags.length > 0 ? tags : null
+          content: fullContent,
+          tags: allTags.length > 0 ? allTags : null
         });
         
         console.log('Update success:', success);
-        
-        // Handle child nodes (for now, we'll just update the main content)
-        // In the future, you could implement full hierarchical content editing
-        
         return success;
       } else {
         console.log('Creating new content');
-        // Create new content
-        const newContent = await this.createContentNode(title, content, path, null, tags);
+        const newContent = await this.createContentNode(title, fullContent, path, null, allTags.length > 0 ? allTags : []);
         console.log('New content created:', newContent);
         return newContent !== null;
       }

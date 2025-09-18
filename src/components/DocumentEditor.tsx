@@ -9,7 +9,7 @@ import { marked } from 'marked';
 
 interface DocumentEditorProps {
   initialContent: ContentNode[];
-  onSave: (nodes: ContentNode[]) => void;
+  onSave: (nodes: ContentNode[], originalMarkup?: string) => void;
   onClose: () => void;
 }
 
@@ -31,7 +31,8 @@ export const DocumentEditor = ({ initialContent, onSave, onClose }: DocumentEdit
     console.log('Current markup:', markup);
     const parsed = HierarchyParser.parseMarkup(markup);
     console.log('Parsed nodes:', parsed.nodes);
-    onSave(parsed.nodes);
+    // Pass both parsed nodes and original markup
+    onSave(parsed.nodes, markup);
   };
 
   const insertTemplate = () => {
