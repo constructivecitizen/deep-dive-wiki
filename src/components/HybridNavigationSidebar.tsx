@@ -110,10 +110,8 @@ const SectionItem: React.FC<{
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
         onClick={() => {
-          console.log('Section clicked:', section.title, 'onSectionView exists:', !!onSectionView);
           if (onSectionView) {
             const sectionContent = extractSectionContent(fullContent, section);
-            console.log('Extracted content:', sectionContent.substring(0, 100) + '...');
             onSectionView({
               content: sectionContent,
               title: section.title,
@@ -375,6 +373,7 @@ const FolderNode: React.FC<{
                 depth={0}
                 folderPath={node.path}
                 onSectionEdit={onSectionEdit}
+                onSectionView={onSectionView}
                 activeSectionId={activeSectionId}
                 fullContent={associatedContent?.content || ''}
                 sectionPosition={index}
