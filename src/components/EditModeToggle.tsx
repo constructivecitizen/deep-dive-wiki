@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Edit, Eye } from "lucide-react";
+import { Edit, Eye, FileText } from "lucide-react";
 
 interface EditModeToggleProps {
   onToggle: (editMode: boolean) => void;
+  onDocumentEdit: () => void;
 }
 
-export const EditModeToggle = ({ onToggle }: EditModeToggleProps) => {
+export const EditModeToggle = ({ onToggle, onDocumentEdit }: EditModeToggleProps) => {
   const [editMode, setEditMode] = useState(false);
 
   const toggleEditMode = () => {
@@ -16,23 +17,34 @@ export const EditModeToggle = ({ onToggle }: EditModeToggleProps) => {
   };
 
   return (
-    <Button
-      onClick={toggleEditMode}
-      variant={editMode ? "default" : "outline"}
-      size="sm"
-      className="fixed top-4 right-4 z-50 shadow-lg"
-    >
-      {editMode ? (
-        <>
-          <Eye className="h-4 w-4 mr-2" />
-          View Mode
-        </>
-      ) : (
-        <>
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Mode
-        </>
-      )}
-    </Button>
+    <div className="fixed top-4 right-4 z-50 flex gap-2">
+      <Button
+        onClick={onDocumentEdit}
+        variant="outline"
+        size="sm"
+        className="shadow-lg"
+      >
+        <FileText className="h-4 w-4 mr-2" />
+        Document Editor
+      </Button>
+      <Button
+        onClick={toggleEditMode}
+        variant={editMode ? "default" : "outline"}
+        size="sm"
+        className="shadow-lg"
+      >
+        {editMode ? (
+          <>
+            <Eye className="h-4 w-4 mr-2" />
+            View Mode
+          </>
+        ) : (
+          <>
+            <Edit className="h-4 w-4 mr-2" />
+            Node Editor
+          </>
+        )}
+      </Button>
+    </div>
   );
 };

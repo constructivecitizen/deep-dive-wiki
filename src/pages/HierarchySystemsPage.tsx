@@ -1,5 +1,9 @@
+import { useState } from "react";
 import { WikiLayout } from "@/components/WikiLayout";
 import { HierarchicalContent } from "@/components/HierarchicalContent";
+import { EditModeToggle } from "@/components/EditModeToggle";
+import { FilterPanel } from "@/components/FilterPanel";
+import { DocumentEditor } from "@/components/DocumentEditor";
 import { ContentNode } from "@/components/HierarchicalContent";
 
 // Dedicated page content for hierarchy systems
@@ -67,8 +71,48 @@ const hierarchySystemsContent: ContentNode = {
 };
 
 const HierarchySystemsPage = () => {
+  const [editMode, setEditMode] = useState(false);
+  const [showDocumentEditor, setShowDocumentEditor] = useState(false);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [content, setContent] = useState<ContentNode[]>([hierarchySystemsContent]);
+  const [filteredContent, setFilteredContent] = useState<ContentNode[]>([hierarchySystemsContent]);
+
+  const handleNodeUpdate = (updatedNode: any) => {
+    console.log("Node updated:", updatedNode);
+  };
+
+  const handleDocumentSave = (nodes: ContentNode[]) => {
+    setContent(nodes);
+    setFilteredContent(nodes);
+    setShowDocumentEditor(false);
+  };
+
+  const handleFilterChange = (filtered: ContentNode[]) => {
+    setFilteredContent(filtered);
+  };
+
+  if (showDocumentEditor) {
+    return (
+      <DocumentEditor
+        initialContent={content}
+        onSave={handleDocumentSave}
+        onClose={() => setShowDocumentEditor(false)}
+      />
+    );
+  }
+
   return (
     <WikiLayout>
+      <EditModeToggle 
+        onToggle={setEditMode}
+        onDocumentEdit={() => setShowDocumentEditor(true)}
+      />
+      <FilterPanel
+        allNodes={content}
+        onFilterChange={handleFilterChange}
+        isOpen={showFilterPanel}
+        onToggle={() => setShowFilterPanel(!showFilterPanel)}
+      />
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-foreground">Hierarchy Systems - Dedicated View</h1>
@@ -78,7 +122,15 @@ const HierarchySystemsPage = () => {
         </div>
         
         <div className="prose prose-lg max-w-none">
-          <HierarchicalContent node={hierarchySystemsContent} showTags={false} />
+          {filteredContent.map((node, index) => (
+            <HierarchicalContent 
+              key={node.id || index}
+              node={node} 
+              showTags={false} 
+              editMode={editMode}
+              onNodeUpdate={handleNodeUpdate}
+            />
+          ))}
         </div>
       </div>
     </WikiLayout>

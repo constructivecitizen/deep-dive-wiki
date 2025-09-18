@@ -151,6 +151,67 @@
   /* Smooth transitions */
   .wiki-transition { transition: var(--transition-smooth); }
   .wiki-bounce { transition: var(--transition-bounce); }
+
+  /* TipTap Editor Styles */
+  .ProseMirror {
+    @apply outline-none;
+  }
+
+  .ProseMirror h1 {
+    @apply text-2xl font-bold mb-4 text-foreground;
+  }
+
+  .ProseMirror h2 {
+    @apply text-xl font-bold mb-3 text-foreground;
+  }
+
+  .ProseMirror h3 {
+    @apply text-lg font-bold mb-2 text-foreground;
+  }
+
+  .ProseMirror h4 {
+    @apply text-base font-bold mb-2 text-foreground;
+  }
+
+  .ProseMirror h5 {
+    @apply text-sm font-bold mb-2 text-foreground;
+  }
+
+  .ProseMirror h6 {
+    @apply text-xs font-bold mb-2 text-foreground;
+  }
+
+  .ProseMirror p {
+    @apply mb-3 text-foreground leading-relaxed;
+  }
+
+  .ProseMirror p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .ProseMirror ul, .ProseMirror ol {
+    @apply mb-3 ml-4;
+  }
+
+  .ProseMirror li {
+    @apply mb-1;
+  }
+
+  .ProseMirror code {
+    @apply bg-muted px-1 py-0.5 rounded text-sm font-mono;
+  }
+
+  .ProseMirror pre {
+    @apply bg-muted p-3 rounded-lg mb-3 overflow-x-auto;
+  }
+
+  .ProseMirror blockquote {
+    @apply border-l-4 border-border pl-4 italic text-muted-foreground mb-3;
+  }
 }
 
 @layer base {
