@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ChevronRight, ChevronDown, FileText, Folder, FolderOpen } from "lucide-react";
+import { ChevronRight, ChevronDown, FileText, Folder, FolderOpen, ExternalLink } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { ContentNode } from "@/components/HierarchicalContent";
 
 export interface DocumentStructure {
   id: string;
@@ -12,20 +13,39 @@ export interface DocumentStructure {
 
 interface DocumentSidebarProps {
   structure: DocumentStructure[];
+  contentNodes?: ContentNode[];
+  onContentNodeClick?: (nodeId: string) => void;
+  activeNodeId?: string;
 }
 
 interface TreeNodeProps {
   node: DocumentStructure;
   level: number;
+  contentNodes?: ContentNode[];
+  onContentNodeClick?: (nodeId: string) => void;
+  activeNodeId?: string;
 }
 
-const TreeNode = ({ node, level }: TreeNodeProps) => {
+const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId }: TreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first two levels
   const hasChildren = node.children && node.children.length > 0;
+  
+  // Find if this document has corresponding content nodes
+  const hasContentNodes = contentNodes && contentNodes.length > 0 && 
+    (node.path === "/tagging-strategies" || node.path === "/hierarchy-systems");
   
   const toggleExpanded = () => {
     if (hasChildren) {
       setIsExpanded(!isExpanded);
+    }
+  };
+
+  const handleShowContent = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (onContentNodeClick && contentNodes && contentNodes.length > 0) {
+      // For now, show the root content node when clicking the page
+      onContentNodeClick(contentNodes[0].id);
     }
   };
 
@@ -61,18 +81,31 @@ const TreeNode = ({ node, level }: TreeNodeProps) => {
         </div>
         
         {node.type === "document" ? (
-          <NavLink 
-            to={node.path}
-            className={({ isActive }) => `
-              flex-1 text-sm font-medium wiki-transition
-              ${isActive 
-                ? "text-primary font-semibold" 
-                : "text-foreground hover:text-primary"
-              }
-            `}
-          >
-            {node.title}
-          </NavLink>
+          <div className="flex items-center flex-1 gap-2">
+            <NavLink 
+              to={node.path}
+              className={({ isActive }) => `
+                flex-1 text-sm font-medium wiki-transition
+                ${isActive 
+                  ? "text-primary font-semibold" 
+                  : "text-foreground hover:text-primary"
+                }
+              `}
+            >
+              {node.title}
+            </NavLink>
+            
+            {hasContentNodes && (
+              <button
+                onClick={handleShowContent}
+                className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
+                aria-label="Show content hierarchy"
+                title="Show content hierarchy"
+              >
+                <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-primary" />
+              </button>
+            )}
+          </div>
         ) : (
           <span className="flex-1 text-sm font-medium text-foreground group-hover:text-primary wiki-transition">
             {node.title}
@@ -83,7 +116,14 @@ const TreeNode = ({ node, level }: TreeNodeProps) => {
       {isExpanded && hasChildren && (
         <div className="wiki-transition">
           {node.children!.map((child) => (
-            <TreeNode key={child.id} node={child} level={level + 1} />
+            <TreeNode 
+              key={child.id} 
+              node={child} 
+              level={level + 1} 
+              contentNodes={contentNodes}
+              onContentNodeClick={onContentNodeClick}
+              activeNodeId={activeNodeId}
+            />
           ))}
         </div>
       )}
@@ -91,7 +131,12 @@ const TreeNode = ({ node, level }: TreeNodeProps) => {
   );
 };
 
-export const DocumentSidebar = ({ structure }: DocumentSidebarProps) => {
+export const DocumentSidebar = ({ 
+  structure, 
+  contentNodes, 
+  onContentNodeClick, 
+  activeNodeId 
+}: DocumentSidebarProps) => {
   return (
     <div className="h-full bg-card border-r border-border overflow-y-auto">
       <div className="p-4 border-b border-border">
@@ -101,7 +146,14 @@ export const DocumentSidebar = ({ structure }: DocumentSidebarProps) => {
       
       <div className="py-2">
         {structure.map((node) => (
-          <TreeNode key={node.id} node={node} level={0} />
+          <TreeNode 
+            key={node.id} 
+            node={node} 
+            level={0} 
+            contentNodes={contentNodes}
+            onContentNodeClick={onContentNodeClick}
+            activeNodeId={activeNodeId}
+          />
         ))}
       </div>
     </div>

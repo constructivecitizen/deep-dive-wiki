@@ -31,15 +31,12 @@ export const WikiLayout = ({
       
       <div className="flex h-[calc(100vh-80px)]">
         <aside className="w-80 flex-shrink-0 border-r border-border">
-          {contentNodes.length > 0 ? (
-            <ContentNavigationSidebar 
-              contentNodes={contentNodes}
-              onNodeClick={onContentNodeClick}
-              activeNodeId={activeNodeId}
-            />
-          ) : (
-            <DocumentSidebar structure={navigationStructure} />
-          )}
+          <DocumentSidebar 
+            structure={navigationStructure} 
+            contentNodes={contentNodes}
+            onContentNodeClick={onContentNodeClick}
+            activeNodeId={activeNodeId}
+          />
         </aside>
         
         <main className="flex-1 overflow-y-auto">
