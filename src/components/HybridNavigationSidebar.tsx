@@ -84,6 +84,9 @@ const SectionItem: React.FC<{
   const hasChildren = section.children.length > 0;
   const isActive = activeSectionId === section.id;
 
+  // Filter children to only show those that have children
+  const filteredChildren = section.children.filter(child => child.children.length > 0);
+
   const indentationPx = (depth + 1) * 16;
 
   return (
@@ -129,9 +132,9 @@ const SectionItem: React.FC<{
         )}
       </div>
 
-      {isExpanded && hasChildren && (
+      {isExpanded && filteredChildren.length > 0 && (
         <div className="mt-1">
-          {section.children.map((child) => (
+          {filteredChildren.map((child) => (
             <SectionItem
               key={child.id}
               section={child}
@@ -339,16 +342,18 @@ const FolderNode: React.FC<{
       {/* Document sections only - no nested folders */}
       {expanded && documentSections.length > 0 && (
         <div>
-          {documentSections.map((section) => (
-            <SectionItem
-              key={section.id}
-              section={section}
-              depth={0}
-              folderPath={node.path}
-              onSectionClick={onSectionClick}
-              activeSectionId={activeSectionId}
-            />
-          ))}
+          {documentSections
+            .filter(section => section.children.length > 0)
+            .map((section) => (
+              <SectionItem
+                key={section.id}
+                section={section}
+                depth={0}
+                folderPath={node.path}
+                onSectionClick={onSectionClick}
+                activeSectionId={activeSectionId}
+              />
+            ))}
         </div>
       )}
     </>
