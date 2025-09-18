@@ -20,6 +20,9 @@ export const DocumentEditor = ({ initialContent, onSave, onClose }: DocumentEdit
     if (initialContent.length > 0) {
       const initialMarkup = HierarchyParser.nodesToMarkup(initialContent);
       setMarkup(initialMarkup);
+    } else {
+      // Start with a basic template for new pages
+      setMarkup('# Page Title\n\nWrite your content here...\n\n## Subtopic\n\nAdd more details here.');
     }
   }, [initialContent]);
 

@@ -226,4 +226,92 @@ export class ContentService {
 
     return true;
   }
+
+  // Content management methods
+  static async createContentNode(
+    title: string, 
+    content: string, 
+    path: string, 
+    parentId: string | null = null,
+    tags: string[] = []
+  ): Promise<ContentNode | null> {
+    // Calculate depth based on path segments
+    const depth = path.split('/').filter(Boolean).length;
+    
+    const { data, error } = await supabase
+      .from('content_nodes')
+      .insert({
+        title,
+        content,
+        path,
+        parent_id: parentId,
+        depth,
+        tags: tags.length > 0 ? tags : null,
+        order_index: 0
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating content node:', error);
+      return null;
+    }
+
+    return data;
+  }
+
+  static async updateContentNode(
+    id: string, 
+    updates: Partial<Omit<ContentNode, 'id' | 'created_at' | 'updated_at'>>
+  ): Promise<boolean> {
+    const { error } = await supabase
+      .from('content_nodes')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating content node:', error);
+      return false;
+    }
+
+    return true;
+  }
+
+  static async saveDocumentContent(path: string, nodes: any[]): Promise<boolean> {
+    try {
+      // First, try to get existing content
+      const existingContent = await this.getContentByPath(path);
+      
+      if (nodes.length === 0) {
+        return true; // Nothing to save
+      }
+
+      // Get the main node (first one should be the page content)
+      const mainNode = nodes[0];
+      const title = mainNode.content?.split('\n')[0]?.replace(/^#+\s*/, '') || 'Untitled';
+      const content = mainNode.content || '';
+      const tags = mainNode.tags || [];
+
+      if (existingContent) {
+        // Update existing content
+        const success = await this.updateContentNode(existingContent.id, {
+          title,
+          content,
+          tags: tags.length > 0 ? tags : null
+        });
+        
+        // Handle child nodes (for now, we'll just update the main content)
+        // In the future, you could implement full hierarchical content editing
+        
+        return success;
+      } else {
+        // Create new content
+        const newContent = await this.createContentNode(title, content, path, null, tags);
+        return newContent !== null;
+      }
+    } catch (error) {
+      console.error('Error saving document content:', error);
+      return false;
+    }
+  }
 }

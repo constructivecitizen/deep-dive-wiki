@@ -10,6 +10,7 @@ import { SimpleBreadcrumb } from "@/components/SimpleBreadcrumb";
 import { renderMarkdown } from "@/lib/markdownRenderer";
 import { TagManager } from "@/lib/tagManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
+import { toast } from "sonner";
 
 const ContentPage = () => {
   const location = useLocation();
@@ -123,7 +124,9 @@ const ContentPage = () => {
             The requested page doesn't exist yet. You can create it using the document editor.
           </p>
           <button 
-            onClick={() => setShowDocumentEditor(true)}
+            onClick={async () => {
+              setShowDocumentEditor(true);
+            }}
             className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
           >
             Create Page
@@ -230,9 +233,26 @@ const ContentPage = () => {
 
       {showDocumentEditor && (
         <DocumentEditor 
-          initialContent={content?.children || []}
-          onSave={(nodes) => {
-            console.log('Saving content nodes:', nodes);
+          initialContent={
+            content ? [{
+              id: content.id,
+              content: content.content || '',
+              tags: content.tags || [],
+              depth: 0,
+              children: content.children || []
+            }] : []
+          }
+          onSave={async (nodes) => {
+            const currentPath = location.pathname;
+            const success = await ContentService.saveDocumentContent(currentPath, nodes);
+            if (success) {
+              toast.success("Content saved successfully");
+              // Refresh the content
+              const contentData = await ContentService.getContentByPath(currentPath);
+              setContent(contentData);
+            } else {
+              toast.error("Failed to save content");
+            }
             setShowDocumentEditor(false);
           }}
           onClose={() => setShowDocumentEditor(false)}
