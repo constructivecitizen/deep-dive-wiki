@@ -22,6 +22,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -56,6 +57,24 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        // Wiki-specific colors
+        hierarchy: {
+          line: "hsl(var(--hierarchy-line))",
+          hover: "hsl(var(--hierarchy-hover))",
+        },
+        depth: {
+          1: "hsl(var(--depth-bg-1))",
+          2: "hsl(var(--depth-bg-2))",
+          3: "hsl(var(--depth-bg-3))",
+        },
+        tags: {
+          blue: "hsl(var(--tag-blue))",
+          green: "hsl(var(--tag-green))",
+          purple: "hsl(var(--tag-purple))",
+          orange: "hsl(var(--tag-orange))",
+          red: "hsl(var(--tag-red))",
+          teal: "hsl(var(--tag-teal))",
         },
       },
       borderRadius: {
