@@ -1,9 +1,7 @@
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { Eye, FileText, Save } from 'lucide-react';
 import { ContentNode } from '@/components/HierarchicalContent';
 import { HierarchyParser } from '@/lib/hierarchyParser';
@@ -17,49 +15,15 @@ interface DocumentEditorProps {
 export const DocumentEditor = ({ initialContent, onSave, onClose }: DocumentEditorProps) => {
   const [markup, setMarkup] = useState('');
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3, 4, 5, 6],
-        },
-      }),
-      Placeholder.configure({
-        placeholder: `Start typing or paste your content...
-
-Use markup like:
-# Main Topic [tag1, tag2]
-Content for the main topic.
-
-## Subtopic [tag3, tag4]
-Content for the subtopic.
-
-### Detail [tag5]
-More detailed content.`,
-      }),
-    ],
-    content: markup,
-    onUpdate: ({ editor }) => {
-      setMarkup(editor.getText());
-    },
-    editorProps: {
-      attributes: {
-        class: 'prose prose-lg max-w-none focus:outline-none min-h-[400px] p-4',
-      },
-    },
-  });
-
   useEffect(() => {
     if (initialContent.length > 0) {
       const initialMarkup = HierarchyParser.nodesToMarkup(initialContent);
       setMarkup(initialMarkup);
-      editor?.commands.setContent(initialMarkup);
     }
-  }, [initialContent, editor]);
+  }, [initialContent]);
 
   const handleSave = () => {
-    const editorContent = editor?.getText() || markup;
-    const parsed = HierarchyParser.parseMarkup(editorContent);
+    const parsed = HierarchyParser.parseMarkup(markup);
     onSave(parsed.nodes);
   };
 
@@ -82,7 +46,7 @@ Another subtopic with practical guidance.
 # Another Main Topic [advanced]
 Start a new main section here.`;
 
-    editor?.commands.setContent(template);
+    setMarkup(template);
   };
 
   return (
@@ -114,10 +78,22 @@ Start a new main section here.`;
           <div className="h-full flex">
             <div className="flex-1 overflow-y-auto">
               <Card className="m-4 h-[calc(100vh-120px)]">
-                <div className="h-full">
-                  <EditorContent 
-                    editor={editor} 
-                    className="h-full overflow-y-auto"
+                <div className="h-full p-4">
+                  <Textarea
+                    value={markup}
+                    onChange={(e) => setMarkup(e.target.value)}
+                    placeholder={`Start typing or paste your content...
+
+Use markup like:
+# Main Topic [tag1, tag2]
+Content for the main topic.
+
+## Subtopic [tag3, tag4]
+Content for the subtopic.
+
+### Detail [tag5]
+More detailed content.`}
+                    className="h-full min-h-[400px] font-mono text-sm resize-none border-0 focus:ring-0 focus:border-0 p-0"
                   />
                 </div>
               </Card>
