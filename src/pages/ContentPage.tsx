@@ -170,7 +170,12 @@ const ContentPage = () => {
             {content.content && (
               <div 
                 className="prose prose-slate dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(content.content) }}
+                dangerouslySetInnerHTML={{ 
+                  __html: renderMarkdown(
+                    // Clean tag syntax from content before rendering
+                    content.content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2')
+                  ) 
+                }}
               />
             )}
 
@@ -207,20 +212,6 @@ const ContentPage = () => {
               </div>
             )}
 
-            {content.tags && content.tags.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-border">
-                <div className="flex flex-wrap gap-2">
-                  {content.tags.map((tag) => (
-                    <span 
-                      key={tag}
-                      className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </WikiLayout>
