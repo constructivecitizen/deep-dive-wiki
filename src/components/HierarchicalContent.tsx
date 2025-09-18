@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { ChevronRight, ChevronDown, ExternalLink } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Tag } from "./Tag";
-import { ContentEditor } from "./ContentEditor";
+import { useState } from 'react';
+import { ChevronRight, ChevronDown, ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ContentEditor } from '@/components/ContentEditor';
+import { Tag } from '@/components/Tag';
+import { renderMarkdown } from '@/lib/markdownRenderer';
 
 export interface ContentNode {
   id: string;
@@ -66,7 +68,10 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate }: 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <p className="text-foreground leading-relaxed">{node.content}</p>
+                <div 
+                  className="text-foreground leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(node.content) }}
+                />
                 
                 {showTags && node.tags && node.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -85,14 +90,14 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate }: 
                   />
                 )}
                 {node.path && (
-                  <Link
-                    to={node.path}
+                  <a
+                    href={node.path}
                     className="flex items-center gap-1 px-2 py-1 text-xs text-primary hover:text-primary-hover bg-primary/5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
                     title="Open dedicated page"
                   >
                     <ExternalLink className="h-3 w-3" />
                     <span className="hidden sm:inline">View</span>
-                  </Link>
+                  </a>
                 )}
               </div>
             </div>

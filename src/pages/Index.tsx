@@ -4,6 +4,7 @@ import { HierarchicalContent } from "@/components/HierarchicalContent";
 import { EditModeToggle } from "@/components/EditModeToggle";
 import { FilterPanel } from "@/components/FilterPanel";
 import { DocumentEditor } from "@/components/DocumentEditor";
+import { NodeManagement } from "@/components/NodeManagement";
 import { sampleContent } from "@/data/sampleDocument";
 import { ContentNode } from "@/components/HierarchicalContent";
 
@@ -41,10 +42,19 @@ const Index = () => {
 
   return (
     <WikiLayout>
-      <EditModeToggle 
-        onToggle={setEditMode}
-        onDocumentEdit={() => setShowDocumentEditor(true)}
-      />
+      <div className="flex items-center gap-4 mb-6">
+        <EditModeToggle 
+          onToggle={setEditMode}
+          onDocumentEdit={() => setShowDocumentEditor(true)}
+        />
+        <NodeManagement 
+          nodes={content}
+          onNodesChange={(nodes) => {
+            setContent(nodes);
+            setFilteredContent(nodes);
+          }}
+        />
+      </div>
       <FilterPanel
         allNodes={content}
         onFilterChange={handleFilterChange}

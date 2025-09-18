@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Eye, FileText, Save } from 'lucide-react';
+import { Eye, FileText, Save, Bold, Italic, List, Link2 } from 'lucide-react';
 import { ContentNode } from '@/components/HierarchicalContent';
 import { HierarchyParser } from '@/lib/hierarchyParser';
+import { marked } from 'marked';
 
 interface DocumentEditorProps {
   initialContent: ContentNode[];
@@ -29,24 +30,70 @@ export const DocumentEditor = ({ initialContent, onSave, onClose }: DocumentEdit
 
   const insertTemplate = () => {
     const template = `# Main Topic [example-tag, important]
-This is the main content section. You can write paragraphs here.
+This is the main content section. You can write **bold text**, *italic text*, and [links](https://example.com).
 
 ## Subtopic A [technical, detailed]
-This is a subtopic with its own content and tags.
+This is a subtopic with its own content and tags. Use markdown formatting:
+
+- **Bold text** for emphasis
+- *Italic text* for subtle emphasis
+- \`code snippets\` for technical terms
+- [External links](https://example.com) for references
 
 ### Detail 1 [implementation]
-Detailed information about implementation.
+Detailed information about implementation. You can use:
+
+1. Numbered lists
+2. **Bold headings** within content
+3. *Emphasized points*
 
 ### Detail 2 [theory, background]
-Background theory and concepts.
+Background theory and concepts with \`inline code\` examples.
 
 ## Subtopic B [practical, guide]
-Another subtopic with practical guidance.
+Another subtopic with practical guidance and **markdown formatting**.
 
 # Another Main Topic [advanced]
-Start a new main section here.`;
+Start a new main section here with full markdown support.`;
 
     setMarkup(template);
+  };
+
+  const insertMarkdown = (type: string) => {
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = markup.substring(start, end);
+    let replacement = '';
+
+    switch (type) {
+      case 'bold':
+        replacement = selectedText ? `**${selectedText}**` : '**bold text**';
+        break;
+      case 'italic':
+        replacement = selectedText ? `*${selectedText}*` : '*italic text*';
+        break;
+      case 'list':
+        replacement = selectedText 
+          ? selectedText.split('\n').map(line => line.trim() ? `- ${line}` : line).join('\n')
+          : '- List item';
+        break;
+      case 'link':
+        replacement = selectedText ? `[${selectedText}](url)` : '[Link text](url)';
+        break;
+    }
+
+    const newMarkup = markup.substring(0, start) + replacement + markup.substring(end);
+    setMarkup(newMarkup);
+
+    // Set cursor position after insertion
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + replacement.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
   };
 
   return (
@@ -59,6 +106,40 @@ Start a new main section here.`;
               <h1 className="text-xl font-semibold">Document Editor</h1>
             </div>
             <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 mr-4 border-r border-border pr-4">
+                <Button 
+                  onClick={() => insertMarkdown('bold')} 
+                  variant="outline" 
+                  size="sm"
+                  title="Bold"
+                >
+                  <Bold className="h-4 w-4" />
+                </Button>
+                <Button 
+                  onClick={() => insertMarkdown('italic')} 
+                  variant="outline" 
+                  size="sm"
+                  title="Italic"
+                >
+                  <Italic className="h-4 w-4" />
+                </Button>
+                <Button 
+                  onClick={() => insertMarkdown('list')} 
+                  variant="outline" 
+                  size="sm"
+                  title="List"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button 
+                  onClick={() => insertMarkdown('link')} 
+                  variant="outline" 
+                  size="sm"
+                  title="Link"
+                >
+                  <Link2 className="h-4 w-4" />
+                </Button>
+              </div>
               <Button onClick={insertTemplate} variant="outline" size="sm">
                 Insert Template
               </Button>
@@ -86,13 +167,14 @@ Start a new main section here.`;
 
 Use markup like:
 # Main Topic [tag1, tag2]
-Content for the main topic.
+Content with **bold**, *italic*, and [links](url).
 
 ## Subtopic [tag3, tag4]
-Content for the subtopic.
+- List items
+- More content
 
 ### Detail [tag5]
-More detailed content.`}
+More detailed content with \`code\`.`}
                     className="h-full min-h-[400px] font-mono text-sm resize-none border-0 focus:ring-0 focus:border-0 p-0"
                   />
                 </div>
@@ -125,10 +207,17 @@ More detailed content.`}
                 </div>
 
                 <div>
-                  <h4 className="font-medium mb-2">Content</h4>
-                  <p className="text-muted-foreground">
-                    Write regular paragraphs after headers. They'll be associated with the nearest header above them.
+                  <h4 className="font-medium mb-2">Content & Markdown</h4>
+                  <p className="text-muted-foreground mb-2">
+                    Write regular paragraphs after headers with full markdown support:
                   </p>
+                  <div className="bg-background p-2 rounded border font-mono text-xs">
+                    **Bold text**<br/>
+                    *Italic text*<br/>
+                    \`inline code\`<br/>
+                    [Link text](url)<br/>
+                    - List items
+                  </div>
                 </div>
 
                 <div className="border-t pt-4">
