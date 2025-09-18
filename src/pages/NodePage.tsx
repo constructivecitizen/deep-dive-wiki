@@ -43,14 +43,6 @@ const NodePage = () => {
     setActiveSectionId(sectionId);
   };
 
-  const fetchData = async () => {
-    const structure = await ContentService.getNavigationStructure();
-    setNavigationStructure(structure);
-    const allNodes = await ContentService.getAllContentNodes();
-    setAllContentNodes(allNodes);
-    setFilteredContent(allNodes);
-  };
-
   // Extract section content from a document based on sectionId
   const extractSectionContent = (content: string, targetSectionId: string) => {
     const lines = content.split('\n');
@@ -90,15 +82,38 @@ const NodePage = () => {
     return { content: currentSection.trim(), title: sectionTitle };
   };
 
-  useEffect(() => {
-    const loadNavigationStructure = async () => {
-      const structure = await ContentService.getNavigationStructure();
-      setNavigationStructure(structure);
-    };
+  // Consolidated data loading and section extraction
+  const loadDataAndExtractSection = async (targetSectionId: string) => {
+    // Load all data first
+    const [structure, allNodes] = await Promise.all([
+      ContentService.getNavigationStructure(),
+      ContentService.getAllContentNodes()
+    ]);
     
-    loadNavigationStructure();
-  }, []);
+    setNavigationStructure(structure);
+    setAllContentNodes(allNodes);
+    setFilteredContent(allNodes);
 
+    // Find the content node that contains this section
+    let foundContent: ContentNode | null = null;
+    let extractedSection = { content: '', title: '' };
+
+    for (const node of allNodes) {
+      if (node.content) {
+        const section = extractSectionContent(node.content, targetSectionId);
+        if (section.content) {
+          foundContent = node;
+          extractedSection = section;
+          setParentPath(node.path);
+          break;
+        }
+      }
+    }
+
+    return { foundContent, extractedSection };
+  };
+
+  // Initial data load when component mounts or sectionId changes
   useEffect(() => {
     const loadContent = async () => {
       if (!sectionId) {
@@ -108,36 +123,22 @@ const NodePage = () => {
 
       setLoading(true);
       
-      // Parse the sectionId to get the source path and section
-      // Format: sectionId contains the section number, we need to find which document it belongs to
-      // For now, we'll search through all content to find the section
-      const allNodes = await ContentService.getAllContentNodes();
-      setAllContentNodes(allNodes);
-      setFilteredContent(allNodes);
+      try {
+        const { foundContent, extractedSection } = await loadDataAndExtractSection(sectionId);
 
-      // Find the content node that contains this section
-      let foundContent: ContentNode | null = null;
-      let extractedSection = { content: '', title: '' };
-
-      for (const node of allNodes) {
-        if (node.content) {
-          const section = extractSectionContent(node.content, sectionId);
-          if (section.content) {
-            foundContent = node;
-            extractedSection = section;
-            setParentPath(node.path);
-            break;
-          }
+        if (foundContent && extractedSection.content) {
+          setContent(foundContent);
+          setSectionContent(extractedSection.content);
+          setSectionTitle(extractedSection.title);
+        } else {
+          // Section not found, redirect back
+          toast.error("Section not found");
+          navigate('/');
+          return;
         }
-      }
-
-      if (foundContent && extractedSection.content) {
-        setContent(foundContent);
-        setSectionContent(extractedSection.content);
-        setSectionTitle(extractedSection.title);
-      } else {
-        // Section not found, redirect back
-        toast.error("Section not found");
+      } catch (error) {
+        console.error("Error loading content:", error);
+        toast.error("Failed to load content");
         navigate('/');
         return;
       }
@@ -164,34 +165,17 @@ const NodePage = () => {
         async () => {
           setIsRefreshing(true);
           
-          // Refresh navigation structure for sidebar updates
-          const structure = await ContentService.getNavigationStructure();
-          setNavigationStructure(structure);
-          
-          // Re-extract the section content from the updated document
-          const allNodes = await ContentService.getAllContentNodes();
-          setAllContentNodes(allNodes);
-          setFilteredContent(allNodes);
-          
-          // Find the content node that contains this section again
-          let foundContent: ContentNode | null = null;
-          let extractedSection = { content: '', title: '' };
+          try {
+            // Use the same data loading and extraction logic
+            const { foundContent, extractedSection } = await loadDataAndExtractSection(sectionId);
 
-          for (const node of allNodes) {
-            if (node.content) {
-              const section = extractSectionContent(node.content, sectionId);
-              if (section.content) {
-                foundContent = node;
-                extractedSection = section;
-                break;
-              }
+            if (foundContent && extractedSection.content) {
+              setContent(foundContent);
+              setSectionContent(extractedSection.content);
+              setSectionTitle(extractedSection.title);
             }
-          }
-
-          if (foundContent && extractedSection.content) {
-            setSectionContent(extractedSection.content);
-            setSectionTitle(extractedSection.title);
-            setContent(foundContent);
+          } catch (error) {
+            console.error("Error refreshing content:", error);
           }
           
           setIsRefreshing(false);
@@ -263,8 +247,14 @@ const NodePage = () => {
         activeNodeId={activeNodeId}
         currentPath={parentPath}
         onStructureUpdate={async () => {
-          const structure = await ContentService.getNavigationStructure();
-          setNavigationStructure(structure);
+          if (sectionId) {
+            const { foundContent, extractedSection } = await loadDataAndExtractSection(sectionId);
+            if (foundContent && extractedSection.content) {
+              setContent(foundContent);
+              setSectionContent(extractedSection.content);
+              setSectionTitle(extractedSection.title);
+            }
+          }
         }}
         actionMenu={
           <SimpleActionMenu 
@@ -281,7 +271,16 @@ const NodePage = () => {
             onSectionClick={handleSectionClick}
             activeSectionId={activeSectionId}
             currentPath={parentPath}
-            onStructureUpdate={fetchData}
+            onStructureUpdate={async () => {
+              if (sectionId) {
+                const { foundContent, extractedSection } = await loadDataAndExtractSection(sectionId);
+                if (foundContent && extractedSection.content) {
+                  setContent(foundContent);
+                  setSectionContent(extractedSection.content);
+                  setSectionTitle(extractedSection.title);
+                }
+              }
+            }}
           />
         }
       >
