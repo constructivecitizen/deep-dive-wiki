@@ -36,7 +36,6 @@ interface HybridNavigationSidebarProps {
   contentNodes?: ContentNode[];
   onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
-  activeSectionId?: string;
   currentPath?: string;
   onStructureUpdate: () => void;
 }
@@ -87,14 +86,12 @@ const SectionItem: React.FC<{
   folderPath: string;
   onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
-  activeSectionId?: string;
   fullContent: string;
   sectionPosition: number;
-}> = ({ section, depth, folderPath, onSectionEdit, onSectionView, activeSectionId, fullContent, sectionPosition }) => {
+}> = ({ section, depth, folderPath, onSectionEdit, onSectionView, fullContent, sectionPosition }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
-  const isActive = activeSectionId === section.id;
 
   // Filter children to only show those that have children
   const filteredChildren = section.children.filter(child => child.children.length > 0);
@@ -105,9 +102,7 @@ const SectionItem: React.FC<{
   return (
     <div className="text-sm">
       <div 
-        className={`flex items-center gap-2 py-1 px-3 rounded cursor-pointer hover:bg-accent transition-colors ${
-          isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
-        }`}
+        className="flex items-center gap-2 py-1 px-3 rounded cursor-pointer hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
         style={{ marginLeft: `${indentationPx}px` }}
         onClick={() => {
           if (onSectionView) {
@@ -162,7 +157,6 @@ const SectionItem: React.FC<{
               folderPath={folderPath}
               onSectionEdit={onSectionEdit}
               onSectionView={onSectionView}
-              activeSectionId={activeSectionId}
               fullContent={fullContent}
               sectionPosition={sectionPosition + index + 1}
             />
@@ -178,7 +172,6 @@ const FolderNode: React.FC<{
   contentNodes?: ContentNode[];
   onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
-  activeSectionId?: string;
   currentPath?: string;
   onStructureUpdate: () => void;
 }> = ({ 
@@ -186,7 +179,6 @@ const FolderNode: React.FC<{
   contentNodes, 
   onSectionEdit, 
   onSectionView, 
-  activeSectionId, 
   currentPath,
   onStructureUpdate
 }) => {
@@ -375,7 +367,6 @@ const FolderNode: React.FC<{
                 folderPath={node.path}
                 onSectionEdit={onSectionEdit}
                 onSectionView={onSectionView}
-                activeSectionId={activeSectionId}
                 fullContent={associatedContent?.content || ''}
                 sectionPosition={index}
               />
@@ -391,7 +382,6 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   contentNodes = [],
   onSectionEdit,
   onSectionView,
-  activeSectionId,
   currentPath,
   onStructureUpdate
 }) => {
@@ -447,7 +437,6 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               contentNodes={contentNodes}
               onSectionEdit={onSectionEdit}
               onSectionView={onSectionView}
-              activeSectionId={activeSectionId}
               currentPath={currentPath}
               onStructureUpdate={onStructureUpdate}
             />

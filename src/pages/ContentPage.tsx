@@ -28,7 +28,6 @@ const ContentPage = () => {
   const [editMode, setEditMode] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
-  const [activeSectionId, setActiveSectionId] = useState<string>();
   const [editorData, setEditorData] = useState<EditorData | null>(null);
   const [viewingSection, setViewingSection] = useState<{
     content: string;
@@ -97,28 +96,14 @@ const ContentPage = () => {
       // Get current path
       const currentPath = location.pathname;
       
-      // Check if this is a section route
-      const sectionMatch = currentPath.match(/^\/node\/(.+)$/);
-      if (sectionMatch) {
-        // Handle section view - find parent document and extract section
-        const allNodes = await ContentService.getAllContentNodes();
-        setAllContentNodes(allNodes);
-        setFilteredContent(allNodes);
-        
-        // For now, set content to null for section routes - we'll handle this in the render
-        setContent(null);
-        setActiveSectionId(sectionMatch[1]);
-      } else {
-        // Load content for regular paths
-        const contentData = await ContentService.getContentByPath(currentPath);
-        setContent(contentData);
-        
-        // Load all content nodes for sidebar
-        const allNodes = await ContentService.getAllContentNodes();
-        setAllContentNodes(allNodes);
-        setFilteredContent(allNodes);
-        setActiveSectionId(undefined);
-      }
+      // Load content for regular paths
+      const contentData = await ContentService.getContentByPath(currentPath);
+      setContent(contentData);
+      
+      // Load all content nodes for sidebar
+      const allNodes = await ContentService.getAllContentNodes();
+      setAllContentNodes(allNodes);
+      setFilteredContent(allNodes);
       
       setLoading(false);
     };
@@ -237,7 +222,6 @@ const ContentPage = () => {
               contentNodes={allContentNodes}
               onSectionEdit={handleSectionEdit}
               onSectionView={handleSectionView}
-              activeSectionId={activeSectionId}
               currentPath={location.pathname}
               onStructureUpdate={refreshAllData}
             />
@@ -337,7 +321,7 @@ const ContentPage = () => {
               <HierarchicalContentDisplay 
                 content={content.content} 
                 onSectionClick={handleContentNodeClick}
-                activeSectionId={activeNodeId}
+                activeNodeId={activeNodeId}
               />
 
             {content.children && content.children.length > 0 && (

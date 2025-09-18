@@ -15,7 +15,7 @@ interface ContentSection {
 interface HierarchicalContentDisplayProps {
   content: string;
   onSectionClick?: (sectionId: string) => void;
-  activeSectionId?: string;
+  activeNodeId?: string;
 }
 
 const parseHierarchicalContent = (content: string): ContentSection[] => {
@@ -79,14 +79,14 @@ const ContentSectionComponent: React.FC<{
   section: ContentSection; 
   depth: number;
   onSectionClick?: (sectionId: string) => void;
-  activeSectionId?: string;
-}> = ({ section, depth, onSectionClick, activeSectionId }) => {
+  activeNodeId?: string;
+}> = ({ section, depth, onSectionClick, activeNodeId }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
-  const isActive = activeSectionId === section.id;
+  const isActive = activeNodeId === section.id;
 
   const getHeadingClass = (level: number) => {
     // All text should be normal weight and size - no bold headers
@@ -131,15 +131,6 @@ const ContentSectionComponent: React.FC<{
                 }}>
               {section.title}
             </h1>
-            
-            {/* Dedicated page button */}
-            <button
-              onClick={() => navigate(`/node/${section.id}`)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded"
-              title="Open in dedicated page"
-            >
-              <ExternalLink className="h-3 w-3 text-muted-foreground" />
-            </button>
           </div>
           
           {section.tags.length > 0 && (
@@ -177,7 +168,7 @@ const ContentSectionComponent: React.FC<{
                   section={child} 
                   depth={depth + 1}
                   onSectionClick={onSectionClick}
-                  activeSectionId={activeSectionId}
+                  activeNodeId={activeNodeId}
                 />
               ))}
             </div>
@@ -191,7 +182,7 @@ const ContentSectionComponent: React.FC<{
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
   content,
   onSectionClick,
-  activeSectionId
+  activeNodeId
 }) => {
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
@@ -214,7 +205,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
           section={section} 
           depth={0}
           onSectionClick={onSectionClick}
-          activeSectionId={activeSectionId}
+          activeNodeId={activeNodeId}
         />
       ))}
     </div>
