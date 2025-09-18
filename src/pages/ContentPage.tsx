@@ -10,12 +10,11 @@ import { SimpleNavigationModal } from "@/components/SimpleNavigationModal";
 import { HybridNavigationSidebar } from "@/components/HybridNavigationSidebar";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { TagManager } from "@/lib/tagManager";
-import { DocumentEditor } from "@/components/DocumentEditor";
-import { SectionEditor } from "@/components/SectionEditor";
+import { UnifiedEditor, EditorData } from "@/components/UnifiedEditor";
 import { SectionView } from "@/components/SectionView";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { replaceSectionContent } from "@/lib/sectionExtractor";
+import { HierarchyParser } from "@/lib/hierarchyParser";
 
 const ContentPage = () => {
   const location = useLocation();
@@ -27,18 +26,10 @@ const ContentPage = () => {
   const [filteredContent, setFilteredContent] = useState<ContentNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
-  const [showDocumentEditor, setShowDocumentEditor] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string>();
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [editingSection, setEditingSection] = useState<{
-    content: string;
-    title: string;
-    level: number;
-    position: number;
-    parentPath: string;
-  } | null>(null);
+  const [editorData, setEditorData] = useState<EditorData | null>(null);
   const [viewingSection, setViewingSection] = useState<{
     content: string;
     title: string;
@@ -53,7 +44,14 @@ const ContentPage = () => {
     position: number;
     parentPath: string;
   }) => {
-    setEditingSection(sectionData);
+    setEditorData({
+      type: 'section',
+      content: sectionData.content,
+      title: sectionData.title,
+      level: sectionData.level,
+      position: sectionData.position,
+      parentPath: sectionData.parentPath
+    });
   };
 
   const handleSectionView = (sectionData: {
@@ -65,12 +63,20 @@ const ContentPage = () => {
     setViewingSection(sectionData);
   };
 
-  const fetchData = async () => {
+  const refreshAllData = async () => {
     const structure = await ContentService.getNavigationStructure();
     setNavigationStructure(structure);
     const allNodes = await ContentService.getAllContentNodes();
     setAllContentNodes(allNodes);
     setFilteredContent(allNodes);
+    
+    // Refresh current content if we're viewing a specific path
+    if (location.pathname !== '/') {
+      const updatedContent = await ContentService.getContentByPath(location.pathname);
+      if (updatedContent) {
+        setContent(updatedContent);
+      }
+    }
   };
 
   // Load navigation structure on mount
@@ -118,45 +124,6 @@ const ContentPage = () => {
     };
 
     loadContent();
-  }, [location.pathname]);
-
-  // Set up real-time subscription for content updates
-  useEffect(() => {
-    const channel = supabase
-      .channel('content-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'content_nodes'
-        },
-        async () => {
-          setIsRefreshing(true);
-          
-          // Refresh all data to ensure sidebar and content are in sync
-          const structure = await ContentService.getNavigationStructure();
-          setNavigationStructure(structure);
-          const allNodes = await ContentService.getAllContentNodes();
-          setAllContentNodes(allNodes);
-          setFilteredContent(allNodes);
-          
-          // Refresh current content if we're viewing a specific path
-          if (location.pathname !== '/') {
-            const updatedContent = await ContentService.getContentByPath(location.pathname);
-            if (updatedContent) {
-              setContent(updatedContent);
-            }
-          }
-          
-          setIsRefreshing(false);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [location.pathname]);
 
   const handleFilter = (filters: {
@@ -227,7 +194,10 @@ const ContentPage = () => {
           </p>
           <button 
             onClick={async () => {
-              setShowDocumentEditor(true);
+              setEditorData({
+                type: 'document',
+                content: '',
+              });
             }}
             className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
           >
@@ -254,7 +224,10 @@ const ContentPage = () => {
             <SimpleActionMenu 
               editMode={editMode}
               onToggleEdit={() => setEditMode(!editMode)}
-              onToggleDocumentEditor={() => setShowDocumentEditor(!showDocumentEditor)}
+              onToggleDocumentEditor={() => setEditorData({
+                type: 'document',
+                content: content?.content || '',
+              })}
               onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
             />
           }
@@ -266,7 +239,7 @@ const ContentPage = () => {
               onSectionView={handleSectionView}
               activeSectionId={activeSectionId}
               currentPath={location.pathname}
-              onStructureUpdate={fetchData}
+              onStructureUpdate={refreshAllData}
             />
           }
         >
@@ -275,11 +248,11 @@ const ContentPage = () => {
             <SectionView 
               sectionData={viewingSection}
               onEdit={() => {
-                setEditingSection({
+                setEditorData({
+                  type: 'section',
                   content: viewingSection.content,
                   title: viewingSection.title,
                   level: viewingSection.level,
-                  position: 0, // Will be determined when editing
                   parentPath: viewingSection.parentPath
                 });
                 setViewingSection(null);
@@ -360,20 +333,12 @@ const ContentPage = () => {
             );
           })()}
 
-          <div className="bg-card rounded-lg border border-border p-8 relative">
-            {isRefreshing && (
-              <div className="absolute top-2 right-2 opacity-60">
-                <div className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded flex items-center gap-1">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                  Updating...
-                </div>
-              </div>
-            )}
-            <HierarchicalContentDisplay 
-              content={content.content} 
-              onSectionClick={handleContentNodeClick}
-              activeSectionId={activeNodeId}
-            />
+            <div className="bg-card rounded-lg border border-border p-8 relative">
+              <HierarchicalContentDisplay 
+                content={content.content} 
+                onSectionClick={handleContentNodeClick}
+                activeSectionId={activeNodeId}
+              />
 
             {content.children && content.children.length > 0 && (
               <div className="mt-8">
@@ -425,94 +390,53 @@ const ContentPage = () => {
         allTags={TagManager.getAllTags(allContentNodes)}
       />
 
-      {showDocumentEditor && (
-        <DocumentEditor 
-          initialContent={
-            content ? [{
-              id: content.id,
-              content: content.content || '',
-              tags: content.tags || [],
-              depth: 0,
-              children: content.children || []
-            }] : []
-          }
-          onSave={async (nodes, originalMarkup) => {
-            console.log('ContentPage onSave called with nodes:', nodes);
-            console.log('Original markup:', originalMarkup);
+      <UnifiedEditor 
+        editorData={editorData}
+        onSave={async (content: string, title?: string) => {
+          if (editorData?.type === 'section') {
+            // Handle section save
             const currentPath = location.pathname;
-            console.log('Saving to path:', currentPath);
-            
-            // If we have original markup, save that directly
-            if (originalMarkup) {
-              console.log('Using original markup for save');
-              const success = await ContentService.saveDocumentContent(currentPath, nodes, originalMarkup);
-              console.log('Save result:', success);
+            const currentContent = await ContentService.getContentByPath(currentPath);
+            if (currentContent && editorData.parentPath) {
+              // Find the section and replace its content
+              const updatedContent = replaceSectionContent(
+                currentContent.content, 
+                {
+                  id: `section-${editorData.level}-${title}`,
+                  level: editorData.level || 1,
+                  title: title || editorData.title || '',
+                  tags: [],
+                  children: []
+                },
+                content,
+                title
+              );
+              
+              const parsed = HierarchyParser.parseMarkup(updatedContent);
+              const success = await ContentService.saveDocumentContent(currentPath, parsed.nodes, updatedContent);
+              
               if (success) {
-                toast.success("Content saved successfully");
-                // Refresh the content
-                const contentData = await ContentService.getContentByPath(currentPath);
-                setContent(contentData);
+                toast.success("Section saved successfully");
+                await refreshAllData();
               } else {
-                toast.error("Failed to save content");
-              }
-            } else {
-              // Fallback to old method
-              const success = await ContentService.saveDocumentContent(currentPath, nodes);
-              console.log('Save result:', success);
-              if (success) {
-                toast.success("Content saved successfully");
-                const contentData = await ContentService.getContentByPath(currentPath);
-                setContent(contentData);
-              } else {
-                toast.error("Failed to save content");
+                toast.error("Failed to save section");
               }
             }
-            setShowDocumentEditor(false);
-          }}
-          onClose={() => setShowDocumentEditor(false)}
-        />
-      )}
-
-      <SectionEditor 
-        sectionData={editingSection}
-        onSave={async (updatedContent: string, title: string) => {
-          if (editingSection && content) {
-            // Find the document section to replace
-            const documentSection = {
-              id: `section-${editingSection.position}`,
-              level: editingSection.level,
-              title: editingSection.title,
-              tags: [],
-              children: []
-            };
-            
-            // Replace the section content in the full document
-            const updatedFullContent = replaceSectionContent(
-              content.content || '',
-              documentSection,
-              updatedContent,
-              title
-            );
-            
-            // Save the updated document
-            const success = await ContentService.saveDocumentContent(
-              editingSection.parentPath, 
-              [], 
-              updatedFullContent
-            );
+          } else {
+            // Handle document save
+            const currentPath = location.pathname;
+            const parsed = HierarchyParser.parseMarkup(content);
+            const success = await ContentService.saveDocumentContent(currentPath, parsed.nodes, content);
             
             if (success) {
-              toast.success("Section updated successfully");
-              // Refresh the content
-              const contentData = await ContentService.getContentByPath(location.pathname);
-              setContent(contentData);
+              toast.success("Document saved successfully");
+              await refreshAllData();
             } else {
-              toast.error("Failed to update section");
+              toast.error("Failed to save document");
             }
           }
-          setEditingSection(null);
         }}
-        onClose={() => setEditingSection(null)}
+        onClose={() => setEditorData(null)}
       />
     </>
   );
