@@ -12,6 +12,7 @@ import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisp
 import { TagManager } from "@/lib/tagManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
 import { SectionEditor } from "@/components/SectionEditor";
+import { SectionView } from "@/components/SectionView";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { replaceSectionContent } from "@/lib/sectionExtractor";
@@ -19,6 +20,7 @@ import { replaceSectionContent } from "@/lib/sectionExtractor";
 const ContentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { pathname } = location;
   const [content, setContent] = useState<ContentNode | null>(null);
   const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
   const [allContentNodes, setAllContentNodes] = useState<ContentNode[]>([]);
@@ -74,14 +76,28 @@ const ContentPage = () => {
       // Get current path
       const currentPath = location.pathname;
       
-      // Load content for this path
-      const contentData = await ContentService.getContentByPath(currentPath);
-      setContent(contentData);
-      
-      // Load all content nodes for sidebar
-      const allNodes = await ContentService.getAllContentNodes();
-      setAllContentNodes(allNodes);
-      setFilteredContent(allNodes);
+      // Check if this is a section route
+      const sectionMatch = currentPath.match(/^\/node\/(.+)$/);
+      if (sectionMatch) {
+        // Handle section view - find parent document and extract section
+        const allNodes = await ContentService.getAllContentNodes();
+        setAllContentNodes(allNodes);
+        setFilteredContent(allNodes);
+        
+        // For now, set content to null for section routes - we'll handle this in the render
+        setContent(null);
+        setActiveSectionId(sectionMatch[1]);
+      } else {
+        // Load content for regular paths
+        const contentData = await ContentService.getContentByPath(currentPath);
+        setContent(contentData);
+        
+        // Load all content nodes for sidebar
+        const allNodes = await ContentService.getAllContentNodes();
+        setAllContentNodes(allNodes);
+        setFilteredContent(allNodes);
+        setActiveSectionId(undefined);
+      }
       
       setLoading(false);
     };
@@ -239,8 +255,17 @@ const ContentPage = () => {
           }
         >
         <div className="space-y-6">
-          {/* Breadcrumb and Title */}
-          {(() => {
+          {/* Handle section view */}
+          {pathname.startsWith('/node/') && activeSectionId ? (
+            <SectionView 
+              sectionId={activeSectionId}
+              allContentNodes={allContentNodes}
+              onEdit={handleSectionEdit}
+            />
+          ) : content ? (
+            <>
+            {/* Breadcrumb and Title */}
+            {(() => {
             const breadcrumbItems = [];
             const pathParts = content.path.split('/').filter(part => part);
             
@@ -360,8 +385,14 @@ const ContentPage = () => {
             )}
 
           </div>
+          </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Content not found</p>
+            </div>
+          )}
         </div>
-      </WikiLayout>
+        </WikiLayout>
 
       <SimpleFilterPanel 
         isOpen={showFilterPanel}

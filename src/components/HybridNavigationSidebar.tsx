@@ -108,17 +108,8 @@ const SectionItem: React.FC<{
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
         onClick={() => {
-          // Extract section content for inline editing
-          const sectionContent = extractSectionContent(fullContent, section);
-          if (sectionContent && onSectionEdit) {
-            onSectionEdit({
-              content: sectionContent,
-              title: section.title,
-              level: section.level,
-              position: sectionPosition,
-              parentPath: folderPath
-            });
-          }
+          // Navigate to section view
+          navigate(`/node/${section.id}`);
         }}
       >
         {hasChildren ? (

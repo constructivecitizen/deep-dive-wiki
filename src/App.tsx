@@ -25,6 +25,7 @@ const App = () => (
           <Route path="/knowledge-management" element={<ContentPage />} />
           <Route path="/advanced-topics" element={<ContentPage />} />
           <Route path="/deep-structures" element={<ContentPage />} />
+          <Route path="/node/:sectionId" element={<ContentPage />} />
           {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
