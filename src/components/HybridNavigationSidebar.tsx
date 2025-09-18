@@ -2,13 +2,11 @@ import React, { useState, useRef } from 'react';
 import { 
   ChevronRight, 
   ChevronDown, 
-  Folder, 
   Plus, 
   Edit2, 
   Check, 
   X, 
-  Trash2,
-  GripVertical
+  Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, ContentNode, ContentService } from '@/services/contentService';
@@ -87,12 +85,13 @@ const SectionItem: React.FC<{
   // Filter children to only show those that have children
   const filteredChildren = section.children.filter(child => child.children.length > 0);
 
-  const indentationPx = (depth + 1) * 16;
+  // Start indentation from the folder level, properly nested under parent labels
+  const indentationPx = (depth + 2) * 16;
 
   return (
     <div className="text-sm">
       <div 
-        className={`flex items-center gap-2 py-1 px-2 rounded cursor-pointer hover:bg-accent transition-colors ${
+        className={`flex items-center gap-2 py-1 px-3 rounded cursor-pointer hover:bg-accent transition-colors ${
           isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
@@ -245,16 +244,13 @@ const FolderNode: React.FC<{
   return (
     <>
       <div
-        className={`flex items-center gap-2 py-2 px-2 cursor-pointer rounded-md group transition-colors ${
+        className={`flex items-center gap-2 py-2 px-3 cursor-pointer rounded-md group transition-colors ${
           isActive 
             ? 'bg-primary/10 text-primary border-l-2 border-primary' 
             : 'hover:bg-accent/50'
         }`}
-        style={{ paddingLeft: '8px' }}
         onClick={handleNodeClick}
       >
-        <GripVertical className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
-
         {/* Expansion toggle */}
         <button
           onClick={toggleExpanded}
@@ -266,8 +262,6 @@ const FolderNode: React.FC<{
             <ChevronRight className="w-3 h-3 text-muted-foreground" />
           )}
         </button>
-
-        <Folder className="w-4 h-4 text-muted-foreground" />
 
         {/* Title - editable */}
         <div className="flex-1 min-w-0">
@@ -408,8 +402,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   return (
     <div className="h-full flex flex-col">
       {/* Navigation Tree */}
-      <div className="flex-1 overflow-y-auto p-2">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-2">
+      <div className="flex-1 overflow-y-auto p-3">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-1">
           Navigation
         </div>
         {topLevelNodes.length > 0 ? (
@@ -425,7 +419,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             />
           ))
         ) : (
-          <div className="p-4 text-center text-muted-foreground">
+          <div className="p-3 text-center text-muted-foreground">
             <p className="text-sm">No folders found</p>
           </div>
         )}

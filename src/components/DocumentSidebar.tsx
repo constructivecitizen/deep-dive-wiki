@@ -74,12 +74,12 @@ const SectionItem: React.FC<{
   const hasChildren = section.children.length > 0;
   const isActive = activeSectionId === section.id;
 
-  const indentationPx = depth * 16;
+  const indentationPx = depth * 20; // Increased for better visual hierarchy
 
   return (
     <div className="text-sm">
       <div 
-        className={`flex items-center gap-2 py-1 px-2 rounded cursor-pointer hover:bg-accent transition-colors ${
+        className={`flex items-center gap-2 py-1 px-3 rounded cursor-pointer hover:bg-accent transition-colors ${
           isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
@@ -145,15 +145,15 @@ export const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
 
   if (sections.length === 0) {
     return (
-      <div className="p-4 text-sm text-muted-foreground">
+      <div className="p-3 text-sm text-muted-foreground">
         No sections found in document
       </div>
     );
   }
 
   return (
-    <div className="p-2 space-y-1">
-      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-2">
+    <div className="p-3 space-y-1">
+      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-1">
         Document Outline
       </div>
       {sections.map((section) => (
