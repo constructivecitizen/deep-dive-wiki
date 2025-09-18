@@ -184,65 +184,74 @@ const ContentPage = () => {
           }
         >
         <div className="space-y-6">
-          {/* Extract the last breadcrumb item as page title */}
+          {/* Breadcrumb and Title */}
           {(() => {
             const breadcrumbItems = [];
             const pathParts = content.path.split('/').filter(part => part);
             
-            // Build breadcrumb path
-            for (let i = 0; i <= pathParts.length; i++) {
+            // Helper function to find navigation node by path
+            const findNodeByPath = (nodes: NavigationNode[], targetPath: string): NavigationNode | null => {
+              for (const node of nodes) {
+                if (node.path === targetPath) return node;
+                const found = findNodeByPath(node.children || [], targetPath);
+                if (found) return found;
+              }
+              return null;
+            };
+
+            // Always start with Home
+            breadcrumbItems.push({
+              title: 'Home',
+              href: '/',
+              isLast: pathParts.length === 0
+            });
+
+            // Build breadcrumb path for each segment
+            for (let i = 1; i <= pathParts.length; i++) {
               const currentPath = '/' + pathParts.slice(0, i).join('/');
               const isLast = i === pathParts.length;
               
-              if (i === 0) {
+              const navNode = findNodeByPath(navigationStructure, currentPath);
+              if (navNode) {
                 breadcrumbItems.push({
-                  title: 'Home',
-                  href: '/',
-                  isLast: false
+                  title: navNode.title,
+                  href: currentPath,
+                  isLast
                 });
-              } else {
-                // Find navigation node for this path
-                const findNodeByPath = (nodes: NavigationNode[], targetPath: string): NavigationNode | null => {
-                  for (const node of nodes) {
-                    if (node.path === targetPath) return node;
-                    const found = findNodeByPath(node.children || [], targetPath);
-                    if (found) return found;
-                  }
-                  return null;
-                };
-                
-                const navNode = findNodeByPath(navigationStructure, currentPath);
-                if (navNode && !isLast) {
-                  breadcrumbItems.push({
-                    title: navNode.title,
-                    href: currentPath,
-                    isLast: false
-                  });
-                }
               }
             }
+
+            // Get the current folder/page title
+            const currentNavNode = findNodeByPath(navigationStructure, content.path);
+            const displayTitle = currentNavNode ? currentNavNode.title : content.title;
             
             return (
               <>
-                {/* Breadcrumb without the last item */}
-                {breadcrumbItems.length > 0 && (
-                  <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
+                {/* Breadcrumb navigation */}
+                {breadcrumbItems.length > 1 && (
+                  <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
                     {breadcrumbItems.map((item, index) => (
                       <div key={index} className="flex items-center">
                         {index > 0 && <ChevronRight className="h-4 w-4 mx-2" />}
-                        <Link 
-                          to={item.href}
-                          className="hover:text-foreground transition-colors"
-                        >
-                          {item.title}
-                        </Link>
+                        {item.isLast ? (
+                          <span className="text-foreground font-medium">
+                            {item.title}
+                          </span>
+                        ) : (
+                          <Link 
+                            to={item.href}
+                            className="hover:text-foreground transition-colors"
+                          >
+                            {item.title}
+                          </Link>
+                        )}
                       </div>
                     ))}
                   </nav>
                 )}
                 
-                {/* Page title - larger and prominent */}
-                <h1 className="text-3xl font-bold text-foreground">{content.title}</h1>
+                {/* Page title - use folder title when available */}
+                <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>
               </>
             );
           })()}
