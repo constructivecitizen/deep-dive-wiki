@@ -213,7 +213,6 @@ const FolderNode: React.FC<{
   const handleNodeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate(node.path);
-    setExpanded(!expanded);
   };
 
   const handleEditStart = (e: React.MouseEvent) => {
@@ -272,12 +271,11 @@ const FolderNode: React.FC<{
   return (
     <>
       <div
-        className={`flex items-center gap-2 py-2 px-3 cursor-pointer rounded-md group transition-colors ${
+        className={`flex items-center gap-2 py-2 px-3 rounded-md group transition-colors ${
           isActive 
             ? 'bg-primary/10 text-primary border-l-2 border-primary' 
             : 'hover:bg-accent/50'
         }`}
-        onClick={handleNodeClick}
       >
         {/* Expansion toggle */}
         <button
@@ -291,8 +289,11 @@ const FolderNode: React.FC<{
           )}
         </button>
 
-        {/* Title - editable */}
-        <div className="flex-1 min-w-0">
+        {/* Title - editable - clicking navigates to folder content */}
+        <div 
+          className="flex-1 min-w-0 cursor-pointer" 
+          onClick={handleNodeClick}
+        >
           {isEditing ? (
             <div className="flex items-center gap-1">
               <Input
