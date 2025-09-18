@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { WikiLayout } from "@/components/WikiLayout";
 import { ContentService, ContentNode, NavigationNode } from "@/services/contentService";
 import { HierarchicalContent } from "@/components/HierarchicalContent";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 
 const ContentPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [content, setContent] = useState<ContentNode | null>(null);
   const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
   const [allContentNodes, setAllContentNodes] = useState<ContentNode[]>([]);
@@ -194,7 +195,7 @@ const ContentPage = () => {
                           ))}
                         </div>
                         <button 
-                          onClick={() => window.location.href = child.path}
+                          onClick={() => navigate(child.path)}
                           className="text-xs text-primary hover:underline"
                         >
                           View →

@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { NavigationNode } from '@/services/contentService';
 
 interface SimpleBreadcrumbProps {
@@ -55,12 +56,12 @@ export const SimpleBreadcrumb = ({ path, navigationStructure = [] }: SimpleBread
           {item.isLast ? (
             <span className="text-foreground font-medium">{item.title}</span>
           ) : (
-            <a 
-              href={item.href}
+            <Link 
+              to={item.href}
               className="hover:text-foreground transition-colors"
             >
               {item.title}
-            </a>
+            </Link>
           )}
         </div>
       ))}
