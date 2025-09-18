@@ -171,10 +171,15 @@ const ContentPage = () => {
               <div 
                 className="prose prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ 
-                  __html: renderMarkdown(
+                  __html: (() => {
                     // Clean tag syntax from content before rendering
-                    content.content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2')
-                  ) 
+                    const cleanedContent = content.content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
+                    console.log('Original content:', content.content.substring(0, 200));
+                    console.log('Cleaned content:', cleanedContent.substring(0, 200));
+                    const rendered = renderMarkdown(cleanedContent);
+                    console.log('Rendered HTML:', rendered.substring(0, 200));
+                    return rendered;
+                  })()
                 }}
               />
             )}

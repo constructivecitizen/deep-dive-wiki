@@ -3,34 +3,15 @@ import { marked } from 'marked';
 // Configure marked for safe HTML rendering
 marked.setOptions({
   breaks: true,
-  gfm: true,
+  gfm: true
 });
-
-// Custom renderer to handle inline markdown within our hierarchy content
-const renderer = new marked.Renderer();
-
-// Override paragraph rendering to avoid wrapping short content in p tags unnecessarily
-renderer.paragraph = ({ tokens }: any) => {
-  const text = marked.parser(tokens);
-  // If it's a short single line, don't wrap in p tags
-  if (typeof text === 'string' && text.length < 100 && !text.includes('<')) {
-    return text;
-  }
-  return `<p>${text}</p>`;
-};
-
-// Override code rendering for inline code
-renderer.code = ({ text, lang }: any) => {
-  return `<code class="inline-code">${text}</code>`;
-};
-
-renderer.codespan = ({ text }: any) => {
-  return `<code class="inline-code">${text}</code>`;
-};
 
 export const renderMarkdown = (content: string): string => {
   try {
-    const result = marked(content, { renderer });
+    console.log('renderMarkdown input:', content.substring(0, 200));
+    // Use marked directly without custom renderer for now to test
+    const result = marked.parse(content);
+    console.log('renderMarkdown output:', typeof result === 'string' ? result.substring(0, 200) : result);
     return typeof result === 'string' ? result : content;
   } catch (error) {
     console.warn('Markdown rendering error:', error);
