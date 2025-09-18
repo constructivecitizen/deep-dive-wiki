@@ -10,6 +10,7 @@ interface WikiLayoutProps {
   currentPath?: string;
   onStructureUpdate?: () => void;
   actionMenu?: React.ReactNode;
+  customSidebar?: React.ReactNode; // New prop for custom sidebar content
 }
 
 export const WikiLayout = ({ 
@@ -20,7 +21,8 @@ export const WikiLayout = ({
   activeNodeId,
   currentPath,
   onStructureUpdate,
-  actionMenu
+  actionMenu,
+  customSidebar
 }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
@@ -43,15 +45,17 @@ export const WikiLayout = ({
       </header>
       
       <div className="flex h-[calc(100vh-80px)]">
-        <aside className="w-80 flex-shrink-0 border-r border-border">
-          <EditableNavigationSidebar 
-            structure={navigationStructure} 
-            contentNodes={contentNodes}
-            onContentNodeClick={onContentNodeClick}
-            activeNodeId={activeNodeId}
-            currentPath={currentPath}
-            onStructureUpdate={onStructureUpdate || (() => {})}
-          />
+        <aside className="w-80 flex-shrink-0 border-r border-border overflow-y-auto">
+          {customSidebar || (
+            <EditableNavigationSidebar 
+              structure={navigationStructure} 
+              contentNodes={contentNodes}
+              onContentNodeClick={onContentNodeClick}
+              activeNodeId={activeNodeId}
+              currentPath={currentPath}
+              onStructureUpdate={onStructureUpdate || (() => {})}
+            />
+          )}
         </aside>
         
         <main className="flex-1 overflow-y-auto">

@@ -13,6 +13,8 @@ interface ContentSection {
 
 interface HierarchicalContentDisplayProps {
   content: string;
+  onSectionClick?: (sectionId: string) => void;
+  activeSectionId?: string;
 }
 
 const parseHierarchicalContent = (content: string): ContentSection[] => {
@@ -75,15 +77,18 @@ const parseHierarchicalContent = (content: string): ContentSection[] => {
 const ContentSectionComponent: React.FC<{ 
   section: ContentSection; 
   depth: number;
-}> = ({ section, depth }) => {
+  onSectionClick?: (sectionId: string) => void;
+  activeSectionId?: string;
+}> = ({ section, depth, onSectionClick, activeSectionId }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
+  const isActive = activeSectionId === section.id;
 
   const getHeadingClass = (level: number) => {
     // All text should be normal weight and size - no bold headers
-    return "text-foreground font-normal text-base";
+    return `text-foreground font-normal text-base ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
   };
 
   // Calculate indentation: children align with parent's text (after the 24px button)
@@ -91,7 +96,7 @@ const ContentSectionComponent: React.FC<{
   const contentIndentationPx = indentationPx + 24; // Additional 24px for content under headers
 
   return (
-    <div>
+    <div id={section.id}>
       <div 
         className="flex items-start gap-2 group"
         style={{ marginLeft: `${indentationPx}px` }}
@@ -117,7 +122,10 @@ const ContentSectionComponent: React.FC<{
         
         <div className="flex-1 min-w-0">
           <h1 className={`${getHeadingClass(section.level)} ${(hasChildren || hasContent) ? 'cursor-pointer' : ''}`}
-              onClick={() => (hasChildren || hasContent) && setIsExpanded(!isExpanded)}>
+              onClick={() => {
+                if (onSectionClick) onSectionClick(section.id);
+                if (hasChildren || hasContent) setIsExpanded(!isExpanded);
+              }}>
             {section.title}
           </h1>
           
@@ -155,6 +163,8 @@ const ContentSectionComponent: React.FC<{
                   key={child.id} 
                   section={child} 
                   depth={depth + 1}
+                  onSectionClick={onSectionClick}
+                  activeSectionId={activeSectionId}
                 />
               ))}
             </div>
@@ -166,7 +176,9 @@ const ContentSectionComponent: React.FC<{
 };
 
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
-  content 
+  content,
+  onSectionClick,
+  activeSectionId
 }) => {
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
@@ -188,6 +200,8 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
           key={section.id} 
           section={section} 
           depth={0}
+          onSectionClick={onSectionClick}
+          activeSectionId={activeSectionId}
         />
       ))}
     </div>

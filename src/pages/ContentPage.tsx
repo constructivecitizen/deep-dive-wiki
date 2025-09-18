@@ -7,7 +7,7 @@ import { HierarchicalContent } from "@/components/HierarchicalContent";
 import { SimpleActionMenu } from "@/components/SimpleActionMenu";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { SimpleNavigationModal } from "@/components/SimpleNavigationModal";
-import { SimpleBreadcrumb } from "@/components/SimpleBreadcrumb";
+import { DocumentSidebar } from "@/components/DocumentSidebar";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { TagManager } from "@/lib/tagManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
@@ -140,25 +140,33 @@ const ContentPage = () => {
 
   return (
     <>
-      <WikiLayout 
-        navigationStructure={navigationStructure}
-        contentNodes={filteredContent}
-        onContentNodeClick={handleContentNodeClick}
-        activeNodeId={activeNodeId}
-        currentPath={location.pathname}
-        onStructureUpdate={async () => {
-          const structure = await ContentService.getNavigationStructure();
-          setNavigationStructure(structure);
-        }}
-        actionMenu={
-          <SimpleActionMenu 
-            editMode={editMode}
-            onToggleEdit={() => setEditMode(!editMode)}
-            onToggleDocumentEditor={() => setShowDocumentEditor(!showDocumentEditor)}
-            onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
-          />
-        }
-      >
+        <WikiLayout 
+          navigationStructure={navigationStructure}
+          contentNodes={filteredContent}
+          onContentNodeClick={handleContentNodeClick}
+          activeNodeId={activeNodeId}
+          currentPath={location.pathname}
+          onStructureUpdate={async () => {
+            const structure = await ContentService.getNavigationStructure();
+            setNavigationStructure(structure);
+          }}
+          actionMenu={
+            <SimpleActionMenu 
+              editMode={editMode}
+              onToggleEdit={() => setEditMode(!editMode)}
+              onToggleDocumentEditor={() => setShowDocumentEditor(!showDocumentEditor)}
+              onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
+            />
+          }
+          // Replace the standard sidebar with document-based sidebar
+          customSidebar={content ? (
+            <DocumentSidebar 
+              content={content.content}
+              onSectionClick={handleContentNodeClick}
+              activeSectionId={activeNodeId}
+            />
+          ) : undefined}
+        >
         <div className="space-y-6">
           {/* Extract the last breadcrumb item as page title */}
           {(() => {
@@ -224,7 +232,11 @@ const ContentPage = () => {
           })()}
 
           <div className="bg-card rounded-lg border border-border p-8">
-            <HierarchicalContentDisplay content={content.content} />
+            <HierarchicalContentDisplay 
+              content={content.content} 
+              onSectionClick={handleContentNodeClick}
+              activeSectionId={activeNodeId}
+            />
 
             {content.children && content.children.length > 0 && (
               <div className="mt-8">

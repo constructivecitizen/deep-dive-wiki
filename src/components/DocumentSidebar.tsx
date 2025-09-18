@@ -1,138 +1,133 @@
-import { useState } from "react";
-import { ChevronRight, ChevronDown, FileText, Folder, FolderOpen, ExternalLink } from "lucide-react";
-import { NavLink } from "react-router-dom";
-import { ContentNode } from "@/components/HierarchicalContent";
+import React, { useState } from 'react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 
+// Legacy interface for compatibility with existing files
 export interface DocumentStructure {
   id: string;
   title: string;
-  type: "document" | "folder";
-  path: string;
+  type: 'folder' | 'document';
+  path?: string;
   children?: DocumentStructure[];
 }
 
-interface DocumentSidebarProps {
-  structure: DocumentStructure[];
-  contentNodes?: ContentNode[];
-  onContentNodeClick?: (nodeId: string) => void;
-  activeNodeId?: string;
-}
-
-interface TreeNodeProps {
-  node: DocumentStructure;
+interface DocumentSection {
+  id: string;
   level: number;
-  contentNodes?: ContentNode[];
-  onContentNodeClick?: (nodeId: string) => void;
-  activeNodeId?: string;
+  title: string;
+  tags: string[];
+  children: DocumentSection[];
 }
 
-const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId }: TreeNodeProps) => {
-  const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first two levels
-  const hasChildren = node.children && node.children.length > 0;
-  
-  // Find if this document has corresponding content nodes
-  const hasContentNodes = contentNodes && contentNodes.length > 0 && 
-    (node.path === "/tagging-strategies" || node.path === "/hierarchy-systems");
+interface DocumentSidebarProps {
+  content: string;
+  onSectionClick?: (sectionId: string) => void;
+  activeSectionId?: string;
+}
 
-  const toggleExpanded = () => {
-    if (hasChildren) {
-      setIsExpanded(!isExpanded);
+const parseDocumentSections = (content: string): DocumentSection[] => {
+  const lines = content.split('\n');
+  const sections: DocumentSection[] = [];
+  const stack: DocumentSection[] = [];
+  let sectionId = 0;
+
+  for (const line of lines) {
+    const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
+    
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const title = headingMatch[2].trim();
+      const tags = headingMatch[3] ? headingMatch[3].split(',').map(tag => tag.trim()) : [];
+      
+      const section: DocumentSection = {
+        id: `section-${++sectionId}`,
+        level,
+        title,
+        tags,
+        children: []
+      };
+
+      // Find the right parent level
+      while (stack.length > 0 && stack[stack.length - 1].level >= level) {
+        stack.pop();
+      }
+
+      if (stack.length === 0) {
+        sections.push(section);
+      } else {
+        stack[stack.length - 1].children.push(section);
+      }
+
+      stack.push(section);
     }
-  };
+  }
 
-  // Handle folder clicks to toggle expansion
-  const handleFolderClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (hasChildren) {
-      toggleExpanded();
-    }
-  };
+  return sections;
+};
 
-  // Handle document clicks - either navigate or show content
-  const handleDocumentClick = (e: React.MouseEvent) => {
-    if (hasContentNodes && onContentNodeClick && contentNodes) {
-      e.preventDefault();
-      onContentNodeClick(contentNodes[0].id);
-    }
-    // If no content nodes, let the NavLink handle navigation normally
-  };
+const SectionItem: React.FC<{
+  section: DocumentSection;
+  depth: number;
+  onSectionClick?: (sectionId: string) => void;
+  activeSectionId?: string;
+}> = ({ section, depth, onSectionClick, activeSectionId }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const hasChildren = section.children.length > 0;
+  const isActive = activeSectionId === section.id;
 
-  const getIcon = () => {
-    if (node.type === "folder") {
-      return isExpanded ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />;
-    }
-    return <FileText className="h-4 w-4" />;
-  };
-
-  const paddingLeft = `${level * 12}px`;
+  const indentationPx = depth * 16;
 
   return (
-    <div className="wiki-transition">
+    <div className="text-sm">
       <div 
-        className="flex items-center gap-2 py-2 px-3 hover:bg-secondary/50 wiki-transition group"
-        style={{ paddingLeft }}
-        onClick={node.type === "folder" ? handleFolderClick : undefined}
+        className={`flex items-center gap-2 py-1 px-2 rounded cursor-pointer hover:bg-accent transition-colors ${
+          isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+        }`}
+        style={{ marginLeft: `${indentationPx}px` }}
+        onClick={() => {
+          if (onSectionClick) onSectionClick(section.id);
+          if (hasChildren) setIsExpanded(!isExpanded);
+        }}
       >
-        <button 
-          className="p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (hasChildren) {
-              toggleExpanded();
-            }
-          }}
-          aria-label={hasChildren ? (isExpanded ? "Collapse" : "Expand") : "No children"}
-        >
-          {hasChildren ? (
-            isExpanded ? (
-              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+        {hasChildren ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
+            className="flex-shrink-0"
+          >
+            {isExpanded ? (
+              <ChevronDown className="h-3 w-3" />
             ) : (
-              <ChevronRight className="h-3 w-3 text-muted-foreground" />
-            )
-          ) : (
-            <ChevronRight className="h-3 w-3 text-muted-foreground opacity-40" />
-          )}
-        </button>
-        
-        <div className="text-muted-foreground group-hover:text-primary wiki-transition">
-          {getIcon()}
-        </div>
-        
-        {node.type === "document" ? (
-          <NavLink 
-            to={node.path}
-            className={({ isActive }) => `
-              flex-1 text-sm font-medium wiki-transition
-              ${isActive 
-                ? "text-primary font-semibold" 
-                : "text-foreground hover:text-primary"
-              }
-            `}
-            onClick={handleDocumentClick}
-          >
-            {node.title}
-          </NavLink>
+              <ChevronRight className="h-3 w-3" />
+            )}
+          </button>
         ) : (
-          <span 
-            className="flex-1 text-sm font-medium text-foreground group-hover:text-primary wiki-transition cursor-pointer"
-            onClick={handleFolderClick}
-          >
-            {node.title}
+          <div className="w-3 h-3 flex-shrink-0 flex items-center justify-center">
+            <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+          </div>
+        )}
+        
+        <span className="truncate flex-1" title={section.title}>
+          {section.title}
+        </span>
+        
+        {section.tags.length > 0 && (
+          <span className="text-xs bg-secondary text-secondary-foreground px-1 py-0.5 rounded flex-shrink-0">
+            {section.tags.length}
           </span>
         )}
       </div>
 
       {isExpanded && hasChildren && (
-        <div className="wiki-transition">
-          {node.children!.map((child) => (
-            <TreeNode 
-              key={child.id} 
-              node={child} 
-              level={level + 1} 
-              contentNodes={contentNodes}
-              onContentNodeClick={onContentNodeClick}
-              activeNodeId={activeNodeId}
+        <div className="mt-1">
+          {section.children.map((child) => (
+            <SectionItem
+              key={child.id}
+              section={child}
+              depth={depth + 1}
+              onSectionClick={onSectionClick}
+              activeSectionId={activeSectionId}
             />
           ))}
         </div>
@@ -141,31 +136,35 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
   );
 };
 
-export const DocumentSidebar = ({ 
-  structure, 
-  contentNodes, 
-  onContentNodeClick, 
-  activeNodeId 
-}: DocumentSidebarProps) => {
+export const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
+  content,
+  onSectionClick,
+  activeSectionId
+}) => {
+  const sections = parseDocumentSections(content);
+
+  if (sections.length === 0) {
+    return (
+      <div className="p-4 text-sm text-muted-foreground">
+        No sections found in document
+      </div>
+    );
+  }
+
   return (
-    <div className="h-full bg-card border-r border-border overflow-y-auto">
-      <div className="p-4 border-b border-border">
-        <h2 className="font-semibold text-lg text-foreground">Knowledge Base</h2>
-        <p className="text-sm text-muted-foreground mt-1">Hierarchical Documentation</p>
+    <div className="p-2 space-y-1">
+      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-2">
+        Document Outline
       </div>
-      
-      <div className="py-2">
-        {structure.map((node) => (
-          <TreeNode 
-            key={node.id} 
-            node={node} 
-            level={0} 
-            contentNodes={contentNodes}
-            onContentNodeClick={onContentNodeClick}
-            activeNodeId={activeNodeId}
-          />
-        ))}
-      </div>
+      {sections.map((section) => (
+        <SectionItem
+          key={section.id}
+          section={section}
+          depth={0}
+          onSectionClick={onSectionClick}
+          activeSectionId={activeSectionId}
+        />
+      ))}
     </div>
   );
 };
