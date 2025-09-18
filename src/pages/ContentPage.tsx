@@ -7,7 +7,7 @@ import { SimpleActionMenu } from "@/components/SimpleActionMenu";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { SimpleNavigationModal } from "@/components/SimpleNavigationModal";
 import { SimpleBreadcrumb } from "@/components/SimpleBreadcrumb";
-import { renderMarkdown } from "@/lib/markdownRenderer";
+import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { TagManager } from "@/lib/tagManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
 import { toast } from "sonner";
@@ -167,22 +167,7 @@ const ContentPage = () => {
           <div className="bg-card rounded-lg border border-border p-8">
             <h1 className="text-3xl font-bold text-foreground mb-6">{content.title}</h1>
             
-            {content.content && (
-              <div 
-                className="prose prose-slate dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ 
-                  __html: (() => {
-                    // Clean tag syntax from content before rendering
-                    const cleanedContent = content.content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
-                    console.log('Original content:', content.content.substring(0, 200));
-                    console.log('Cleaned content:', cleanedContent.substring(0, 200));
-                    const rendered = renderMarkdown(cleanedContent);
-                    console.log('Rendered HTML:', rendered.substring(0, 200));
-                    return rendered;
-                  })()
-                }}
-              />
-            )}
+            <HierarchicalContentDisplay content={content.content} />
 
             {content.children && content.children.length > 0 && (
               <div className="mt-8">
