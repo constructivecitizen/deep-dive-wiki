@@ -73,6 +73,7 @@ const TaggingStrategiesPage = () => {
   const [filteredContent, setFilteredContent] = useState<ContentNode[]>([taggingContent]);
   const [navigationStructure, setNavigationStructure] = useState<DocumentStructure[]>(documentStructure);
   const [activeNodeId, setActiveNodeId] = useState<string | undefined>();
+  const [selectedNodeContent, setSelectedNodeContent] = useState<ContentNode | null>(null);
 
   const handleNodeUpdate = (updatedNode: any) => {
     console.log("Node updated:", updatedNode);
@@ -88,11 +89,24 @@ const TaggingStrategiesPage = () => {
     setFilteredContent(filtered);
   };
 
+  const findNodeById = (nodes: ContentNode[], nodeId: string): ContentNode | null => {
+    for (const node of nodes) {
+      if (node.id === nodeId) {
+        return node;
+      }
+      if (node.children) {
+        const found = findNodeById(node.children, nodeId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
   const handleContentNodeClick = (nodeId: string) => {
     setActiveNodeId(nodeId);
-    const element = document.getElementById(`content-node-${nodeId}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const foundNode = findNodeById(content, nodeId);
+    if (foundNode) {
+      setSelectedNodeContent(foundNode);
     }
   };
 
@@ -150,16 +164,37 @@ const TaggingStrategiesPage = () => {
         </div>
         
         <div className="prose prose-lg max-w-none">
-          {filteredContent.map((node, index) => (
-            <div key={node.id || index} id={`content-node-${node.id}`}>
-              <HierarchicalContent 
-                node={node} 
-                showTags={false} 
-                editMode={editMode}
-                onNodeUpdate={handleNodeUpdate}
-              />
+          {selectedNodeContent ? (
+            <div>
+              <div className="mb-4">
+                <button
+                  onClick={() => setSelectedNodeContent(null)}
+                  className="text-sm text-primary hover:text-primary-hover underline"
+                >
+                  ← Back to full content
+                </button>
+              </div>
+              <div key={selectedNodeContent.id} id={`content-node-${selectedNodeContent.id}`}>
+                <HierarchicalContent 
+                  node={selectedNodeContent} 
+                  showTags={false} 
+                  editMode={editMode}
+                  onNodeUpdate={handleNodeUpdate}
+                />
+              </div>
             </div>
-          ))}
+          ) : (
+            filteredContent.map((node, index) => (
+              <div key={node.id || index} id={`content-node-${node.id}`}>
+                <HierarchicalContent 
+                  node={node} 
+                  showTags={false} 
+                  editMode={editMode}
+                  onNodeUpdate={handleNodeUpdate}
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </WikiLayout>

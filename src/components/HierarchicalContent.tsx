@@ -96,7 +96,6 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate }: 
                     title="Open dedicated page"
                   >
                     <ExternalLink className="h-3 w-3" />
-                    <span className="hidden sm:inline">View</span>
                   </a>
                 )}
               </div>
