@@ -39,6 +39,12 @@ const ContentPage = () => {
     position: number;
     parentPath: string;
   } | null>(null);
+  const [viewingSection, setViewingSection] = useState<{
+    content: string;
+    title: string;
+    level: number;
+    parentPath: string;
+  } | null>(null);
 
   const handleSectionEdit = (sectionData: {
     content: string;
@@ -48,6 +54,15 @@ const ContentPage = () => {
     parentPath: string;
   }) => {
     setEditingSection(sectionData);
+  };
+
+  const handleSectionView = (sectionData: {
+    content: string;
+    title: string;
+    level: number;
+    parentPath: string;
+  }) => {
+    setViewingSection(sectionData);
   };
 
   const fetchData = async () => {
@@ -248,6 +263,7 @@ const ContentPage = () => {
               structure={navigationStructure} 
               contentNodes={allContentNodes}
               onSectionEdit={handleSectionEdit}
+              onSectionView={handleSectionView}
               activeSectionId={activeSectionId}
               currentPath={location.pathname}
               onStructureUpdate={fetchData}
@@ -255,12 +271,20 @@ const ContentPage = () => {
           }
         >
         <div className="space-y-6">
-          {/* Handle section view */}
-          {pathname.startsWith('/node/') && activeSectionId ? (
+          {viewingSection ? (
             <SectionView 
-              sectionId={activeSectionId}
-              allContentNodes={allContentNodes}
-              onEdit={handleSectionEdit}
+              sectionData={viewingSection}
+              onEdit={() => {
+                setEditingSection({
+                  content: viewingSection.content,
+                  title: viewingSection.title,
+                  level: viewingSection.level,
+                  position: 0, // Will be determined when editing
+                  parentPath: viewingSection.parentPath
+                });
+                setViewingSection(null);
+              }}
+              onBack={() => setViewingSection(null)}
             />
           ) : content ? (
             <>
