@@ -72,6 +72,7 @@ const TaggingStrategiesPage = () => {
   const [content, setContent] = useState<ContentNode[]>([taggingContent]);
   const [filteredContent, setFilteredContent] = useState<ContentNode[]>([taggingContent]);
   const [navigationStructure, setNavigationStructure] = useState<DocumentStructure[]>(documentStructure);
+  const [activeNodeId, setActiveNodeId] = useState<string | undefined>();
 
   const handleNodeUpdate = (updatedNode: any) => {
     console.log("Node updated:", updatedNode);
@@ -87,6 +88,14 @@ const TaggingStrategiesPage = () => {
     setFilteredContent(filtered);
   };
 
+  const handleContentNodeClick = (nodeId: string) => {
+    setActiveNodeId(nodeId);
+    const element = document.getElementById(`content-node-${nodeId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   if (showDocumentEditor) {
     return (
       <DocumentEditor
@@ -98,7 +107,12 @@ const TaggingStrategiesPage = () => {
   }
 
   return (
-    <WikiLayout navigationStructure={navigationStructure}>
+    <WikiLayout 
+      navigationStructure={navigationStructure}
+      contentNodes={content}
+      onContentNodeClick={handleContentNodeClick}
+      activeNodeId={activeNodeId}
+    >
       <div className="flex justify-end mb-6">
         <ActionMenu
           editMode={editMode}
@@ -137,13 +151,14 @@ const TaggingStrategiesPage = () => {
         
         <div className="prose prose-lg max-w-none">
           {filteredContent.map((node, index) => (
-            <HierarchicalContent 
-              key={node.id || index}
-              node={node} 
-              showTags={false} 
-              editMode={editMode}
-              onNodeUpdate={handleNodeUpdate}
-            />
+            <div key={node.id || index} id={`content-node-${node.id}`}>
+              <HierarchicalContent 
+                node={node} 
+                showTags={false} 
+                editMode={editMode}
+                onNodeUpdate={handleNodeUpdate}
+              />
+            </div>
           ))}
         </div>
       </div>

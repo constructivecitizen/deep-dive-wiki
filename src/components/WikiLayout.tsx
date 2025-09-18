@@ -1,12 +1,23 @@
 import { DocumentSidebar, DocumentStructure } from "./DocumentSidebar";
+import { ContentNavigationSidebar } from "./ContentNavigationSidebar";
 import { documentStructure } from "@/data/sampleDocument";
+import { ContentNode } from "@/components/HierarchicalContent";
 
 interface WikiLayoutProps {
   children: React.ReactNode;
   navigationStructure?: DocumentStructure[];
+  contentNodes?: ContentNode[];
+  onContentNodeClick?: (nodeId: string) => void;
+  activeNodeId?: string;
 }
 
-export const WikiLayout = ({ children, navigationStructure = documentStructure }: WikiLayoutProps) => {
+export const WikiLayout = ({ 
+  children, 
+  navigationStructure = documentStructure, 
+  contentNodes = [],
+  onContentNodeClick,
+  activeNodeId
+}: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
@@ -20,7 +31,15 @@ export const WikiLayout = ({ children, navigationStructure = documentStructure }
       
       <div className="flex h-[calc(100vh-80px)]">
         <aside className="w-80 flex-shrink-0 border-r border-border">
-          <DocumentSidebar structure={navigationStructure} />
+          {contentNodes.length > 0 ? (
+            <ContentNavigationSidebar 
+              contentNodes={contentNodes}
+              onNodeClick={onContentNodeClick}
+              activeNodeId={activeNodeId}
+            />
+          ) : (
+            <DocumentSidebar structure={navigationStructure} />
+          )}
         </aside>
         
         <main className="flex-1 overflow-y-auto">

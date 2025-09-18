@@ -17,6 +17,7 @@ const Index = () => {
   const [content, setContent] = useState<ContentNode[]>([sampleContent]);
   const [filteredContent, setFilteredContent] = useState<ContentNode[]>([sampleContent]);
   const [navigationStructure, setNavigationStructure] = useState<DocumentStructure[]>(documentStructure);
+  const [activeNodeId, setActiveNodeId] = useState<string | undefined>();
 
   const handleNodeUpdate = (updatedNode: any) => {
     // In a real app, this would update the data source
@@ -33,6 +34,15 @@ const Index = () => {
     setFilteredContent(filtered);
   };
 
+  const handleContentNodeClick = (nodeId: string) => {
+    setActiveNodeId(nodeId);
+    // Scroll to the node in the main content area
+    const element = document.getElementById(`content-node-${nodeId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   if (showDocumentEditor) {
     return (
       <DocumentEditor
@@ -44,7 +54,12 @@ const Index = () => {
   }
 
   return (
-    <WikiLayout navigationStructure={navigationStructure}>
+    <WikiLayout 
+      navigationStructure={navigationStructure}
+      contentNodes={content}
+      onContentNodeClick={handleContentNodeClick}
+      activeNodeId={activeNodeId}
+    >
       <div className="flex justify-end mb-6">
         <ActionMenu
           editMode={editMode}
@@ -83,13 +98,14 @@ const Index = () => {
         
         <div className="prose prose-lg max-w-none">
           {filteredContent.map((node, index) => (
-            <HierarchicalContent 
-              key={node.id || index}
-              node={node} 
-              showTags={false} 
-              editMode={editMode}
-              onNodeUpdate={handleNodeUpdate}
-            />
+            <div key={node.id || index} id={`content-node-${node.id}`}>
+              <HierarchicalContent 
+                node={node} 
+                showTags={false} 
+                editMode={editMode}
+                onNodeUpdate={handleNodeUpdate}
+              />
+            </div>
           ))}
         </div>
       </div>
