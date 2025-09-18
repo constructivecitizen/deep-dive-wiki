@@ -93,7 +93,7 @@ const ContentSectionComponent: React.FC<{
 
   // Calculate indentation: children align with parent's text (after the 24px button)
   const indentationPx = depth === 0 ? 0 : depth * 24; // 24px per level for child alignment
-  const contentIndentationPx = indentationPx + 24; // Additional 24px for content under headers
+  const contentIndentationPx = indentationPx + 32; // 24px for button + 8px for gap to align with parent label text
 
   return (
     <div id={section.id}>
