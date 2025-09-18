@@ -13,6 +13,7 @@ import { NavigationNode, ContentNode, ContentService } from '@/services/contentS
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { extractSectionContent } from '@/lib/sectionExtractor';
 
 interface DocumentSection {
   id: string;
@@ -22,10 +23,18 @@ interface DocumentSection {
   children: DocumentSection[];
 }
 
+interface SectionEditData {
+  content: string;
+  title: string;
+  level: number;
+  position: number;
+  parentPath: string;
+}
+
 interface HybridNavigationSidebarProps {
   structure: NavigationNode[];
   contentNodes?: ContentNode[];
-  onSectionClick?: (sectionId: string, folderPath: string) => void;
+  onSectionEdit?: (sectionData: SectionEditData) => void;
   activeSectionId?: string;
   currentPath?: string;
   onStructureUpdate: () => void;
@@ -75,9 +84,11 @@ const SectionItem: React.FC<{
   section: DocumentSection;
   depth: number;
   folderPath: string;
-  onSectionClick?: (sectionId: string, folderPath: string) => void;
+  onSectionEdit?: (sectionData: SectionEditData) => void;
   activeSectionId?: string;
-}> = ({ section, depth, folderPath, onSectionClick, activeSectionId }) => {
+  fullContent: string;
+  sectionPosition: number;
+}> = ({ section, depth, folderPath, onSectionEdit, activeSectionId, fullContent, sectionPosition }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
@@ -97,8 +108,17 @@ const SectionItem: React.FC<{
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
         onClick={() => {
-          // Navigate to dedicated node page instead of just scrolling
-          navigate(`/node/${section.id}`);
+          // Extract section content for inline editing
+          const sectionContent = extractSectionContent(fullContent, section);
+          if (sectionContent && onSectionEdit) {
+            onSectionEdit({
+              content: sectionContent,
+              title: section.title,
+              level: section.level,
+              position: sectionPosition,
+              parentPath: folderPath
+            });
+          }
         }}
       >
         {hasChildren ? (
@@ -134,14 +154,16 @@ const SectionItem: React.FC<{
 
       {isExpanded && filteredChildren.length > 0 && (
         <div className="mt-1">
-          {filteredChildren.map((child) => (
+          {filteredChildren.map((child, index) => (
             <SectionItem
               key={child.id}
               section={child}
               depth={depth + 1}
               folderPath={folderPath}
-              onSectionClick={onSectionClick}
+              onSectionEdit={onSectionEdit}
               activeSectionId={activeSectionId}
+              fullContent={fullContent}
+              sectionPosition={sectionPosition + index + 1}
             />
           ))}
         </div>
@@ -153,14 +175,14 @@ const SectionItem: React.FC<{
 const FolderNode: React.FC<{
   node: NavigationNode;
   contentNodes?: ContentNode[];
-  onSectionClick?: (sectionId: string, folderPath: string) => void;
+  onSectionEdit?: (sectionData: SectionEditData) => void;
   activeSectionId?: string;
   currentPath?: string;
   onStructureUpdate: () => void;
 }> = ({ 
   node, 
   contentNodes, 
-  onSectionClick, 
+  onSectionEdit, 
   activeSectionId, 
   currentPath,
   onStructureUpdate
@@ -341,14 +363,16 @@ const FolderNode: React.FC<{
         <div>
           {documentSections
             .filter(section => section.children.length > 0)
-            .map((section) => (
+            .map((section, index) => (
               <SectionItem
                 key={section.id}
                 section={section}
                 depth={0}
                 folderPath={node.path}
-                onSectionClick={onSectionClick}
+                onSectionEdit={onSectionEdit}
                 activeSectionId={activeSectionId}
+                fullContent={associatedContent?.content || ''}
+                sectionPosition={index}
               />
             ))}
         </div>
@@ -360,7 +384,7 @@ const FolderNode: React.FC<{
 export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = ({ 
   structure, 
   contentNodes = [],
-  onSectionClick,
+  onSectionEdit,
   activeSectionId,
   currentPath,
   onStructureUpdate
@@ -415,7 +439,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               key={item.id}
               node={item}
               contentNodes={contentNodes}
-              onSectionClick={onSectionClick}
+              onSectionEdit={onSectionEdit}
               activeSectionId={activeSectionId}
               currentPath={currentPath}
               onStructureUpdate={onStructureUpdate}

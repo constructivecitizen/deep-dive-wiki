@@ -11,8 +11,10 @@ import { HybridNavigationSidebar } from "@/components/HybridNavigationSidebar";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { TagManager } from "@/lib/tagManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
+import { SectionEditor } from "@/components/SectionEditor";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { replaceSectionContent } from "@/lib/sectionExtractor";
 
 const ContentPage = () => {
   const location = useLocation();
@@ -28,10 +30,22 @@ const ContentPage = () => {
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string>();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [editingSection, setEditingSection] = useState<{
+    content: string;
+    title: string;
+    level: number;
+    position: number;
+    parentPath: string;
+  } | null>(null);
 
-  const handleSectionClick = (sectionId: string, folderPath: string) => {
-    setActiveSectionId(sectionId);
-    // Could scroll to section or handle navigation here
+  const handleSectionEdit = (sectionData: {
+    content: string;
+    title: string;
+    level: number;
+    position: number;
+    parentPath: string;
+  }) => {
+    setEditingSection(sectionData);
   };
 
   const fetchData = async () => {
@@ -217,7 +231,7 @@ const ContentPage = () => {
             <HybridNavigationSidebar 
               structure={navigationStructure} 
               contentNodes={allContentNodes}
-              onSectionClick={handleSectionClick}
+              onSectionEdit={handleSectionEdit}
               activeSectionId={activeSectionId}
               currentPath={location.pathname}
               onStructureUpdate={fetchData}
@@ -403,6 +417,48 @@ const ContentPage = () => {
           onClose={() => setShowDocumentEditor(false)}
         />
       )}
+
+      <SectionEditor 
+        sectionData={editingSection}
+        onSave={async (updatedContent: string, title: string) => {
+          if (editingSection && content) {
+            // Find the document section to replace
+            const documentSection = {
+              id: `section-${editingSection.position}`,
+              level: editingSection.level,
+              title: editingSection.title,
+              tags: [],
+              children: []
+            };
+            
+            // Replace the section content in the full document
+            const updatedFullContent = replaceSectionContent(
+              content.content || '',
+              documentSection,
+              updatedContent,
+              title
+            );
+            
+            // Save the updated document
+            const success = await ContentService.saveDocumentContent(
+              editingSection.parentPath, 
+              [], 
+              updatedFullContent
+            );
+            
+            if (success) {
+              toast.success("Section updated successfully");
+              // Refresh the content
+              const contentData = await ContentService.getContentByPath(location.pathname);
+              setContent(contentData);
+            } else {
+              toast.error("Failed to update section");
+            }
+          }
+          setEditingSection(null);
+        }}
+        onClose={() => setEditingSection(null)}
+      />
     </>
   );
 };

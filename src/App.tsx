@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ContentPage from "./pages/ContentPage";
-import NodePage from "./pages/NodePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -16,8 +15,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Node-specific routes */}
-          <Route path="/node/:sectionId" element={<NodePage />} />
           {/* Dynamic content routes - handles all wiki content */}
           <Route path="/" element={<ContentPage />} />
           <Route path="/getting-started" element={<ContentPage />} />
