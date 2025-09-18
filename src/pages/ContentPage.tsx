@@ -9,6 +9,7 @@ import { SimpleNavigationModal } from "@/components/SimpleNavigationModal";
 import { SimpleBreadcrumb } from "@/components/SimpleBreadcrumb";
 import { renderMarkdown } from "@/lib/markdownRenderer";
 import { TagManager } from "@/lib/tagManager";
+import { DocumentEditor } from "@/components/DocumentEditor";
 
 const ContentPage = () => {
   const location = useLocation();
@@ -225,6 +226,17 @@ const ContentPage = () => {
         onFilter={handleFilter}
         allTags={TagManager.getAllTags(allContentNodes)}
       />
+
+      {showDocumentEditor && (
+        <DocumentEditor 
+          initialContent={content?.children || []}
+          onSave={(nodes) => {
+            console.log('Saving content nodes:', nodes);
+            setShowDocumentEditor(false);
+          }}
+          onClose={() => setShowDocumentEditor(false)}
+        />
+      )}
     </>
   );
 };

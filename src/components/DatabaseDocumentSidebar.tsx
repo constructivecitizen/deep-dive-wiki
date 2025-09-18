@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { ChevronRight, ChevronDown, FileText, Folder, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { NavigationNode } from "@/services/contentService";
-import { ContentNavigationSidebar } from "./ContentNavigationSidebar";
-import { ContentNode } from "@/services/contentService";
+import { NavigationNode, ContentNode } from "@/services/contentService";
 
 interface DatabaseDocumentSidebarProps {
   structure: NavigationNode[];
@@ -159,16 +157,6 @@ export const DatabaseDocumentSidebar = ({
         )}
       </div>
 
-      {/* Content Navigation Section */}
-      {contentNodes.length > 0 && (
-        <div className="border-t border-border">
-          <ContentNavigationSidebar
-            contentNodes={contentNodes}
-            onNodeClick={onContentNodeClick}
-            activeNodeId={activeNodeId}
-          />
-        </div>
-      )}
     </div>
   );
 };
