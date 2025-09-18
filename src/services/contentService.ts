@@ -365,4 +365,98 @@ export class ContentService {
       return false;
     }
   }
+
+  // Section-specific update method
+  static async updateSectionInDocument(
+    path: string, 
+    sectionId: string, 
+    newSectionContent: string
+  ): Promise<boolean> {
+    try {
+      console.log('updateSectionInDocument called with:', { path, sectionId, contentLength: newSectionContent.length });
+      
+      // Get the existing document
+      const existingContent = await this.getContentByPath(path);
+      if (!existingContent || !existingContent.content) {
+        console.error('Document not found for section update');
+        return false;
+      }
+
+      const updatedContent = this.replaceSectionInMarkup(existingContent.content, sectionId, newSectionContent);
+      if (!updatedContent) {
+        console.error('Failed to replace section in document');
+        return false;
+      }
+
+      // Update the document with the new content
+      const success = await this.updateContentNode(existingContent.id, {
+        content: updatedContent
+      });
+      
+      console.log('Section update success:', success);
+      return success;
+    } catch (error) {
+      console.error('Error updating section in document:', error);
+      return false;
+    }
+  }
+
+  // Helper method to replace section content within markup
+  static replaceSectionInMarkup(
+    originalContent: string, 
+    targetSectionId: string, 
+    newSectionContent: string
+  ): string | null {
+    try {
+      const lines = originalContent.split('\n');
+      let sectionCount = 0;
+      let sectionStartIndex = -1;
+      let sectionEndIndex = -1;
+      let sectionDepth = 0;
+      let found = false;
+
+      // Find the section boundaries
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
+        
+        if (headingMatch) {
+          const level = headingMatch[1].length;
+          sectionCount++;
+          const currentSectionId = `section-${sectionCount}`;
+          
+          if (currentSectionId === targetSectionId) {
+            found = true;
+            sectionStartIndex = i;
+            sectionDepth = level;
+          } else if (found && level <= sectionDepth) {
+            // We've hit a section at the same or higher level - end of our section
+            sectionEndIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (!found) {
+        console.error('Section not found:', targetSectionId);
+        return null;
+      }
+
+      // If we didn't find an end, the section goes to the end of the document
+      if (sectionEndIndex === -1) {
+        sectionEndIndex = lines.length;
+      }
+
+      // Replace the section content
+      const beforeSection = lines.slice(0, sectionStartIndex);
+      const afterSection = lines.slice(sectionEndIndex);
+      const newSectionLines = newSectionContent.trim().split('\n');
+
+      const updatedLines = [...beforeSection, ...newSectionLines, ...afterSection];
+      return updatedLines.join('\n');
+    } catch (error) {
+      console.error('Error replacing section in markup:', error);
+      return null;
+    }
+  }
 }

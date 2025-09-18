@@ -9,6 +9,7 @@ import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { HybridNavigationSidebar } from "@/components/HybridNavigationSidebar";
 import { TagManager } from "@/lib/tagManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { renderMarkdown } from "@/lib/markdownRenderer";
 
@@ -238,16 +239,35 @@ const NodePage = () => {
             </Link>
           </nav>
           
-          {/* Section title */}
-          <h1 className="text-3xl font-bold text-foreground">{sectionTitle}</h1>
+          {/* Section title with edit button */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-foreground">{sectionTitle}</h1>
+            <Button
+              onClick={() => setShowDocumentEditor(true)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Section
+            </Button>
+          </div>
 
-          <div className="bg-card rounded-lg border border-border p-8">
+          <div className="bg-card rounded-lg border border-border p-8 relative">
             <div 
               className="prose prose-slate dark:prose-invert max-w-none"
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(sectionContent) 
               }}
             />
+            {/* Edit indicator */}
+            <div className="absolute top-2 right-2 opacity-60">
+              <div className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+                Section {sectionId?.replace('section-', '')}
+              </div>
+            </div>
           </div>
         </div>
       </WikiLayout>
@@ -269,9 +289,54 @@ const NodePage = () => {
             children: []
           }]}
           onSave={async (nodes, originalMarkup) => {
-            // For now, we'll show a message that editing individual sections isn't supported
-            toast.info("Please edit the full document from the parent page");
-            setShowDocumentEditor(false);
+            try {
+              // Use the original markup if provided, otherwise reconstruct from nodes
+              let updatedSectionContent = '';
+              
+              if (originalMarkup) {
+                updatedSectionContent = originalMarkup.trim();
+              } else if (nodes.length > 0 && nodes[0].content) {
+                updatedSectionContent = nodes[0].content;
+              } else {
+                toast.error("No content to save");
+                return;
+              }
+
+              // Update the section in the parent document
+              const success = await ContentService.updateSectionInDocument(
+                parentPath, 
+                sectionId!, 
+                updatedSectionContent
+              );
+
+              if (success) {
+                // Update local state to reflect the changes immediately
+                setSectionContent(updatedSectionContent);
+                
+                // Extract new title from the updated content
+                const lines = updatedSectionContent.split('\n');
+                const firstLine = lines[0];
+                const headingMatch = firstLine.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
+                if (headingMatch) {
+                  const newTitle = headingMatch[2].trim();
+                  setSectionTitle(newTitle);
+                }
+
+                toast.success("Section updated successfully");
+                setShowDocumentEditor(false);
+                
+                // Refresh the parent document data
+                const updatedContent = await ContentService.getContentByPath(parentPath);
+                if (updatedContent) {
+                  setContent(updatedContent);
+                }
+              } else {
+                toast.error("Failed to update section");
+              }
+            } catch (error) {
+              console.error("Error saving section:", error);
+              toast.error("An error occurred while saving the section");
+            }
           }}
           onClose={() => setShowDocumentEditor(false)}
         />
