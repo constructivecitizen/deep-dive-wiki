@@ -20,6 +20,7 @@ interface HierarchicalContentProps {
   showTags?: boolean;
   editMode?: boolean;
   onNodeUpdate?: (updatedNode: ContentNode) => void;
+  onDedicatedPageClick?: (nodeId: string) => void;
 }
 
 interface ContentItemProps {
@@ -27,9 +28,10 @@ interface ContentItemProps {
   showTags?: boolean;
   editMode?: boolean;
   onNodeUpdate?: (updatedNode: ContentNode) => void;
+  onDedicatedPageClick?: (nodeId: string) => void;
 }
 
-const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate }: ContentItemProps) => {
+const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate, onDedicatedPageClick }: ContentItemProps) => {
   const [isExpanded, setIsExpanded] = useState(node.depth < 3); // Auto-expand first 3 levels
   const hasChildren = node.children && node.children.length > 0;
 
@@ -90,13 +92,13 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate }: 
                   />
                 )}
                 {node.path && (
-                  <a
-                    href={node.path}
+                  <button
+                    onClick={() => onDedicatedPageClick?.(node.id)}
                     className="flex items-center gap-1 px-2 py-1 text-xs text-primary hover:text-primary-hover bg-primary/5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
                     title="Open dedicated page"
                   >
                     <ExternalLink className="h-3 w-3" />
-                  </a>
+                  </button>
                 )}
               </div>
             </div>
@@ -106,7 +108,7 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate }: 
         {isExpanded && hasChildren && (
           <div className="mt-2 space-y-1">
             {node.children!.map((child) => (
-              <ContentItem key={child.id} node={child} showTags={showTags} editMode={editMode} onNodeUpdate={onNodeUpdate} />
+              <ContentItem key={child.id} node={child} showTags={showTags} editMode={editMode} onNodeUpdate={onNodeUpdate} onDedicatedPageClick={onDedicatedPageClick} />
             ))}
           </div>
         )}
@@ -115,10 +117,10 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate }: 
   );
 };
 
-export const HierarchicalContent = ({ node, showTags = true, editMode = false, onNodeUpdate }: HierarchicalContentProps) => {
+export const HierarchicalContent = ({ node, showTags = true, editMode = false, onNodeUpdate, onDedicatedPageClick }: HierarchicalContentProps) => {
   return (
     <div className="space-y-2">
-      <ContentItem node={node} showTags={showTags} editMode={editMode} onNodeUpdate={onNodeUpdate} />
+      <ContentItem node={node} showTags={showTags} editMode={editMode} onNodeUpdate={onNodeUpdate} onDedicatedPageClick={onDedicatedPageClick} />
     </div>
   );
 };

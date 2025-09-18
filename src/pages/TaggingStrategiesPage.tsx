@@ -21,24 +21,28 @@ const taggingContent: ContentNode = {
       content: "Developing a coherent tag taxonomy is essential for consistent categorization across your knowledge base.",
       tags: ["taxonomy", "categorization", "consistency"],
       depth: 1,
+      path: "#tag-taxonomy",
       children: [
         {
           id: "semantic-tags",
           content: "Semantic tags describe the meaning or subject matter of content, such as 'machine-learning' or 'user-interface'.",
           tags: ["semantic", "meaning", "subject"],
-          depth: 2
+          depth: 2,
+          path: "#semantic-tags"
         },
         {
           id: "functional-tags", 
           content: "Functional tags indicate the purpose or use of content, like 'tutorial', 'reference', or 'troubleshooting'.",
           tags: ["functional", "purpose", "use-case"],
-          depth: 2
+          depth: 2,
+          path: "#functional-tags"
         },
         {
           id: "temporal-tags",
           content: "Temporal tags help organize content by time relevance, such as 'current', 'deprecated', or 'future-planning'.",
           tags: ["temporal", "time", "relevance"],
-          depth: 2
+          depth: 2,
+          path: "#temporal-tags"
         }
       ]
     },
@@ -47,18 +51,21 @@ const taggingContent: ContentNode = {
       content: "Effective filtering mechanisms allow users to quickly narrow down content based on their current needs and interests.",
       tags: ["filtering", "search", "discovery"],
       depth: 1,
+      path: "#filtering-mechanisms",
       children: [
         {
           id: "inclusive-filtering",
           content: "Inclusive filtering shows content that matches ANY of the selected tags, broadening the result set.",
           tags: ["inclusive", "any", "broad"],
-          depth: 2
+          depth: 2,
+          path: "#inclusive-filtering"
         },
         {
           id: "exclusive-filtering", 
           content: "Exclusive filtering shows content that matches ALL selected tags, providing more precise results.",
           tags: ["exclusive", "all", "precise"],
-          depth: 2
+          depth: 2,
+          path: "#exclusive-filtering"
         }
       ]
     }
@@ -180,6 +187,7 @@ const TaggingStrategiesPage = () => {
                   showTags={false} 
                   editMode={editMode}
                   onNodeUpdate={handleNodeUpdate}
+                  onDedicatedPageClick={handleContentNodeClick}
                 />
               </div>
             </div>
@@ -191,6 +199,7 @@ const TaggingStrategiesPage = () => {
                   showTags={false} 
                   editMode={editMode}
                   onNodeUpdate={handleNodeUpdate}
+                  onDedicatedPageClick={handleContentNodeClick}
                 />
               </div>
             ))
