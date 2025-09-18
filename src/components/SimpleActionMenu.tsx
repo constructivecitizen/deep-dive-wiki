@@ -22,32 +22,27 @@ export const SimpleActionMenu = ({
   onToggleFilter
 }: SimpleActionMenuProps) => {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Menu className="w-4 h-4 mr-2" />
-              Actions
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={onToggleEdit}>
-              <Edit3 className="w-4 h-4 mr-2" />
-              {editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onToggleDocumentEditor}>
-              <FileEdit className="w-4 h-4 mr-2" />
-              Document Editor
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onToggleFilter}>
-              <Filter className="w-4 h-4 mr-2" />
-              Filter Content
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Menu className="w-4 h-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-card border border-border">
+        <DropdownMenuItem onClick={onToggleEdit}>
+          <Edit3 className="w-4 h-4 mr-2" />
+          {editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onToggleDocumentEditor}>
+          <FileEdit className="w-4 h-4 mr-2" />
+          Document Editor
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onToggleFilter}>
+          <Filter className="w-4 h-4 mr-2" />
+          Filter Content
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

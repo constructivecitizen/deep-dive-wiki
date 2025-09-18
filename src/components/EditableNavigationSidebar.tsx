@@ -368,59 +368,6 @@ export const EditableNavigationSidebar = ({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-semibold text-foreground">Navigation</h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              Browse and manage documentation structure
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={startCreating}
-            className="flex items-center gap-1"
-          >
-            <Plus className="w-3 h-3" />
-            New
-          </Button>
-        </div>
-
-        {/* New folder input */}
-        {isCreating && (
-          <div className="mt-3 flex items-center gap-2">
-            <Input
-              ref={inputRef}
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Folder name..."
-              className="text-sm"
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCreateFolder}
-              disabled={!newFolderName.trim()}
-            >
-              <Check className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsCreating(false);
-                setNewFolderName("");
-              }}
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          </div>
-        )}
-      </div>
-
       {/* Navigation Tree */}
       <div className="flex-1 overflow-y-auto p-2">
         {structure.length > 0 ? (
@@ -442,14 +389,52 @@ export const EditableNavigationSidebar = ({
         ) : (
           <div className="p-4 text-center text-muted-foreground">
             <p className="text-sm">No navigation structure found</p>
+          </div>
+        )}
+      </div>
+
+      {/* Compact New Folder Button at Bottom */}
+      <div className="p-2 border-t border-border">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={startCreating}
+          className="w-8 h-8 p-0 mx-auto block"
+          title="Add new folder"
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+
+        {/* New folder input */}
+        {isCreating && (
+          <div className="mt-2 flex items-center gap-2">
+            <Input
+              ref={inputRef}
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Folder name..."
+              className="text-sm"
+            />
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={startCreating}
-              className="mt-2"
+              onClick={handleCreateFolder}
+              disabled={!newFolderName.trim()}
+              className="h-6 w-6 p-0"
             >
-              <Plus className="w-3 h-3 mr-1" />
-              Create First Folder
+              <Check className="w-3 h-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setIsCreating(false);
+                setNewFolderName("");
+              }}
+              className="h-6 w-6 p-0"
+            >
+              <X className="w-3 h-3" />
             </Button>
           </div>
         )}
