@@ -12,6 +12,7 @@ import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisp
 import { TagManager } from "@/lib/tagManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContentPage = () => {
   const location = useLocation();
@@ -26,6 +27,7 @@ const ContentPage = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string>();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleSectionClick = (sectionId: string, folderPath: string) => {
     setActiveSectionId(sectionId);
@@ -72,6 +74,35 @@ const ContentPage = () => {
 
     loadContent();
   }, [location.pathname]);
+
+  // Set up real-time subscription for content updates
+  useEffect(() => {
+    if (!content?.id) return;
+
+    const channel = supabase
+      .channel('content-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'content_nodes',
+          filter: `id=eq.${content.id}`
+        },
+        async () => {
+          setIsRefreshing(true);
+          const currentPath = location.pathname;
+          const updatedContent = await ContentService.getContentByPath(currentPath);
+          setContent(updatedContent);
+          setIsRefreshing(false);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [content?.id, location.pathname]);
 
   const handleFilter = (filters: {
     searchTerm: string;
@@ -256,7 +287,15 @@ const ContentPage = () => {
             );
           })()}
 
-          <div className="bg-card rounded-lg border border-border p-8">
+          <div className="bg-card rounded-lg border border-border p-8 relative">
+            {isRefreshing && (
+              <div className="absolute top-2 right-2 opacity-60">
+                <div className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded flex items-center gap-1">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                  Updating...
+                </div>
+              </div>
+            )}
             <HierarchicalContentDisplay 
               content={content.content} 
               onSectionClick={handleContentNodeClick}

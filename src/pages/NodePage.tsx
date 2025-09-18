@@ -12,6 +12,7 @@ import { DocumentEditor } from "@/components/DocumentEditor";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { renderMarkdown } from "@/lib/markdownRenderer";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NodePageParams {
   sectionId: string;
@@ -34,6 +35,7 @@ const NodePage = () => {
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string>();
   const [parentPath, setParentPath] = useState<string>("/");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { sectionId } = params;
 
@@ -146,20 +148,30 @@ const NodePage = () => {
     loadContent();
   }, [sectionId, navigate]);
 
-  // Add effect to refresh content when page becomes visible (handles back navigation)
+  // Set up real-time subscription for content updates
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && sectionId) {
-        // Page became visible, refresh the content to pick up any changes
-        const refreshContent = async () => {
-          const allNodes = await ContentService.getAllContentNodes();
+    if (!content?.id || !sectionId) return;
+
+    const channel = supabase
+      .channel('section-content-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'content_nodes',
+          filter: `id=eq.${content.id}`
+        },
+        async () => {
+          setIsRefreshing(true);
           
-          // Find the updated content node that contains this section
+          // Re-extract the section content from the updated document
+          const allNodes = await ContentService.getAllContentNodes();
           let foundContent: ContentNode | null = null;
           let extractedSection = { content: '', title: '' };
 
           for (const node of allNodes) {
-            if (node.content) {
+            if (node.content && node.id === content.id) {
               const section = extractSectionContent(node.content, sectionId);
               if (section.content) {
                 foundContent = node;
@@ -170,34 +182,20 @@ const NodePage = () => {
           }
 
           if (foundContent && extractedSection.content) {
-            // Only update if content has actually changed
-            if (extractedSection.content !== sectionContent || extractedSection.title !== sectionTitle) {
-              setSectionContent(extractedSection.content);
-              setSectionTitle(extractedSection.title);
-              setContent(foundContent);
-              console.log('Section content refreshed due to document updates');
-            }
+            setSectionContent(extractedSection.content);
+            setSectionTitle(extractedSection.title);
+            setContent(foundContent);
           }
-        };
-
-        refreshContent();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // Also refresh when component mounts in case we're coming from a navigation
-    const timeoutId = setTimeout(() => {
-      if (sectionId && sectionContent) {
-        handleVisibilityChange();
-      }
-    }, 500);
+          
+          setIsRefreshing(false);
+        }
+      )
+      .subscribe();
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      clearTimeout(timeoutId);
+      supabase.removeChannel(channel);
     };
-  }, [sectionId, sectionContent, sectionTitle]);
+  }, [content?.id, sectionId]);
 
   const handleFilter = (filters: {
     searchTerm: string;
@@ -292,53 +290,20 @@ const NodePage = () => {
             </Link>
           </nav>
           
-          {/* Section title with edit and refresh buttons */}
+          {/* Section title with edit button */}
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-foreground">{sectionTitle}</h1>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={async () => {
-                  // Manual refresh function
-                  const allNodes = await ContentService.getAllContentNodes();
-                  
-                  for (const node of allNodes) {
-                    if (node.content) {
-                      const section = extractSectionContent(node.content, sectionId!);
-                      if (section.content) {
-                        if (section.content !== sectionContent || section.title !== sectionTitle) {
-                          setSectionContent(section.content);
-                          setSectionTitle(section.title);
-                          setContent(node);
-                          toast.success("Content refreshed");
-                        } else {
-                          toast.info("Content is already up to date");
-                        }
-                        break;
-                      }
-                    }
-                  }
-                }}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh
-              </Button>
-              <Button
-                onClick={() => setShowDocumentEditor(true)}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit Section
-              </Button>
-            </div>
+            <Button
+              onClick={() => setShowDocumentEditor(true)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Section
+            </Button>
           </div>
 
           <div className="bg-card rounded-lg border border-border p-8 relative">
@@ -348,11 +313,18 @@ const NodePage = () => {
                 __html: renderMarkdown(sectionContent) 
               }}
             />
-            {/* Edit indicator */}
+            {/* Update indicator and section info */}
             <div className="absolute top-2 right-2 opacity-60">
-              <div className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
-                Section {sectionId?.replace('section-', '')}
-              </div>
+              {isRefreshing ? (
+                <div className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded flex items-center gap-1">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                  Updating...
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
+                  Section {sectionId?.replace('section-', '')}
+                </div>
+              )}
             </div>
           </div>
         </div>
