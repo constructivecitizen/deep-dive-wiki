@@ -184,15 +184,6 @@ const TreeNode = ({
         {/* Spacer for items without expansion toggle */}
         {!hasChildren && <div className="w-4" />}
 
-        {/* Icon */}
-        <div className="flex-shrink-0">
-          {node.type === 'folder' ? (
-            <Folder className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <FileText className="w-4 h-4 text-muted-foreground" />
-          )}
-        </div>
-
         {/* Title - editable for folders */}
         <div className="flex-1 min-w-0">
           {isEditing ? (
