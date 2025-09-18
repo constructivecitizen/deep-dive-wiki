@@ -114,8 +114,8 @@ const ContentSectionComponent: React.FC<{
             )}
           </button>
         ) : (
-          // Bullet point for leaf nodes
-          <div className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center">
+          // Bullet point for leaf nodes - positioned to align with content
+          <div className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center" style={{ marginLeft: '24px' }}>
             <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
           </div>
         )}
