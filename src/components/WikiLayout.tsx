@@ -9,6 +9,7 @@ interface WikiLayoutProps {
   activeNodeId?: string;
   currentPath?: string;
   onStructureUpdate?: () => void;
+  actionMenu?: React.ReactNode;
 }
 
 export const WikiLayout = ({ 
@@ -18,16 +19,26 @@ export const WikiLayout = ({
   onContentNodeClick,
   activeNodeId,
   currentPath,
-  onStructureUpdate
+  onStructureUpdate,
+  actionMenu
 }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold text-foreground">Document Wiki</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Hierarchical knowledge management system
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Document Wiki</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Hierarchical knowledge management system
+              </p>
+            </div>
+            {actionMenu && (
+              <div className="flex items-center">
+                {actionMenu}
+              </div>
+            )}
+          </div>
         </div>
       </header>
       

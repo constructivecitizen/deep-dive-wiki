@@ -145,6 +145,14 @@ const ContentPage = () => {
           const structure = await ContentService.getNavigationStructure();
           setNavigationStructure(structure);
         }}
+        actionMenu={
+          <SimpleActionMenu 
+            editMode={editMode}
+            onToggleEdit={() => setEditMode(!editMode)}
+            onToggleDocumentEditor={() => setShowDocumentEditor(!showDocumentEditor)}
+            onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
+          />
+        }
       >
         <div className="space-y-6">
           <SimpleBreadcrumb 
@@ -153,15 +161,7 @@ const ContentPage = () => {
           />
 
           <div className="bg-card rounded-lg border border-border p-8">
-            <div className="flex items-start justify-between mb-6">
-              <h1 className="text-3xl font-bold text-foreground">{content.title}</h1>
-              <SimpleActionMenu 
-                editMode={editMode}
-                onToggleEdit={() => setEditMode(!editMode)}
-                onToggleDocumentEditor={() => setShowDocumentEditor(!showDocumentEditor)}
-                onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
-              />
-            </div>
+            <h1 className="text-3xl font-bold text-foreground mb-6">{content.title}</h1>
             
             {content.content && (
               <div 
