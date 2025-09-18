@@ -65,16 +65,26 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
         style={{ paddingLeft }}
         onClick={toggleExpanded}
       >
-        {hasChildren && (
-          <button className="p-0.5 hover:bg-primary/10 rounded wiki-transition">
-            {isExpanded ? (
+        <button 
+          className="p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (hasChildren) {
+              toggleExpanded();
+            }
+          }}
+          aria-label={hasChildren ? (isExpanded ? "Collapse" : "Expand") : "No children"}
+        >
+          {hasChildren ? (
+            isExpanded ? (
               <ChevronDown className="h-3 w-3 text-muted-foreground" />
             ) : (
               <ChevronRight className="h-3 w-3 text-muted-foreground" />
-            )}
-          </button>
-        )}
-        {!hasChildren && <div className="w-4" />}
+            )
+          ) : (
+            <ChevronRight className="h-3 w-3 text-muted-foreground opacity-40" />
+          )}
+        </button>
         
         <div className="text-muted-foreground group-hover:text-primary wiki-transition">
           {getIcon()}
