@@ -149,7 +149,6 @@ const SectionItem: React.FC<{
 
 const FolderNode: React.FC<{
   node: NavigationNode;
-  level: number;
   contentNodes?: ContentNode[];
   onSectionClick?: (sectionId: string, folderPath: string) => void;
   activeSectionId?: string;
@@ -157,20 +156,18 @@ const FolderNode: React.FC<{
   onStructureUpdate: () => void;
 }> = ({ 
   node, 
-  level, 
   contentNodes, 
   onSectionClick, 
   activeSectionId, 
   currentPath,
   onStructureUpdate
 }) => {
-  const [expanded, setExpanded] = useState(level < 2);
+  const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(node.title);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   
-  const hasChildren = node.children && node.children.length > 0;
   const isActive = currentPath === node.path;
 
   // Find the associated content for this folder
@@ -242,10 +239,6 @@ const FolderNode: React.FC<{
     }
   };
 
-  const indentationStyle = {
-    paddingLeft: `${level * 16 + 8}px`
-  };
-
   return (
     <>
       <div
@@ -254,7 +247,7 @@ const FolderNode: React.FC<{
             ? 'bg-primary/10 text-primary border-l-2 border-primary' 
             : 'hover:bg-accent/50'
         }`}
-        style={indentationStyle}
+        style={{ paddingLeft: '8px' }}
         onClick={handleNodeClick}
       >
         <GripVertical className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
@@ -343,32 +336,17 @@ const FolderNode: React.FC<{
         )}
       </div>
 
-      {/* Document sections and children */}
-      {expanded && (
+      {/* Document sections only - no nested folders */}
+      {expanded && documentSections.length > 0 && (
         <div>
-          {/* Document sections first */}
           {documentSections.map((section) => (
             <SectionItem
               key={section.id}
               section={section}
-              depth={level}
+              depth={0}
               folderPath={node.path}
               onSectionClick={onSectionClick}
               activeSectionId={activeSectionId}
-            />
-          ))}
-          
-          {/* Then child folders */}
-          {hasChildren && node.children!.map((child) => (
-            <FolderNode
-              key={child.id}
-              node={child}
-              level={level + 1}
-              contentNodes={contentNodes}
-              onSectionClick={onSectionClick}
-              activeSectionId={activeSectionId}
-              currentPath={currentPath}
-              onStructureUpdate={onStructureUpdate}
             />
           ))}
         </div>
@@ -419,6 +397,9 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
+  // Only show top-level nodes, no nested structure
+  const topLevelNodes = structure.filter(node => !node.parent_id);
+
   return (
     <div className="h-full flex flex-col">
       {/* Navigation Tree */}
@@ -426,12 +407,11 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-2">
           Navigation
         </div>
-        {structure.length > 0 ? (
-          structure.map((item) => (
+        {topLevelNodes.length > 0 ? (
+          topLevelNodes.map((item) => (
             <FolderNode
               key={item.id}
               node={item}
-              level={0}
               contentNodes={contentNodes}
               onSectionClick={onSectionClick}
               activeSectionId={activeSectionId}
