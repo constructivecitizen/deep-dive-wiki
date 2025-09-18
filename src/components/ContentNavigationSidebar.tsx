@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { ChevronRight, ChevronDown, FileText, Hash } from "lucide-react";
+import { ChevronRight, ChevronDown } from "lucide-react";
 import { ContentNode } from "@/components/HierarchicalContent";
-import { Badge } from "@/components/ui/badge";
 
 interface ContentNavigationSidebarProps {
   contentNodes: ContentNode[];
@@ -19,7 +18,6 @@ interface ContentTreeNodeProps {
 const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTreeNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first 2 levels
   const hasChildren = node.children && node.children.length > 0;
-  const isLeafNode = !hasChildren;
   
   const toggleExpanded = () => {
     if (hasChildren) {
@@ -36,13 +34,6 @@ const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTree
     }
   };
 
-  const getIcon = () => {
-    if (isLeafNode) {
-      return <Hash className="h-3 w-3" />;
-    }
-    return <FileText className="h-4 w-4" />;
-  };
-
   const paddingLeft = `${level * 12 + 8}px`;
 
   // Truncate content for display
@@ -55,67 +46,46 @@ const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTree
   return (
     <div className="animate-fade-in">
       <div 
-        className={`flex items-start gap-2 py-2 px-3 hover:bg-secondary/50 cursor-pointer wiki-transition group ${
+        className={`flex items-center gap-2 py-2 px-3 hover:bg-secondary/50 cursor-pointer wiki-transition group ${
           isActive ? 'bg-primary/10 border-r-2 border-primary' : ''
         }`}
         style={{ paddingLeft }}
         onClick={handleNodeClick}
       >
-        {hasChildren && (
-          <button 
-            className="mt-0.5 p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
-            onClick={(e) => {
-              e.stopPropagation();
+        <button 
+          className="p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (hasChildren) {
               toggleExpanded();
-            }}
-            aria-label={isExpanded ? "Collapse content" : "Expand content"}
-          >
-            {isExpanded ? (
+            }
+          }}
+          aria-label={hasChildren ? (isExpanded ? "Collapse content" : "Expand content") : "Content item"}
+        >
+          {hasChildren ? (
+            isExpanded ? (
               <ChevronDown className="h-3 w-3 text-hierarchy-hover" />
             ) : (
               <ChevronRight className="h-3 w-3 text-muted-foreground" />
-            )}
-          </button>
-        )}
-        {!hasChildren && <div className="w-4 flex-shrink-0" />}
+            )
+          ) : (
+            <ChevronRight className="h-3 w-3 text-muted-foreground opacity-40" />
+          )}
+        </button>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-start gap-2">
-            <div className="text-muted-foreground group-hover:text-primary wiki-transition mt-0.5 flex-shrink-0">
-              {getIcon()}
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <div className={`text-sm leading-relaxed ${
-                isActive ? 'font-medium text-primary' : 'text-foreground group-hover:text-primary'
-              } wiki-transition`}>
-                {displayContent}
-              </div>
-              
-              {/* Show tags if any */}
-              {node.tags && node.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {node.tags.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs h-4 px-1">
-                      {tag}
-                    </Badge>
-                  ))}
-                  {node.tags.length > 3 && (
-                    <Badge variant="outline" className="text-xs h-4 px-1">
-                      +{node.tags.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              )}
-              
-              {/* Show depth indicator for very nested items */}
-              {level > 2 && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  Level {level + 1}
-                </div>
-              )}
-            </div>
+          <div className={`text-sm leading-relaxed ${
+            isActive ? 'font-medium text-primary' : 'text-foreground group-hover:text-primary'
+          } wiki-transition`}>
+            {displayContent}
           </div>
+          
+          {/* Show depth indicator for very nested items */}
+          {level > 2 && (
+            <div className="text-xs text-muted-foreground mt-1">
+              Level {level + 1}
+            </div>
+          )}
         </div>
       </div>
 
@@ -149,13 +119,10 @@ export const ContentNavigationSidebar = ({
     
     return nodes.filter(node => {
       const matchesContent = node.content.toLowerCase().includes(query.toLowerCase());
-      const matchesTags = node.tags?.some(tag => 
-        tag.toLowerCase().includes(query.toLowerCase())
-      );
       const hasMatchingChildren = node.children && 
         filterNodes(node.children, query).length > 0;
       
-      return matchesContent || matchesTags || hasMatchingChildren;
+      return matchesContent || hasMatchingChildren;
     });
   };
 
