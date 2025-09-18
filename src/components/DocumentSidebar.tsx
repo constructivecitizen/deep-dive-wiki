@@ -61,12 +61,11 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
   return (
     <div className="wiki-transition">
       <div 
-        className="flex items-center gap-2 py-2 px-3 hover:bg-secondary/50 cursor-pointer wiki-transition group"
+        className="flex items-center gap-2 py-2 px-3 hover:bg-secondary/50 wiki-transition group"
         style={{ paddingLeft }}
-        onClick={toggleExpanded}
       >
         <button 
-          className="p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
+          className="p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             if (hasChildren) {
@@ -91,31 +90,24 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
         </div>
         
         {node.type === "document" ? (
-          <div className="flex items-center flex-1 gap-2">
-            <NavLink 
-              to={node.path}
-              className={({ isActive }) => `
-                flex-1 text-sm font-medium wiki-transition
-                ${isActive 
-                  ? "text-primary font-semibold" 
-                  : "text-foreground hover:text-primary"
-                }
-              `}
-            >
-              {node.title}
-            </NavLink>
-            
-            {hasContentNodes && (
-              <button
-                onClick={handleShowContent}
-                className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
-                aria-label="Show content hierarchy"
-                title="Show content hierarchy"
-              >
-                <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-primary" />
-              </button>
-            )}
-          </div>
+          <NavLink 
+            to={node.path}
+            className={({ isActive }) => `
+              flex-1 text-sm font-medium wiki-transition
+              ${isActive 
+                ? "text-primary font-semibold" 
+                : "text-foreground hover:text-primary"
+              }
+            `}
+            onClick={(e) => {
+              if (hasContentNodes && onContentNodeClick && contentNodes) {
+                e.preventDefault();
+                onContentNodeClick(contentNodes[0].id);
+              }
+            }}
+          >
+            {node.title}
+          </NavLink>
         ) : (
           <span className="flex-1 text-sm font-medium text-foreground group-hover:text-primary wiki-transition">
             {node.title}
