@@ -42,7 +42,7 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate, on
   };
 
   const getDepthStyling = (depth: number) => {
-    const baseClasses = "wiki-transition border-l-2 pl-6 ml-2"; // Increased padding-left for better alignment
+    const baseClasses = "wiki-transition border-l-2 pl-4 ml-2";
     if (depth === 1) return `${baseClasses} depth-1`;
     if (depth === 2) return `${baseClasses} depth-2`;
     if (depth >= 3) return `${baseClasses} depth-3`;
@@ -53,7 +53,7 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate, on
     <div className={node.depth > 0 ? getDepthStyling(node.depth) : ""}>
       <div className="group py-3">
         <div className="flex items-start gap-3">
-          {hasChildren ? (
+          {hasChildren && (
             <button
               onClick={toggleExpanded}
               className="mt-1 p-1 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
@@ -65,11 +65,6 @@ const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate, on
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               )}
             </button>
-          ) : (
-            // Add bullet point for leaf nodes with proper alignment
-            <div className="mt-1 p-1 flex-shrink-0 w-6 h-6 flex items-center justify-center">
-              <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-            </div>
           )}
           
           <div className="flex-1 min-w-0">
