@@ -80,6 +80,40 @@ export class TagManager {
     return this.extractAllTags(nodes);
   }
 
+  static filterNodes(nodes: ContentNode[], filter: TagFilter): ContentNode[] {
+    const { includeTags, excludeTags } = filter;
+    
+    if (includeTags.length === 0 && excludeTags.length === 0) {
+      return nodes;
+    }
+
+    const filterNode = (node: ContentNode): ContentNode | null => {
+      const nodeTags = node.tags || [];
+      
+      // Check if node should be excluded
+      const shouldExclude = excludeTags.some(tag => nodeTags.includes(tag));
+      if (shouldExclude) return null;
+      
+      // Check if node matches include filter (if any include tags are specified)
+      const matchesInclude = includeTags.length === 0 || includeTags.some(tag => nodeTags.includes(tag));
+      
+      // Filter children recursively
+      const filteredChildren = node.children?.map(filterNode).filter(Boolean) as ContentNode[] || [];
+      
+      // Include node if it matches filter or has matching children
+      if (matchesInclude || filteredChildren.length > 0) {
+        return {
+          ...node,
+          children: filteredChildren
+        };
+      }
+      
+      return null;
+    };
+
+    return nodes.map(filterNode).filter(Boolean) as ContentNode[];
+  }
+
   static getTagSuggestions(currentInput: string, allTags: string[]): string[] {
     if (!currentInput) return allTags;
     
