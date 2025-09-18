@@ -63,8 +63,22 @@ export class HierarchyParser {
     return { nodes, tagIndex };
   }
 
-  static nodeToMarkup(node: ContentNode): string {
+  static nodeToMarkup(node: ContentNode, isRoot: boolean = false): string {
     const content = node.content.trim();
+    
+    // For root level content, don't automatically add headers unless the content explicitly starts with #
+    if (isRoot) {
+      // Use content as-is for root level
+      let markup = content;
+      
+      // Add children markup if any
+      if (node.children && node.children.length > 0) {
+        const childrenMarkup = node.children.map(child => this.nodeToMarkup(child, false)).join('\n');
+        markup += '\n' + childrenMarkup;
+      }
+      
+      return markup;
+    }
     
     // Check if content already starts with headers - if so, use it as-is
     if (content.startsWith('#')) {
@@ -72,14 +86,14 @@ export class HierarchyParser {
       
       // Add children markup if any
       if (node.children && node.children.length > 0) {
-        const childrenMarkup = node.children.map(child => this.nodeToMarkup(child)).join('\n');
+        const childrenMarkup = node.children.map(child => this.nodeToMarkup(child, false)).join('\n');
         markup += '\n' + childrenMarkup;
       }
       
       return markup;
     }
     
-    // Original logic for plain content
+    // For non-root content that doesn't start with #, add appropriate header level
     const indent = '#'.repeat(node.depth + 1);
     const tags = node.tags && node.tags.length > 0 ? ` [${node.tags.join(', ')}]` : '';
     const header = `${indent} ${content.split('\n')[0]}${tags}`;
@@ -90,7 +104,7 @@ export class HierarchyParser {
     let markup = header + contentPart;
     
     if (node.children && node.children.length > 0) {
-      const childrenMarkup = node.children.map(child => this.nodeToMarkup(child)).join('\n');
+      const childrenMarkup = node.children.map(child => this.nodeToMarkup(child, false)).join('\n');
       markup += '\n' + childrenMarkup;
     }
     
@@ -98,6 +112,6 @@ export class HierarchyParser {
   }
 
   static nodesToMarkup(nodes: ContentNode[]): string {
-    return nodes.map(node => this.nodeToMarkup(node)).join('\n\n');
+    return nodes.map((node, index) => this.nodeToMarkup(node, index === 0)).join('\n\n');
   }
 }

@@ -18,17 +18,10 @@ export const DocumentEditor = ({ initialContent, onSave, onClose }: DocumentEdit
 
   useEffect(() => {
     if (initialContent.length > 0) {
-      // Check if the content already contains markdown headers
+      // Use the content directly from the database without additional processing
       const firstNodeContent = initialContent[0].content;
-      if (firstNodeContent && firstNodeContent.startsWith('#')) {
-        // Content already contains markdown - use it directly
-        console.log('Using existing markdown content directly');
-        setMarkup(firstNodeContent);
-      } else {
-        // Convert node structure to markup
-        const initialMarkup = HierarchyParser.nodesToMarkup(initialContent);
-        setMarkup(initialMarkup);
-      }
+      console.log('DocumentEditor initialContent:', firstNodeContent?.substring(0, 100));
+      setMarkup(firstNodeContent || '');
     } else {
       // Start with a basic template for new pages
       setMarkup('# Page Title\n\nWrite your content here...\n\n## Subtopic\n\nAdd more details here.');
