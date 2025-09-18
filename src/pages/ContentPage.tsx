@@ -62,8 +62,12 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   }) => {
+    console.log('handleSectionView called with:', sectionData.title);
     setViewingSection(sectionData);
   };
+
+  // Debug logging
+  console.log('ContentPage render: viewingSection exists:', !!viewingSection, viewingSection?.title);
 
   const fetchData = async () => {
     const structure = await ContentService.getNavigationStructure();
