@@ -21,7 +21,6 @@ const ContentPage = () => {
   const [editMode, setEditMode] = useState(false);
   const [showDocumentEditor, setShowDocumentEditor] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [showNavigationManager, setShowNavigationManager] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
 
   // Load navigation structure on mount
@@ -142,6 +141,10 @@ const ContentPage = () => {
         onContentNodeClick={handleContentNodeClick}
         activeNodeId={activeNodeId}
         currentPath={location.pathname}
+        onStructureUpdate={async () => {
+          const structure = await ContentService.getNavigationStructure();
+          setNavigationStructure(structure);
+        }}
       >
         <div className="space-y-6">
           <SimpleActionMenu 
@@ -149,7 +152,6 @@ const ContentPage = () => {
             onToggleEdit={() => setEditMode(!editMode)}
             onToggleDocumentEditor={() => setShowDocumentEditor(!showDocumentEditor)}
             onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
-            onToggleNavigation={() => setShowNavigationManager(!showNavigationManager)}
           />
 
           <SimpleBreadcrumb path={content.path} />
@@ -214,11 +216,6 @@ const ContentPage = () => {
           </div>
         </div>
       </WikiLayout>
-
-      <SimpleNavigationModal 
-        isOpen={showNavigationManager}
-        onClose={() => setShowNavigationManager(false)}
-      />
 
       <SimpleFilterPanel 
         isOpen={showFilterPanel}

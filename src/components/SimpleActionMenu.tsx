@@ -6,22 +6,20 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Menu, Edit3, FileEdit, Filter, FolderTree } from 'lucide-react';
+import { Menu, Edit3, FileEdit, Filter } from 'lucide-react';
 
 interface SimpleActionMenuProps {
   editMode: boolean;
   onToggleEdit: () => void;
   onToggleDocumentEditor: () => void;
   onToggleFilter: () => void;
-  onToggleNavigation: () => void;
 }
 
 export const SimpleActionMenu = ({
   editMode,
   onToggleEdit,
   onToggleDocumentEditor,
-  onToggleFilter,
-  onToggleNavigation
+  onToggleFilter
 }: SimpleActionMenuProps) => {
   return (
     <div className="flex items-center justify-between mb-6">
@@ -46,10 +44,6 @@ export const SimpleActionMenu = ({
             <DropdownMenuItem onClick={onToggleFilter}>
               <Filter className="w-4 h-4 mr-2" />
               Filter Content
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onToggleNavigation}>
-              <FolderTree className="w-4 h-4 mr-2" />
-              Manage Navigation
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

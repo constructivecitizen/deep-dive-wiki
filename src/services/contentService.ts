@@ -154,4 +154,76 @@ export class ContentService {
 
     return this.buildHierarchy(data || []);
   }
+
+  // Navigation management methods
+  static async createNavigationFolder(title: string, parentId: string | null = null): Promise<NavigationNode | null> {
+    const path = parentId ? `/${title.toLowerCase().replace(/\s+/g, '-')}` : `/${title.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    const { data, error } = await supabase
+      .from('navigation_structure')
+      .insert({
+        title,
+        type: 'folder',
+        path,
+        parent_id: parentId,
+        order_index: 999 // Add at the end
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating navigation folder:', error);
+      return null;
+    }
+
+    return {
+      ...data,
+      type: 'folder' as const
+    };
+  }
+
+  static async updateNavigationNode(id: string, updates: Partial<NavigationNode>): Promise<boolean> {
+    const { error } = await supabase
+      .from('navigation_structure')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating navigation node:', error);
+      return false;
+    }
+
+    return true;
+  }
+
+  static async deleteNavigationNode(id: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('navigation_structure')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting navigation node:', error);
+      return false;
+    }
+
+    return true;
+  }
+
+  static async reorderNavigationNodes(nodeId: string, newParentId: string | null, newOrderIndex: number): Promise<boolean> {
+    const { error } = await supabase
+      .from('navigation_structure')
+      .update({
+        parent_id: newParentId,
+        order_index: newOrderIndex
+      })
+      .eq('id', nodeId);
+
+    if (error) {
+      console.error('Error reordering navigation node:', error);
+      return false;
+    }
+
+    return true;
+  }
 }

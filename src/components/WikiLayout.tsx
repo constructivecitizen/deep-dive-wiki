@@ -1,4 +1,4 @@
-import { DatabaseDocumentSidebar } from "./DatabaseDocumentSidebar";
+import { EditableNavigationSidebar } from "./EditableNavigationSidebar";
 import { NavigationNode, ContentNode } from "@/services/contentService";
 
 interface WikiLayoutProps {
@@ -8,6 +8,7 @@ interface WikiLayoutProps {
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
   currentPath?: string;
+  onStructureUpdate?: () => void;
 }
 
 export const WikiLayout = ({ 
@@ -16,7 +17,8 @@ export const WikiLayout = ({
   contentNodes = [],
   onContentNodeClick,
   activeNodeId,
-  currentPath
+  currentPath,
+  onStructureUpdate
 }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
@@ -31,12 +33,13 @@ export const WikiLayout = ({
       
       <div className="flex h-[calc(100vh-80px)]">
         <aside className="w-80 flex-shrink-0 border-r border-border">
-          <DatabaseDocumentSidebar 
+          <EditableNavigationSidebar 
             structure={navigationStructure} 
             contentNodes={contentNodes}
             onContentNodeClick={onContentNodeClick}
             activeNodeId={activeNodeId}
             currentPath={currentPath}
+            onStructureUpdate={onStructureUpdate || (() => {})}
           />
         </aside>
         
