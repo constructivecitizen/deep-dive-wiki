@@ -1,11 +1,12 @@
-import { DocumentSidebar } from "./DocumentSidebar";
+import { DocumentSidebar, DocumentStructure } from "./DocumentSidebar";
 import { documentStructure } from "@/data/sampleDocument";
 
 interface WikiLayoutProps {
   children: React.ReactNode;
+  navigationStructure?: DocumentStructure[];
 }
 
-export const WikiLayout = ({ children }: WikiLayoutProps) => {
+export const WikiLayout = ({ children, navigationStructure = documentStructure }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
@@ -19,7 +20,7 @@ export const WikiLayout = ({ children }: WikiLayoutProps) => {
       
       <div className="flex h-[calc(100vh-80px)]">
         <aside className="w-80 flex-shrink-0 border-r border-border">
-          <DocumentSidebar structure={documentStructure} />
+          <DocumentSidebar structure={navigationStructure} />
         </aside>
         
         <main className="flex-1 overflow-y-auto">

@@ -4,7 +4,10 @@ import { HierarchicalContent } from "@/components/HierarchicalContent";
 import { EditModeToggle } from "@/components/EditModeToggle";
 import { FilterPanel } from "@/components/FilterPanel";
 import { DocumentEditor } from "@/components/DocumentEditor";
+import { NavigationManager } from "@/components/NavigationManager";
 import { ContentNode } from "@/components/HierarchicalContent";
+import { DocumentStructure } from "@/components/DocumentSidebar";
+import { documentStructure } from "@/data/sampleDocument";
 
 // Dedicated page content for hierarchy systems
 const hierarchySystemsContent: ContentNode = {
@@ -76,6 +79,7 @@ const HierarchySystemsPage = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [content, setContent] = useState<ContentNode[]>([hierarchySystemsContent]);
   const [filteredContent, setFilteredContent] = useState<ContentNode[]>([hierarchySystemsContent]);
+  const [navigationStructure, setNavigationStructure] = useState<DocumentStructure[]>(documentStructure);
 
   const handleNodeUpdate = (updatedNode: any) => {
     console.log("Node updated:", updatedNode);
@@ -102,11 +106,17 @@ const HierarchySystemsPage = () => {
   }
 
   return (
-    <WikiLayout>
-      <EditModeToggle 
-        onToggle={setEditMode}
-        onDocumentEdit={() => setShowDocumentEditor(true)}
-      />
+    <WikiLayout navigationStructure={navigationStructure}>
+      <div className="flex items-center gap-4 mb-6">
+        <EditModeToggle 
+          onToggle={setEditMode}
+          onDocumentEdit={() => setShowDocumentEditor(true)}
+        />
+        <NavigationManager 
+          structure={navigationStructure}
+          onStructureChange={setNavigationStructure}
+        />
+      </div>
       <FilterPanel
         allNodes={content}
         onFilterChange={handleFilterChange}

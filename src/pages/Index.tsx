@@ -4,9 +4,10 @@ import { HierarchicalContent } from "@/components/HierarchicalContent";
 import { EditModeToggle } from "@/components/EditModeToggle";
 import { FilterPanel } from "@/components/FilterPanel";
 import { DocumentEditor } from "@/components/DocumentEditor";
-import { NodeManagement } from "@/components/NodeManagement";
-import { sampleContent } from "@/data/sampleDocument";
+import { NavigationManager } from "@/components/NavigationManager";
+import { sampleContent, documentStructure } from "@/data/sampleDocument";
 import { ContentNode } from "@/components/HierarchicalContent";
+import { DocumentStructure } from "@/components/DocumentSidebar";
 
 const Index = () => {
   const [editMode, setEditMode] = useState(false);
@@ -14,6 +15,7 @@ const Index = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [content, setContent] = useState<ContentNode[]>([sampleContent]);
   const [filteredContent, setFilteredContent] = useState<ContentNode[]>([sampleContent]);
+  const [navigationStructure, setNavigationStructure] = useState<DocumentStructure[]>(documentStructure);
 
   const handleNodeUpdate = (updatedNode: any) => {
     // In a real app, this would update the data source
@@ -41,18 +43,15 @@ const Index = () => {
   }
 
   return (
-    <WikiLayout>
+    <WikiLayout navigationStructure={navigationStructure}>
       <div className="flex items-center gap-4 mb-6">
         <EditModeToggle 
           onToggle={setEditMode}
           onDocumentEdit={() => setShowDocumentEditor(true)}
         />
-        <NodeManagement 
-          nodes={content}
-          onNodesChange={(nodes) => {
-            setContent(nodes);
-            setFilteredContent(nodes);
-          }}
+        <NavigationManager 
+          structure={navigationStructure}
+          onStructureChange={setNavigationStructure}
         />
       </div>
       <FilterPanel
