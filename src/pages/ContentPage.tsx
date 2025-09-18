@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 import { WikiLayout } from "@/components/WikiLayout";
 import { ContentService, ContentNode, NavigationNode } from "@/services/contentService";
 import { HierarchicalContent } from "@/components/HierarchicalContent";
@@ -159,14 +160,70 @@ const ContentPage = () => {
         }
       >
         <div className="space-y-6">
-          <SimpleBreadcrumb 
-            path={content.path} 
-            navigationStructure={navigationStructure}
-          />
+          {/* Extract the last breadcrumb item as page title */}
+          {(() => {
+            const breadcrumbItems = [];
+            const pathParts = content.path.split('/').filter(part => part);
+            
+            // Build breadcrumb path
+            for (let i = 0; i <= pathParts.length; i++) {
+              const currentPath = '/' + pathParts.slice(0, i).join('/');
+              const isLast = i === pathParts.length;
+              
+              if (i === 0) {
+                breadcrumbItems.push({
+                  title: 'Home',
+                  href: '/',
+                  isLast: false
+                });
+              } else {
+                // Find navigation node for this path
+                const findNodeByPath = (nodes: NavigationNode[], targetPath: string): NavigationNode | null => {
+                  for (const node of nodes) {
+                    if (node.path === targetPath) return node;
+                    const found = findNodeByPath(node.children || [], targetPath);
+                    if (found) return found;
+                  }
+                  return null;
+                };
+                
+                const navNode = findNodeByPath(navigationStructure, currentPath);
+                if (navNode && !isLast) {
+                  breadcrumbItems.push({
+                    title: navNode.title,
+                    href: currentPath,
+                    isLast: false
+                  });
+                }
+              }
+            }
+            
+            return (
+              <>
+                {/* Breadcrumb without the last item */}
+                {breadcrumbItems.length > 0 && (
+                  <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    {breadcrumbItems.map((item, index) => (
+                      <div key={index} className="flex items-center">
+                        {index > 0 && <ChevronRight className="h-4 w-4 mx-2" />}
+                        <Link 
+                          to={item.href}
+                          className="hover:text-foreground transition-colors"
+                        >
+                          {item.title}
+                        </Link>
+                      </div>
+                    ))}
+                  </nav>
+                )}
+                
+                {/* Page title - larger and prominent */}
+                <h1 className="text-3xl font-bold text-foreground">{content.title}</h1>
+              </>
+            );
+          })()}
 
           <div className="bg-card rounded-lg border border-border p-8">
-            <h1 className="text-3xl font-bold text-foreground mb-6">{content.title}</h1>
-            
             <HierarchicalContentDisplay content={content.content} />
 
             {content.children && content.children.length > 0 && (

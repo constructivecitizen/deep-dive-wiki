@@ -82,12 +82,8 @@ const ContentSectionComponent: React.FC<{
   const isLeafNode = !hasChildren && !hasContent;
 
   const getHeadingClass = (level: number) => {
-    const baseClasses = "font-semibold text-foreground";
-    if (level <= 1) return `${baseClasses} text-2xl`;
-    if (level <= 2) return `${baseClasses} text-xl`;
-    if (level <= 3) return `${baseClasses} text-lg`;
-    if (level <= 4) return `${baseClasses} text-base`;
-    return `${baseClasses} text-sm`;
+    // All text should be normal weight and size - no bold headers
+    return "text-foreground font-normal text-base";
   };
 
   // Calculate indentation: children align with parent's text (after the 24px button)
