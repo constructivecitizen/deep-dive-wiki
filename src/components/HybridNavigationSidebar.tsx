@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -173,9 +173,11 @@ const FolderNode: React.FC<{
   
   const isActive = currentPath === node.path;
 
-  // Find the associated content for this folder
+  // Find the associated content for this folder and re-parse sections when content changes
   const associatedContent = contentNodes?.find(content => content.path === node.path);
-  const documentSections = associatedContent ? parseDocumentSections(associatedContent.content || '') : [];
+  const documentSections = useMemo(() => {
+    return associatedContent ? parseDocumentSections(associatedContent.content || '') : [];
+  }, [associatedContent?.content]);
 
   const toggleExpanded = (e: React.MouseEvent) => {
     e.preventDefault();

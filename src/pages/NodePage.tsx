@@ -167,6 +167,9 @@ const NodePage = () => {
           
           // Re-extract the section content from the updated document
           const allNodes = await ContentService.getAllContentNodes();
+          setAllContentNodes(allNodes);
+          setFilteredContent(allNodes);
+          
           let foundContent: ContentNode | null = null;
           let extractedSection = { content: '', title: '' };
 
