@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronRight, ChevronDown, ExternalLink } from "lucide-react";
 import { ContentNode } from "@/components/HierarchicalContent";
 
 interface ContentNavigationSidebarProps {
@@ -25,12 +25,16 @@ const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTree
     }
   };
 
-  const handleNodeClick = () => {
-    if (onNodeClick) {
-      onNodeClick(node.id);
-    }
+  const handleContentClick = () => {
     if (hasChildren) {
       toggleExpanded();
+    }
+  };
+
+  const handleShowInMain = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onNodeClick) {
+      onNodeClick(node.id);
     }
   };
 
@@ -50,7 +54,7 @@ const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTree
           isActive ? 'bg-primary/10 border-r-2 border-primary' : ''
         }`}
         style={{ paddingLeft }}
-        onClick={handleNodeClick}
+        onClick={handleContentClick}
       >
         <button 
           className="p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
@@ -87,6 +91,16 @@ const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTree
             </div>
           )}
         </div>
+        
+        {/* Clickout button to show in main display */}
+        <button
+          onClick={handleShowInMain}
+          className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
+          aria-label="Show in main display"
+          title="Show in main display"
+        >
+          <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-primary" />
+        </button>
       </div>
 
       {isExpanded && hasChildren && (
