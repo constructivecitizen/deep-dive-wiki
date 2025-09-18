@@ -79,6 +79,7 @@ const ContentSectionComponent: React.FC<{
   const [isExpanded, setIsExpanded] = useState(true);
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
+  const isLeafNode = !hasChildren && !hasContent;
 
   const getHeadingClass = (level: number) => {
     const baseClasses = "font-semibold text-foreground";
@@ -89,9 +90,9 @@ const ContentSectionComponent: React.FC<{
     return `${baseClasses} text-sm`;
   };
 
-  // Calculate indentation: 16px base + 20px per level
-  const indentationPx = depth * 20;
-  const contentIndentationPx = indentationPx + 24; // Additional 24px to align with header text (after the 24px wide button)
+  // Calculate indentation: children align with parent's text (after the 24px button)
+  const indentationPx = depth === 0 ? 0 : depth * 24; // 24px per level for child alignment
+  const contentIndentationPx = indentationPx + 24; // Additional 24px for content under headers
 
   return (
     <div>
@@ -99,7 +100,7 @@ const ContentSectionComponent: React.FC<{
         className="flex items-start gap-2 group"
         style={{ marginLeft: `${indentationPx}px` }}
       >
-        {(hasChildren || hasContent) && (
+        {(hasChildren || hasContent) ? (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex-shrink-0 mt-1 p-1 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-center"
@@ -111,10 +112,15 @@ const ContentSectionComponent: React.FC<{
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             )}
           </button>
+        ) : (
+          // Bullet point for leaf nodes
+          <div className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center">
+            <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+          </div>
         )}
         
         <div className="flex-1 min-w-0">
-          <h1 className={`${getHeadingClass(section.level)} cursor-pointer`}
+          <h1 className={`${getHeadingClass(section.level)} ${(hasChildren || hasContent) ? 'cursor-pointer' : ''}`}
               onClick={() => (hasChildren || hasContent) && setIsExpanded(!isExpanded)}>
             {section.title}
           </h1>
