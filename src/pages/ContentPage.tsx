@@ -154,7 +154,10 @@ const ContentPage = () => {
             onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
           />
 
-          <SimpleBreadcrumb path={content.path} />
+          <SimpleBreadcrumb 
+            path={content.path} 
+            navigationStructure={navigationStructure}
+          />
 
           <div className="bg-card rounded-lg border border-border p-8">
             <h1 className="text-3xl font-bold text-foreground mb-6">{content.title}</h1>

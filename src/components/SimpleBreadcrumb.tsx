@@ -1,17 +1,41 @@
 import { ChevronRight } from 'lucide-react';
+import { NavigationNode } from '@/services/contentService';
 
 interface SimpleBreadcrumbProps {
   path: string;
+  navigationStructure?: NavigationNode[];
 }
 
-export const SimpleBreadcrumb = ({ path }: SimpleBreadcrumbProps) => {
+export const SimpleBreadcrumb = ({ path, navigationStructure = [] }: SimpleBreadcrumbProps) => {
+  // Create a flat map of path to navigation node for quick lookup
+  const createPathMap = (nodes: NavigationNode[]): Map<string, NavigationNode> => {
+    const pathMap = new Map<string, NavigationNode>();
+    
+    const traverse = (items: NavigationNode[]) => {
+      items.forEach(item => {
+        pathMap.set(item.path, item);
+        if (item.children) {
+          traverse(item.children);
+        }
+      });
+    };
+    
+    traverse(nodes);
+    return pathMap;
+  };
+
+  const pathMap = createPathMap(navigationStructure);
+  
   // Parse the path into breadcrumb segments
   const segments = path.split('/').filter(Boolean);
   
-  // Create breadcrumb items
+  // Create breadcrumb items using actual navigation titles when available
   const breadcrumbItems = segments.map((segment, index) => {
     const href = '/' + segments.slice(0, index + 1).join('/');
-    const title = segment.split('-').map(word => 
+    
+    // Try to get title from navigation structure first
+    const navNode = pathMap.get(href);
+    const title = navNode?.title || segment.split('-').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
     
