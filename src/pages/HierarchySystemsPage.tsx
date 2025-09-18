@@ -78,7 +78,7 @@ const HierarchySystemsPage = () => {
         </div>
         
         <div className="prose prose-lg max-w-none">
-          <HierarchicalContent node={hierarchySystemsContent} />
+          <HierarchicalContent node={hierarchySystemsContent} showTags={false} />
         </div>
       </div>
     </WikiLayout>

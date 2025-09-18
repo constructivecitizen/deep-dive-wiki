@@ -69,7 +69,7 @@ const TaggingStrategiesPage = () => {
         </div>
         
         <div className="prose prose-lg max-w-none">
-          <HierarchicalContent node={taggingContent} />
+          <HierarchicalContent node={taggingContent} showTags={false} />
         </div>
       </div>
     </WikiLayout>

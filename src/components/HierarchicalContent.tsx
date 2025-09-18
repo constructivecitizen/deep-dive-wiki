@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronRight, ChevronDown, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Tag } from "./Tag";
+import { ContentEditor } from "./ContentEditor";
 
 export interface ContentNode {
   id: string;
@@ -15,14 +16,18 @@ export interface ContentNode {
 interface HierarchicalContentProps {
   node: ContentNode;
   showTags?: boolean;
+  editMode?: boolean;
+  onNodeUpdate?: (updatedNode: ContentNode) => void;
 }
 
 interface ContentItemProps {
   node: ContentNode;
   showTags?: boolean;
+  editMode?: boolean;
+  onNodeUpdate?: (updatedNode: ContentNode) => void;
 }
 
-const ContentItem = ({ node, showTags = true }: ContentItemProps) => {
+const ContentItem = ({ node, showTags = true, editMode = false, onNodeUpdate }: ContentItemProps) => {
   const [isExpanded, setIsExpanded] = useState(node.depth < 3); // Auto-expand first 3 levels
   const hasChildren = node.children && node.children.length > 0;
 
@@ -72,16 +77,24 @@ const ContentItem = ({ node, showTags = true }: ContentItemProps) => {
                 )}
               </div>
               
-              {node.path && (
-                <Link
-                  to={node.path}
-                  className="flex items-center gap-1 px-2 py-1 text-xs text-primary hover:text-primary-hover bg-primary/5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
-                  title="Open dedicated page"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  <span className="hidden sm:inline">View</span>
-                </Link>
-              )}
+              <div className="flex items-center gap-2">
+                {editMode && (
+                  <ContentEditor
+                    node={node}
+                    onSave={(updatedNode) => onNodeUpdate?.(updatedNode)}
+                  />
+                )}
+                {node.path && (
+                  <Link
+                    to={node.path}
+                    className="flex items-center gap-1 px-2 py-1 text-xs text-primary hover:text-primary-hover bg-primary/5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
+                    title="Open dedicated page"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    <span className="hidden sm:inline">View</span>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -89,7 +102,7 @@ const ContentItem = ({ node, showTags = true }: ContentItemProps) => {
         {isExpanded && hasChildren && (
           <div className="mt-2 space-y-1">
             {node.children!.map((child) => (
-              <ContentItem key={child.id} node={child} showTags={showTags} />
+              <ContentItem key={child.id} node={child} showTags={showTags} editMode={editMode} onNodeUpdate={onNodeUpdate} />
             ))}
           </div>
         )}
@@ -98,10 +111,10 @@ const ContentItem = ({ node, showTags = true }: ContentItemProps) => {
   );
 };
 
-export const HierarchicalContent = ({ node, showTags = true }: HierarchicalContentProps) => {
+export const HierarchicalContent = ({ node, showTags = true, editMode = false, onNodeUpdate }: HierarchicalContentProps) => {
   return (
     <div className="space-y-2">
-      <ContentItem node={node} showTags={showTags} />
+      <ContentItem node={node} showTags={showTags} editMode={editMode} onNodeUpdate={onNodeUpdate} />
     </div>
   );
 };
