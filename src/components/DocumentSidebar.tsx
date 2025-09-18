@@ -33,20 +33,29 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
   // Find if this document has corresponding content nodes
   const hasContentNodes = contentNodes && contentNodes.length > 0 && 
     (node.path === "/tagging-strategies" || node.path === "/hierarchy-systems");
-  
+
   const toggleExpanded = () => {
     if (hasChildren) {
       setIsExpanded(!isExpanded);
     }
   };
 
-  const handleShowContent = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Handle folder clicks to toggle expansion
+  const handleFolderClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (onContentNodeClick && contentNodes && contentNodes.length > 0) {
-      // For now, show the root content node when clicking the page
+    e.stopPropagation();
+    if (hasChildren) {
+      toggleExpanded();
+    }
+  };
+
+  // Handle document clicks - either navigate or show content
+  const handleDocumentClick = (e: React.MouseEvent) => {
+    if (hasContentNodes && onContentNodeClick && contentNodes) {
+      e.preventDefault();
       onContentNodeClick(contentNodes[0].id);
     }
+    // If no content nodes, let the NavLink handle navigation normally
   };
 
   const getIcon = () => {
@@ -63,6 +72,7 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
       <div 
         className="flex items-center gap-2 py-2 px-3 hover:bg-secondary/50 wiki-transition group"
         style={{ paddingLeft }}
+        onClick={node.type === "folder" ? handleFolderClick : undefined}
       >
         <button 
           className="p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0 cursor-pointer"
@@ -99,17 +109,15 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId 
                 : "text-foreground hover:text-primary"
               }
             `}
-            onClick={(e) => {
-              if (hasContentNodes && onContentNodeClick && contentNodes) {
-                e.preventDefault();
-                onContentNodeClick(contentNodes[0].id);
-              }
-            }}
+            onClick={handleDocumentClick}
           >
             {node.title}
           </NavLink>
         ) : (
-          <span className="flex-1 text-sm font-medium text-foreground group-hover:text-primary wiki-transition">
+          <span 
+            className="flex-1 text-sm font-medium text-foreground group-hover:text-primary wiki-transition cursor-pointer"
+            onClick={handleFolderClick}
+          >
             {node.title}
           </span>
         )}
