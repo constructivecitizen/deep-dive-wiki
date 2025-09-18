@@ -279,10 +279,14 @@ export class ContentService {
 
   static async saveDocumentContent(path: string, nodes: any[]): Promise<boolean> {
     try {
+      console.log('saveDocumentContent called with path:', path, 'nodes:', nodes);
+      
       // First, try to get existing content
       const existingContent = await this.getContentByPath(path);
+      console.log('Existing content found:', existingContent);
       
       if (nodes.length === 0) {
+        console.log('No nodes to save, returning true');
         return true; // Nothing to save
       }
 
@@ -292,7 +296,10 @@ export class ContentService {
       const content = mainNode.content || '';
       const tags = mainNode.tags || [];
 
+      console.log('Processing node:', { title, content: content.substring(0, 100) + '...', tags });
+
       if (existingContent) {
+        console.log('Updating existing content with id:', existingContent.id);
         // Update existing content
         const success = await this.updateContentNode(existingContent.id, {
           title,
@@ -300,13 +307,17 @@ export class ContentService {
           tags: tags.length > 0 ? tags : null
         });
         
+        console.log('Update success:', success);
+        
         // Handle child nodes (for now, we'll just update the main content)
         // In the future, you could implement full hierarchical content editing
         
         return success;
       } else {
+        console.log('Creating new content');
         // Create new content
         const newContent = await this.createContentNode(title, content, path, null, tags);
+        console.log('New content created:', newContent);
         return newContent !== null;
       }
     } catch (error) {

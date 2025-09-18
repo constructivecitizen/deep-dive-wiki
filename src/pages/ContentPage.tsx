@@ -244,8 +244,11 @@ const ContentPage = () => {
             }] : []
           }
           onSave={async (nodes) => {
+            console.log('ContentPage onSave called with nodes:', nodes);
             const currentPath = location.pathname;
+            console.log('Saving to path:', currentPath);
             const success = await ContentService.saveDocumentContent(currentPath, nodes);
+            console.log('Save result:', success);
             if (success) {
               toast.success("Content saved successfully");
               // Refresh the content

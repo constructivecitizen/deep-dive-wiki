@@ -27,7 +27,10 @@ export const DocumentEditor = ({ initialContent, onSave, onClose }: DocumentEdit
   }, [initialContent]);
 
   const handleSave = () => {
+    console.log('DocumentEditor handleSave called');
+    console.log('Current markup:', markup);
     const parsed = HierarchyParser.parseMarkup(markup);
+    console.log('Parsed nodes:', parsed.nodes);
     onSave(parsed.nodes);
   };
 
