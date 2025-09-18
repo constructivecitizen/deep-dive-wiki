@@ -79,6 +79,7 @@ const SectionItem: React.FC<{
   activeSectionId?: string;
 }> = ({ section, depth, folderPath, onSectionClick, activeSectionId }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
   const isActive = activeSectionId === section.id;
 
@@ -96,8 +97,8 @@ const SectionItem: React.FC<{
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
         onClick={() => {
-          if (onSectionClick) onSectionClick(section.id, folderPath);
-          if (hasChildren) setIsExpanded(!isExpanded);
+          // Navigate to dedicated node page instead of just scrolling
+          navigate(`/node/${section.id}`);
         }}
       >
         {hasChildren ? (

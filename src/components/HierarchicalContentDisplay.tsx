@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 
 interface ContentSection {
@@ -81,6 +82,7 @@ const ContentSectionComponent: React.FC<{
   activeSectionId?: string;
 }> = ({ section, depth, onSectionClick, activeSectionId }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
@@ -121,13 +123,24 @@ const ContentSectionComponent: React.FC<{
         )}
         
         <div className="flex-1 min-w-0">
-          <h1 className={`${getHeadingClass(section.level)} ${(hasChildren || hasContent) ? 'cursor-pointer' : ''}`}
-              onClick={() => {
-                if (onSectionClick) onSectionClick(section.id);
-                if (hasChildren || hasContent) setIsExpanded(!isExpanded);
-              }}>
-            {section.title}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className={`${getHeadingClass(section.level)} ${(hasChildren || hasContent) ? 'cursor-pointer' : ''} flex-1`}
+                onClick={() => {
+                  if (onSectionClick) onSectionClick(section.id);
+                  if (hasChildren || hasContent) setIsExpanded(!isExpanded);
+                }}>
+              {section.title}
+            </h1>
+            
+            {/* Dedicated page button */}
+            <button
+              onClick={() => navigate(`/node/${section.id}`)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded"
+              title="Open in dedicated page"
+            >
+              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+            </button>
+          </div>
           
           {section.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
