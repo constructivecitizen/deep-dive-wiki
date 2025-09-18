@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronUp, ChevronDown, Edit2, Plus, X, FolderTree, FileText, Folder } from 'lucide-react';
+import { ChevronUp, ChevronDown, Edit2, Plus, X, Folder, FileText } from 'lucide-react';
 import { DocumentStructure } from '@/components/DocumentSidebar';
 
-interface NavigationManagerProps {
+interface NavigationManagerModalProps {
   structure: DocumentStructure[];
   onStructureChange: (structure: DocumentStructure[]) => void;
 }
@@ -75,8 +75,14 @@ const ItemEditor = ({ item, onSave }: ItemEditorProps) => {
   );
 };
 
-export const NavigationManager = ({ structure, onStructureChange }: NavigationManagerProps) => {
+export const NavigationManagerModal = ({ structure, onStructureChange }: NavigationManagerModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('openNavigationManager', handleOpen);
+    return () => window.removeEventListener('openNavigationManager', handleOpen);
+  }, []);
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
     const newStructure = [...structure];
@@ -116,13 +122,7 @@ export const NavigationManager = ({ structure, onStructureChange }: NavigationMa
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <FolderTree className="h-4 w-4 mr-2" />
-          Manage Navigation
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto animate-scale-in">
         <DialogHeader>
           <DialogTitle>Manage Navigation Structure</DialogTitle>
         </DialogHeader>
@@ -132,7 +132,7 @@ export const NavigationManager = ({ structure, onStructureChange }: NavigationMa
             <span className="text-sm text-muted-foreground">
               Manage your main navigation categories and topics
             </span>
-            <Button onClick={addNewItem} size="sm">
+            <Button onClick={addNewItem} size="sm" className="hover-scale">
               <Plus className="h-4 w-4 mr-2" />
               Add Topic
             </Button>
@@ -142,7 +142,7 @@ export const NavigationManager = ({ structure, onStructureChange }: NavigationMa
             const Icon = getIcon(item.type);
             
             return (
-              <Card key={item.id} className="p-4">
+              <Card key={item.id} className="p-4 animate-fade-in hover-scale">
                 <div className="flex items-start gap-4">
                   <div className="flex flex-col gap-1">
                     <Button
@@ -150,6 +150,7 @@ export const NavigationManager = ({ structure, onStructureChange }: NavigationMa
                       disabled={index === 0}
                       size="sm"
                       variant="outline"
+                      className="hover-scale"
                     >
                       <ChevronUp className="h-4 w-4" />
                     </Button>
@@ -158,6 +159,7 @@ export const NavigationManager = ({ structure, onStructureChange }: NavigationMa
                       disabled={index === structure.length - 1}
                       size="sm"
                       variant="outline"
+                      className="hover-scale"
                     >
                       <ChevronDown className="h-4 w-4" />
                     </Button>
@@ -186,12 +188,12 @@ export const NavigationManager = ({ structure, onStructureChange }: NavigationMa
                     <div className="flex gap-2">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" className="hover-scale">
                             <Edit2 className="h-4 w-4 mr-1" />
                             Edit
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="animate-scale-in">
                           <DialogHeader>
                             <DialogTitle>Edit Navigation Item</DialogTitle>
                           </DialogHeader>
@@ -206,6 +208,7 @@ export const NavigationManager = ({ structure, onStructureChange }: NavigationMa
                         onClick={() => removeItem(index)}
                         size="sm" 
                         variant="destructive"
+                        className="hover-scale"
                       >
                         <X className="h-4 w-4" />
                       </Button>

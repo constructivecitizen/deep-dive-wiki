@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { WikiLayout } from "@/components/WikiLayout";
 import { HierarchicalContent } from "@/components/HierarchicalContent";
-import { EditModeToggle } from "@/components/EditModeToggle";
 import { FilterPanel } from "@/components/FilterPanel";
 import { DocumentEditor } from "@/components/DocumentEditor";
-import { NavigationManager } from "@/components/NavigationManager";
+import { ActionMenu } from "@/components/ActionMenu";
+import { PageBreadcrumb } from "@/components/PageBreadcrumb";
+import { NavigationManagerModal } from "@/components/NavigationManagerModal";
 import { sampleContent, documentStructure } from "@/data/sampleDocument";
 import { ContentNode } from "@/components/HierarchicalContent";
 import { DocumentStructure } from "@/components/DocumentSidebar";
@@ -44,16 +45,28 @@ const Index = () => {
 
   return (
     <WikiLayout navigationStructure={navigationStructure}>
-      <div className="flex items-center gap-4 mb-6">
-        <EditModeToggle 
-          onToggle={setEditMode}
+      <div className="flex justify-end mb-6">
+        <ActionMenu
+          editMode={editMode}
+          onToggleEdit={setEditMode}
           onDocumentEdit={() => setShowDocumentEditor(true)}
-        />
-        <NavigationManager 
-          structure={navigationStructure}
+          onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
+          navigationStructure={navigationStructure}
           onStructureChange={setNavigationStructure}
         />
       </div>
+      
+      <PageBreadcrumb
+        currentPath="/"
+        navigationStructure={navigationStructure}
+        pageTitle="Hierarchy Systems"
+      />
+      
+      <NavigationManagerModal
+        structure={navigationStructure}
+        onStructureChange={setNavigationStructure}
+      />
+      
       <FilterPanel
         allNodes={content}
         onFilterChange={handleFilterChange}
