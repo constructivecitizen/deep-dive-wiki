@@ -7,7 +7,7 @@ import { HierarchicalContent } from "@/components/HierarchicalContent";
 import { SimpleActionMenu } from "@/components/SimpleActionMenu";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { SimpleNavigationModal } from "@/components/SimpleNavigationModal";
-import { DocumentSidebar } from "@/components/DocumentSidebar";
+import { HybridNavigationSidebar } from "@/components/HybridNavigationSidebar";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { TagManager } from "@/lib/tagManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
@@ -25,6 +25,20 @@ const ContentPage = () => {
   const [showDocumentEditor, setShowDocumentEditor] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [activeSectionId, setActiveSectionId] = useState<string>();
+
+  const handleSectionClick = (sectionId: string, folderPath: string) => {
+    setActiveSectionId(sectionId);
+    // Could scroll to section or handle navigation here
+  };
+
+  const fetchData = async () => {
+    const structure = await ContentService.getNavigationStructure();
+    setNavigationStructure(structure);
+    const allNodes = await ContentService.getAllContentNodes();
+    setAllContentNodes(allNodes);
+    setFilteredContent(allNodes);
+  };
 
   // Load navigation structure on mount
   useEffect(() => {
@@ -158,14 +172,16 @@ const ContentPage = () => {
               onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
             />
           }
-          // Replace the standard sidebar with document-based sidebar
-          customSidebar={content ? (
-            <DocumentSidebar 
-              content={content.content}
-              onSectionClick={handleContentNodeClick}
-              activeSectionId={activeNodeId}
+          customSidebar={
+            <HybridNavigationSidebar 
+              structure={navigationStructure} 
+              contentNodes={allContentNodes}
+              onSectionClick={handleSectionClick}
+              activeSectionId={activeSectionId}
+              currentPath={location.pathname}
+              onStructureUpdate={fetchData}
             />
-          ) : undefined}
+          }
         >
         <div className="space-y-6">
           {/* Extract the last breadcrumb item as page title */}
