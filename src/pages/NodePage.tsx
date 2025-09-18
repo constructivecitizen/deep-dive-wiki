@@ -150,7 +150,7 @@ const NodePage = () => {
 
   // Set up real-time subscription for content updates
   useEffect(() => {
-    if (!content?.id || !sectionId) return;
+    if (!sectionId) return;
 
     const channel = supabase
       .channel('section-content-changes')
@@ -159,22 +159,26 @@ const NodePage = () => {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'content_nodes',
-          filter: `id=eq.${content.id}`
+          table: 'content_nodes'
         },
         async () => {
           setIsRefreshing(true);
+          
+          // Refresh navigation structure for sidebar updates
+          const structure = await ContentService.getNavigationStructure();
+          setNavigationStructure(structure);
           
           // Re-extract the section content from the updated document
           const allNodes = await ContentService.getAllContentNodes();
           setAllContentNodes(allNodes);
           setFilteredContent(allNodes);
           
+          // Find the content node that contains this section again
           let foundContent: ContentNode | null = null;
           let extractedSection = { content: '', title: '' };
 
           for (const node of allNodes) {
-            if (node.content && node.id === content.id) {
+            if (node.content) {
               const section = extractSectionContent(node.content, sectionId);
               if (section.content) {
                 foundContent = node;
@@ -198,7 +202,7 @@ const NodePage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [content?.id, sectionId]);
+  }, [sectionId]);
 
   const handleFilter = (filters: {
     searchTerm: string;

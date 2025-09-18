@@ -77,8 +77,6 @@ const ContentPage = () => {
 
   // Set up real-time subscription for content updates
   useEffect(() => {
-    if (!content?.id) return;
-
     const channel = supabase
       .channel('content-changes')
       .on(
@@ -86,14 +84,26 @@ const ContentPage = () => {
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'content_nodes',
-          filter: `id=eq.${content.id}`
+          table: 'content_nodes'
         },
         async () => {
           setIsRefreshing(true);
-          const currentPath = location.pathname;
-          const updatedContent = await ContentService.getContentByPath(currentPath);
-          setContent(updatedContent);
+          
+          // Refresh all data to ensure sidebar and content are in sync
+          const structure = await ContentService.getNavigationStructure();
+          setNavigationStructure(structure);
+          const allNodes = await ContentService.getAllContentNodes();
+          setAllContentNodes(allNodes);
+          setFilteredContent(allNodes);
+          
+          // Refresh current content if we're viewing a specific path
+          if (location.pathname !== '/') {
+            const updatedContent = await ContentService.getContentByPath(location.pathname);
+            if (updatedContent) {
+              setContent(updatedContent);
+            }
+          }
+          
           setIsRefreshing(false);
         }
       )
@@ -102,7 +112,7 @@ const ContentPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [content?.id, location.pathname]);
+  }, [location.pathname]);
 
   const handleFilter = (filters: {
     searchTerm: string;
