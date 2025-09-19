@@ -1,51 +1,35 @@
 import { useState } from "react";
-import { ChevronRight, ChevronDown, ExternalLink } from "lucide-react";
-import { ContentNode } from "@/components/HierarchicalContent";
+import { ChevronRight, ExternalLink } from "lucide-react";
+import { WikiDocument } from "@/services/contentService";
 
 interface ContentNavigationSidebarProps {
-  contentNodes: ContentNode[];
+  contentNodes: WikiDocument[];
   onNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
 }
 
-interface ContentTreeNodeProps {
-  node: ContentNode;
-  level: number;
+interface ContentItemProps {
+  document: WikiDocument;
   onNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
 }
 
-const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTreeNodeProps) => {
-  const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first 2 levels
-  const hasChildren = node.children && node.children.length > 0;
-  
-  const toggleExpanded = () => {
-    if (hasChildren) {
-      setIsExpanded(!isExpanded);
-    }
-  };
-
-  const handleContentClick = () => {
-    if (hasChildren) {
-      toggleExpanded();
-    }
-  };
-
+const ContentItem = ({ document, onNodeClick, activeNodeId }: ContentItemProps) => {
   const handleShowInMain = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onNodeClick) {
-      onNodeClick(node.id);
+      onNodeClick(document.id);
     }
   };
 
-  const paddingLeft = `${level * 12 + 8}px`;
+  // Get first section content for preview
+  const firstSection = document.content_json?.sections?.[0];
+  const displayContent = firstSection?.content || firstSection?.title || document.title;
+  const truncatedContent = displayContent.length > 60 
+    ? `${displayContent.substring(0, 60)}...`
+    : displayContent;
 
-  // Truncate content for display
-  const displayContent = node.content.length > 60 
-    ? `${node.content.substring(0, 60)}...`
-    : node.content;
-
-  const isActive = activeNodeId === node.id;
+  const isActive = activeNodeId === document.id;
 
   return (
     <div className="animate-fade-in">
@@ -53,43 +37,19 @@ const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTree
         className={`flex items-center gap-2 py-2 px-3 hover:bg-secondary/50 cursor-pointer wiki-transition group ${
           isActive ? 'bg-primary/10 border-r-2 border-primary' : ''
         }`}
-        style={{ paddingLeft }}
-        onClick={handleContentClick}
+        onClick={handleShowInMain}
       >
-        <button 
-          className="p-0.5 hover:bg-primary/10 rounded wiki-transition flex-shrink-0"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (hasChildren) {
-              toggleExpanded();
-            }
-          }}
-          aria-label={hasChildren ? (isExpanded ? "Collapse content" : "Expand content") : "Content item"}
-        >
-          {hasChildren ? (
-            isExpanded ? (
-              <ChevronDown className="h-3 w-3 text-hierarchy-hover" />
-            ) : (
-              <ChevronRight className="h-3 w-3 text-muted-foreground" />
-            )
-          ) : (
-            <ChevronRight className="h-3 w-3 text-muted-foreground opacity-40" />
-          )}
-        </button>
+        <ChevronRight className="h-3 w-3 text-muted-foreground opacity-40 flex-shrink-0" />
         
         <div className="flex-1 min-w-0">
-          <div className={`text-sm leading-relaxed ${
-            isActive ? 'font-medium text-primary' : 'text-foreground group-hover:text-primary'
+          <div className={`text-sm font-medium leading-relaxed ${
+            isActive ? 'text-primary' : 'text-foreground group-hover:text-primary'
           } wiki-transition`}>
-            {displayContent}
+            {document.title}
           </div>
-          
-          {/* Show depth indicator for very nested items */}
-          {level > 2 && (
-            <div className="text-xs text-muted-foreground mt-1">
-              Level {level + 1}
-            </div>
-          )}
+          <div className="text-xs text-muted-foreground mt-1">
+            {truncatedContent}
+          </div>
         </div>
         
         {/* Clickout button to show in main display */}
@@ -102,20 +62,6 @@ const ContentTreeNode = ({ node, level, onNodeClick, activeNodeId }: ContentTree
           <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-primary" />
         </button>
       </div>
-
-      {isExpanded && hasChildren && (
-        <div className="wiki-transition">
-          {node.children!.map((child) => (
-            <ContentTreeNode 
-              key={child.id} 
-              node={child} 
-              level={level + 1} 
-              onNodeClick={onNodeClick}
-              activeNodeId={activeNodeId}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 };
@@ -127,33 +73,30 @@ export const ContentNavigationSidebar = ({
 }: ContentNavigationSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter nodes based on search query
-  const filterNodes = (nodes: ContentNode[], query: string): ContentNode[] => {
-    if (!query.trim()) return nodes;
+  // Filter documents based on search query
+  const filteredDocuments = contentNodes.filter(doc => {
+    if (!searchQuery.trim()) return true;
     
-    return nodes.filter(node => {
-      const matchesContent = node.content.toLowerCase().includes(query.toLowerCase());
-      const hasMatchingChildren = node.children && 
-        filterNodes(node.children, query).length > 0;
-      
-      return matchesContent || hasMatchingChildren;
-    });
-  };
-
-  const filteredNodes = filterNodes(contentNodes, searchQuery);
+    const query = searchQuery.toLowerCase();
+    const titleMatch = doc.title.toLowerCase().includes(query);
+    const contentMatch = JSON.stringify(doc.content_json).toLowerCase().includes(query);
+    const tagsMatch = doc.tags?.some(tag => tag.toLowerCase().includes(query));
+    
+    return titleMatch || contentMatch || tagsMatch;
+  });
 
   return (
     <div className="h-full bg-card border-r border-border overflow-y-auto animate-fade-in">
       <div className="p-4 border-b border-border">
         <h2 className="font-semibold text-lg text-foreground mb-2">Content Navigation</h2>
         <p className="text-sm text-muted-foreground mb-3">
-          Hierarchical Content Explorer
+          Document Explorer
         </p>
         
         {/* Search functionality */}
         <input
           type="text"
-          placeholder="Search content..."
+          placeholder="Search documents..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
@@ -161,19 +104,18 @@ export const ContentNavigationSidebar = ({
       </div>
       
       <div className="py-2">
-        {filteredNodes.length > 0 ? (
-          filteredNodes.map((node) => (
-            <ContentTreeNode 
-              key={node.id} 
-              node={node} 
-              level={0}
+        {filteredDocuments.length > 0 ? (
+          filteredDocuments.map((document) => (
+            <ContentItem 
+              key={document.id} 
+              document={document}
               onNodeClick={onNodeClick}
               activeNodeId={activeNodeId}
             />
           ))
         ) : (
           <div className="p-4 text-center text-muted-foreground text-sm">
-            {searchQuery ? 'No matching content found' : 'No content available'}
+            {searchQuery ? 'No matching documents found' : 'No documents available'}
           </div>
         )}
       </div>

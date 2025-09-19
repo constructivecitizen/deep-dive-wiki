@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Search, X, Filter, Tag as TagIcon } from 'lucide-react';
-import { ContentNode } from '@/services/contentService';
+import { WikiDocument } from '@/services/contentService';
 import { TagManager, TagFilter } from '@/lib/tagManager';
 
 interface FilterPanelProps {

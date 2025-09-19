@@ -108,11 +108,11 @@ const ContentPage = () => {
       const currentPath = location.pathname;
       
       // Load content for regular paths
-      const contentData = await ContentService.getContentByPath(currentPath);
+      const contentData = await ContentService.getDocumentByPath(currentPath);
       setContent(contentData);
       
       // Load all content nodes for sidebar
-      const allNodes = await ContentService.getAllContentNodes();
+      const allNodes = await ContentService.getAllDocuments();
       setAllContentNodes(allNodes);
       setFilteredContent(allNodes);
       
@@ -150,7 +150,7 @@ const ContentPage = () => {
     }
   };
 
-  const handleNodeUpdate = (updatedNode: ContentNode) => {
+  const handleNodeUpdate = (updatedNode: WikiDocument) => {
     // Update local state optimistically
     setAllContentNodes(prevNodes => 
       prevNodes.map(node => 
@@ -220,10 +220,10 @@ const ContentPage = () => {
             <SimpleActionMenu 
               editMode={editMode}
               onToggleEdit={() => setEditMode(!editMode)}
-              onToggleDocumentEditor={() => setEditorData({
-                type: 'document',
-                content: content?.content || '',
-              })}
+                onToggleDocumentEditor={() => setEditorData({
+                  type: 'document',
+                  content: HierarchyParser.sectionsToMarkup(content?.content_json?.sections || []),
+                })}
               onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
             />
           }
@@ -333,47 +333,13 @@ const ContentPage = () => {
           })()}
 
             <div className="bg-card rounded-lg border border-border p-8 relative">
-              <HierarchicalContentDisplay 
-                content={content.content} 
+              <HierarchicalContent 
+                sections={content.content_json?.sections || []}
+                showTags={true}
                 onSectionClick={handleContentNodeClick}
-                activeNodeId={activeNodeId}
               />
-
-            {content.children && content.children.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-xl font-semibold text-foreground mb-4">Subsections</h2>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {content.children.map((child) => (
-                    <div key={child.id} className="border border-border rounded-lg p-4 hover:bg-accent/10 transition-colors">
-                      <h3 className="font-medium text-foreground mb-2">{child.title}</h3>
-                      {child.content && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {child.content.replace(/[#*`]/g, '').substring(0, 100)}...
-                        </p>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex gap-1">
-                          {child.tags?.slice(0, 2).map((tag) => (
-                            <span key={tag} className="px-2 py-1 bg-secondary text-secondary-foreground rounded text-xs">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                        <button 
-                          onClick={() => navigate(child.path)}
-                          className="text-xs text-primary hover:underline"
-                        >
-                          View →
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-          </div>
-          </>
+            </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Content not found</p>
@@ -398,8 +364,9 @@ const ContentPage = () => {
             const currentContent = await ContentService.getDocumentByPath(currentPath);
             if (currentContent && editorData.parentPath) {
               // Find the section and replace its content
+              const contentString = currentContent.content_json?.sections?.map(s => s.content || '').join('\n') || '';
               const updatedContent = replaceSectionContent(
-                currentContent.content, 
+                contentString,
                 {
                   id: `section-${editorData.level}-${title}`,
                   level: editorData.level || 1,

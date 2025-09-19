@@ -19,49 +19,35 @@ interface DocumentSection {
 }
 
 interface DocumentSidebarProps {
-  content: string;
+  document: {
+    content_json?: {
+      sections?: Array<{
+        id?: string;
+        level?: number;
+        title?: string;
+        content?: string;
+        tags?: string[];
+      }>;
+    };
+  };
   onSectionClick?: (sectionId: string) => void;
   activeSectionId?: string;
 }
 
-const parseDocumentSections = (content: string): DocumentSection[] => {
-  const lines = content.split('\n');
-  const sections: DocumentSection[] = [];
-  const stack: DocumentSection[] = [];
-  let sectionId = 0;
-
-  for (const line of lines) {
-    const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
-    
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      const title = headingMatch[2].trim();
-      const tags = headingMatch[3] ? headingMatch[3].split(',').map(tag => tag.trim()) : [];
-      
-      const section: DocumentSection = {
-        id: `section-${++sectionId}`,
-        level,
-        title,
-        tags,
-        children: []
-      };
-
-      // Find the right parent level
-      while (stack.length > 0 && stack[stack.length - 1].level >= level) {
-        stack.pop();
-      }
-
-      if (stack.length === 0) {
-        sections.push(section);
-      } else {
-        stack[stack.length - 1].children.push(section);
-      }
-
-      stack.push(section);
-    }
-  }
-
-  return sections;
+const parseDocumentSections = (jsonSections: Array<{
+  id?: string;
+  level?: number;
+  title?: string;
+  content?: string;
+  tags?: string[];
+}>): DocumentSection[] => {
+  return jsonSections.map((section, index) => ({
+    id: section.id || `section-${index}`,
+    level: section.level || 1,
+    title: section.title || '',
+    tags: section.tags || [],
+    children: []
+  }));
 };
 
 const SectionItem: React.FC<{
@@ -137,11 +123,11 @@ const SectionItem: React.FC<{
 };
 
 export const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
-  content,
+  document,
   onSectionClick,
   activeSectionId
 }) => {
-  const sections = parseDocumentSections(content);
+  const sections = parseDocumentSections(document.content_json?.sections || []);
 
   if (sections.length === 0) {
     return (

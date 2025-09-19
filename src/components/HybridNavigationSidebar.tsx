@@ -13,7 +13,6 @@ import { NavigationNode, WikiDocument, ContentService } from '@/services/content
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { extractSectionContent } from '@/lib/sectionExtractor';
 
 interface DocumentSection {
   id: string;
@@ -40,63 +39,16 @@ interface HybridNavigationSidebarProps {
   onStructureUpdate: () => void;
 }
 
-const parseDocumentSections = (content: string): DocumentSection[] => {
-  const lines = content.split('\n');
-  const sections: DocumentSection[] = [];
-  const stack: DocumentSection[] = [];
-  let sectionId = 0;
-
-  for (const line of lines) {
-    const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
-    
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      const title = headingMatch[2].trim();
-      const tags = headingMatch[3] ? headingMatch[3].split(',').map(tag => tag.trim()) : [];
-      
-      const section: DocumentSection = {
-        id: `section-${++sectionId}`,
-        level,
-        title,
-        tags,
-        children: []
-      };
-
-      // Find the right parent level
-      while (stack.length > 0 && stack[stack.length - 1].level >= level) {
-        stack.pop();
-      }
-
-      if (stack.length === 0) {
-        sections.push(section);
-      } else {
-        stack[stack.length - 1].children.push(section);
-      }
-
-      stack.push(section);
-    }
-  }
-
-  return sections;
-};
-
 const SectionItem: React.FC<{
   section: DocumentSection;
   depth: number;
   folderPath: string;
   onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
-  fullContent: string;
   sectionPosition: number;
-}> = ({ section, depth, folderPath, onSectionEdit, onSectionView, fullContent, sectionPosition }) => {
+}> = ({ section, depth, folderPath, onSectionEdit, onSectionView, sectionPosition }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
-
-  // Filter children to only show those that have children
-  const filteredChildren = section.children.filter(child => child.children.length > 0);
-
-  // Start indentation from the folder level, properly nested under parent labels
   const indentationPx = (depth + 2) * 16;
 
   return (
@@ -107,15 +59,9 @@ const SectionItem: React.FC<{
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('📄 SECTION DEBUG: Section clicked:', {
-            title: section.title,
-            level: section.level,
-            folderPath: folderPath
-          });
           if (onSectionView) {
-            const sectionContent = extractSectionContent(fullContent, section);
             onSectionView({
-              content: sectionContent,
+              content: section.title,
               title: section.title,
               level: section.level,
               parentPath: folderPath
@@ -154,9 +100,9 @@ const SectionItem: React.FC<{
         )}
       </div>
 
-      {isExpanded && filteredChildren.length > 0 && (
+      {isExpanded && hasChildren && (
         <div className="mt-1">
-          {filteredChildren.map((child, index) => (
+          {section.children.map((child, index) => (
             <SectionItem
               key={child.id}
               section={child}
@@ -164,7 +110,6 @@ const SectionItem: React.FC<{
               folderPath={folderPath}
               onSectionEdit={onSectionEdit}
               onSectionView={onSectionView}
-              fullContent={fullContent}
               sectionPosition={sectionPosition + index + 1}
             />
           ))}
@@ -197,11 +142,19 @@ const FolderNode: React.FC<{
   
   const isActive = currentPath === node.path;
 
-  // Find the associated content for this folder and re-parse sections when content changes
+  // Find the associated content for this folder and get JSON sections
   const associatedContent = contentNodes?.find(content => content.path === node.path);
   const documentSections = useMemo(() => {
-    return associatedContent ? parseDocumentSections(associatedContent.content || '') : [];
-  }, [associatedContent?.content]);
+    if (!associatedContent?.content_json?.sections) return [];
+    // Convert JSON sections to DocumentSection format
+    return associatedContent.content_json.sections.map((section, index) => ({
+      id: `section-${index}`,
+      level: section.level || 1,
+      title: section.title || '',
+      tags: section.tags || [],
+      children: []
+    }));
+  }, [associatedContent?.content_json?.sections]);
 
   const toggleExpanded = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -211,7 +164,6 @@ const FolderNode: React.FC<{
 
   const handleNodeClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('📁 FOLDER DEBUG: Folder clicked, navigating to:', node.path);
     navigate(node.path);
   };
 
@@ -377,7 +329,6 @@ const FolderNode: React.FC<{
                 folderPath={node.path}
                 onSectionEdit={onSectionEdit}
                 onSectionView={onSectionView}
-                fullContent={associatedContent?.content || ''}
                 sectionPosition={index}
               />
             ))}
