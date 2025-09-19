@@ -79,33 +79,46 @@ const ContentPage = () => {
   // Load content when route changes or currentNavId changes
   useEffect(() => {
     const loadContent = async () => {
-      // Only show loading for initial page load, not sidebar navigation
+      // Get current path first
+      const currentPath = location.pathname;
+      
+      // Only show loading for initial page load
       const isInitialLoad = !content && !currentFolder;
       if (isInitialLoad) {
         setLoading(true);
       }
       
-      // Clear all view states when navigating to a new path
+      // Clear section view immediately
       setViewingSection(null);
-      setCurrentFolder(null);
-      setFolderChildren([]);
-      setContent(null); // Clear content to prevent stale data
       
-      // Get current path
-      const currentPath = location.pathname;
-      
-      // Load content for regular paths
+      // Try to load content first (this is faster and prevents flashing)
       const contentData = await ContentService.getDocumentByPath(currentPath);
-      setContent(contentData);
       
-      // If no content found, check if it's a navigation item without content
-      if (!contentData && currentPath !== '/') {
+      if (contentData) {
+        // We have content - set it and clear folder states
+        setContent(contentData);
+        setCurrentFolder(null);
+        setFolderChildren([]);
+      } else if (currentPath !== '/') {
+        // No content, try to load as folder
         const folderData = await ContentService.getNavigationNodeByPath(currentPath);
         if (folderData) {
+          // We have a folder - clear content first, then set folder states
+          setContent(null);
           setCurrentFolder(folderData);
           const children = await ContentService.getNavigationNodeChildren(currentPath);
           setFolderChildren(children);
+        } else {
+          // Neither content nor folder found
+          setContent(null);
+          setCurrentFolder(null);
+          setFolderChildren([]);
         }
+      } else {
+        // Root path - clear everything
+        setContent(null);
+        setCurrentFolder(null);
+        setFolderChildren([]);
       }
       
       // Load all content nodes for sidebar if not already loaded
