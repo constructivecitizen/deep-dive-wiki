@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { WikiLayout } from "@/components/WikiLayout";
 import { ContentService, NavigationNode, WikiDocument } from "@/services/contentService";
-import { HierarchicalContent } from "@/components/HierarchicalContent";
+// Import removed - using HierarchicalContentDisplay instead
 import { SimpleActionMenu } from "@/components/SimpleActionMenu";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { SimpleNavigationModal } from "@/components/SimpleNavigationModal";
@@ -343,17 +343,15 @@ const ContentPage = () => {
             {/* Content Area */}
             {content ? (
               <div className="bg-card rounded-lg border border-border p-8 relative">
-                <HierarchicalContent 
-                  sections={content.content_json || []}
-                  showTags={true}
+                <HierarchicalContentDisplay 
+                  content={HierarchyParser.sectionsToMarkup(content.content_json || [])}
                   onSectionClick={handleContentNodeClick}
                 />
               </div>
             ) : currentFolder?.content_json ? (
               <div className="bg-card rounded-lg border border-border p-8 relative">
-                <HierarchicalContent 
-                  sections={currentFolder.content_json || []}
-                  showTags={true}
+                <HierarchicalContentDisplay 
+                  content={HierarchyParser.sectionsToMarkup(currentFolder.content_json || [])}
                   onSectionClick={handleContentNodeClick}
                 />
               </div>
