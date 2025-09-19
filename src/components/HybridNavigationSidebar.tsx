@@ -18,7 +18,6 @@ interface HybridNavigationSidebarProps {
   structure: NavigationNode[];
   contentNodes?: WikiDocument[];
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
-  currentPath?: string;
   onStructureUpdate: () => void;
   onNavigationClick?: (navId: string, path: string) => void;
   currentNavId?: string | null;
@@ -28,7 +27,6 @@ interface HybridNavigationSidebarProps {
   node: NavigationNode;
   contentNodes?: WikiDocument[];
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
-  currentPath?: string;
   onStructureUpdate: () => void;
   onNavigationClick?: (navId: string, path: string) => void;  
   currentNavId?: string | null;
@@ -36,7 +34,6 @@ interface HybridNavigationSidebarProps {
   node, 
   contentNodes, 
   onSectionView, 
-  currentPath,
   onStructureUpdate,
   onNavigationClick,
   currentNavId
@@ -46,8 +43,6 @@ interface HybridNavigationSidebarProps {
   const [editValue, setEditValue] = useState(node.title);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
-  
-  const isActive = currentPath === node.path;
 
   // Find the associated content for this folder and build hierarchical sections
   const associatedContent = contentNodes?.find(content => content.path === node.path);
@@ -141,11 +136,7 @@ interface HybridNavigationSidebarProps {
     <>
       {/* Folder Header - Clickable to navigate */}
       <div
-        className={`flex items-center gap-2 py-2 px-3 rounded-md group transition-colors cursor-pointer ${
-          isActive 
-            ? 'bg-primary/10 text-primary border-l-2 border-primary' 
-            : 'hover:bg-accent/50'
-        }`}
+        className="flex items-center gap-2 py-2 px-3 rounded-md group transition-colors cursor-pointer hover:bg-accent/50"
         onClick={handleNodeClick}
       >
         {/* Expansion toggle */}
@@ -195,9 +186,7 @@ interface HybridNavigationSidebarProps {
               </Button>
             </div>
           ) : (
-            <span className={`text-sm truncate ${
-              isActive ? 'text-primary font-medium' : 'text-foreground group-hover:text-foreground/80'
-            }`}>
+            <span className="text-sm truncate text-foreground group-hover:text-foreground/80">
               {node.title}
             </span>
           )}
@@ -255,7 +244,6 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   structure, 
   contentNodes = [],
   onSectionView,
-  currentPath,
   onStructureUpdate,
   onNavigationClick,
   currentNavId
@@ -310,9 +298,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               key={item.id}
               node={item}
               contentNodes={contentNodes}
-              
               onSectionView={onSectionView}
-              currentPath={currentPath}
               onStructureUpdate={onStructureUpdate}
               onNavigationClick={onNavigationClick}
               currentNavId={currentNavId}

@@ -52,7 +52,6 @@ export const WikiLayout = ({
             structure={navigationStructure} 
             contentNodes={contentNodes}
             onSectionView={onSectionView}
-            currentPath={currentPath}
             onStructureUpdate={onStructureUpdate || (() => {})}
             onNavigationClick={onNavigationClick}
           />
