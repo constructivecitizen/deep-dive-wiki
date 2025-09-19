@@ -28,7 +28,7 @@ const ContentPage = () => {
   const [allContentNodes, setAllContentNodes] = useState<WikiDocument[]>([]);
   const [filteredContent, setFilteredContent] = useState<WikiDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
+  
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [editorData, setEditorData] = useState<EditorData | null>(null);
@@ -246,12 +246,10 @@ const ContentPage = () => {
           }}
           actionMenu={
             <SimpleActionMenu 
-              editMode={editMode}
-              onToggleEdit={() => setEditMode(!editMode)}
-                onToggleDocumentEditor={() => setEditorData({
-                  type: 'document',
-                  content: HierarchyParser.sectionsToMarkup(content?.content_json || []),
-                })}
+              onToggleDocumentEditor={() => setEditorData({
+                type: 'document',
+                content: HierarchyParser.sectionsToMarkup(content?.content_json || []),
+              })}
               onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
             />
           }

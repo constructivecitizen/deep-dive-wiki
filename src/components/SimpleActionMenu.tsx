@@ -6,18 +6,14 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Menu, Edit3, FileEdit, Filter } from 'lucide-react';
+import { Menu, FileEdit, Filter } from 'lucide-react';
 
 interface SimpleActionMenuProps {
-  editMode: boolean;
-  onToggleEdit: () => void;
   onToggleDocumentEditor: () => void;
   onToggleFilter: () => void;
 }
 
 export const SimpleActionMenu = ({
-  editMode,
-  onToggleEdit,
   onToggleDocumentEditor,
   onToggleFilter
 }: SimpleActionMenuProps) => {
@@ -29,10 +25,6 @@ export const SimpleActionMenu = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-card border border-border shadow-lg z-50">
-        <DropdownMenuItem onClick={onToggleEdit}>
-          <Edit3 className="w-4 h-4 mr-2" />
-          {editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={onToggleDocumentEditor}>
           <FileEdit className="w-4 h-4 mr-2" />
           Document Editor
