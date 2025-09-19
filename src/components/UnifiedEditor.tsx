@@ -119,22 +119,21 @@ Start a new main section here with full markdown support.`;
   if (isFullscreen) {
     return (
       <div 
-        className="fixed inset-0 bg-background z-[100] overflow-hidden pointer-events-auto" 
+        className="fixed inset-0 bg-background z-50 overflow-hidden" 
         role="dialog" 
         aria-modal="true"
         aria-labelledby="editor-title"
         aria-describedby="editor-description"
-        onClick={(e) => e.stopPropagation()}
       >
-        <div className="h-full flex flex-col pointer-events-auto">
-          <header className="border-b border-border bg-card p-4 pointer-events-auto">
+        <div className="h-full flex flex-col">
+          <header className="border-b border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 <h1 id="editor-title" className="text-xl font-semibold">Document Editor</h1>
                 <span id="editor-description" className="sr-only">Full-screen document editor with markdown support</span>
               </div>
-              <div className="flex items-center gap-2 pointer-events-auto">
+              <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 mr-4 border-r border-border pr-4">
                   <Button 
                     onClick={(e) => {
@@ -145,7 +144,6 @@ Start a new main section here with full markdown support.`;
                     variant="outline" 
                     size="sm"
                     title="Bold"
-                    className="pointer-events-auto"
                   >
                     <Bold className="h-4 w-4" />
                   </Button>
@@ -158,7 +156,6 @@ Start a new main section here with full markdown support.`;
                     variant="outline" 
                     size="sm"
                     title="Italic"
-                    className="pointer-events-auto"
                   >
                     <Italic className="h-4 w-4" />
                   </Button>
@@ -171,7 +168,6 @@ Start a new main section here with full markdown support.`;
                     variant="outline" 
                     size="sm"
                     title="List"
-                    className="pointer-events-auto"
                   >
                     <List className="h-4 w-4" />
                   </Button>
@@ -184,7 +180,6 @@ Start a new main section here with full markdown support.`;
                     variant="outline" 
                     size="sm"
                     title="Link"
-                    className="pointer-events-auto"
                   >
                     <Link2 className="h-4 w-4" />
                   </Button>
@@ -197,7 +192,6 @@ Start a new main section here with full markdown support.`;
                   }} 
                   variant="outline" 
                   size="sm"
-                  className="pointer-events-auto"
                 >
                   Insert Template
                 </Button>
@@ -208,7 +202,6 @@ Start a new main section here with full markdown support.`;
                     handleSave();
                   }} 
                   size="sm"
-                  className="pointer-events-auto"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save Changes
@@ -221,7 +214,6 @@ Start a new main section here with full markdown support.`;
                   }} 
                   variant="outline" 
                   size="sm"
-                  className="pointer-events-auto"
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   Back to View
@@ -230,11 +222,11 @@ Start a new main section here with full markdown support.`;
             </div>
           </header>
 
-          <div className="flex-1 overflow-hidden pointer-events-auto">
+          <div className="flex-1 overflow-hidden">
             <div className="h-full flex">
-              <div className="flex-1 overflow-y-auto pointer-events-auto">
-                <Card className="m-4 h-[calc(100vh-120px)] pointer-events-auto">
-                  <div className="h-full p-4 pointer-events-auto">
+              <div className="flex-1 overflow-y-auto">
+                <Card className="m-4 h-[calc(100vh-120px)]">
+                  <div className="h-full p-4">
                     <Textarea
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
@@ -250,7 +242,7 @@ Content with **bold**, *italic*, and [links](url).
 
 ### Detail [tag5]
 More detailed content with \`code\`.`}
-                      className="h-full min-h-[400px] font-mono text-sm resize-none border-0 focus:ring-0 focus:border-0 p-0 pointer-events-auto"
+                      className="h-full min-h-[400px] font-mono text-sm resize-none border-0 focus:ring-0 focus:border-0 p-0"
                     />
                   </div>
                 </Card>

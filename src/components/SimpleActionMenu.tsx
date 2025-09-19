@@ -28,7 +28,7 @@ export const SimpleActionMenu = ({
           <Menu className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-card border border-border">
+      <DropdownMenuContent align="end" className="bg-card border border-border shadow-lg z-50">
         <DropdownMenuItem onClick={onToggleEdit}>
           <Edit3 className="w-4 h-4 mr-2" />
           {editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
