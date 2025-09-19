@@ -45,7 +45,6 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
     onClose();
   };
 
-
   const insertMarkdown = (type: string) => {
     const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
     if (!textarea) return;
@@ -89,7 +88,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
   if (isFullscreen) {
     return (
       <div 
-        className="fixed inset-0 bg-background z-50 overflow-hidden" 
+        className="fixed inset-0 bg-background z-40 overflow-hidden" 
         role="dialog" 
         aria-modal="true"
         aria-labelledby="editor-title"
@@ -106,11 +105,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 mr-4 border-r border-border pr-4">
                   <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log('Bold button clicked');
-                      insertMarkdown('bold');
-                    }} 
+                    onClick={() => insertMarkdown('bold')} 
                     variant="outline" 
                     size="sm"
                     title="Bold"
@@ -118,11 +113,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
                     <Bold className="h-4 w-4" />
                   </Button>
                   <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log('Italic button clicked');
-                      insertMarkdown('italic');
-                    }} 
+                    onClick={() => insertMarkdown('italic')} 
                     variant="outline" 
                     size="sm"
                     title="Italic"
@@ -130,11 +121,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
                     <Italic className="h-4 w-4" />
                   </Button>
                   <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log('List button clicked');
-                      insertMarkdown('list');
-                    }} 
+                    onClick={() => insertMarkdown('list')} 
                     variant="outline" 
                     size="sm"
                     title="List"
@@ -142,11 +129,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
                     <List className="h-4 w-4" />
                   </Button>
                   <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      console.log('Link button clicked');
-                      insertMarkdown('link');
-                    }} 
+                    onClick={() => insertMarkdown('link')} 
                     variant="outline" 
                     size="sm"
                     title="Link"
@@ -155,22 +138,14 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
                   </Button>
                 </div>
                 <Button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log('Save button clicked');
-                    handleSave();
-                  }} 
+                  onClick={handleSave} 
                   size="sm"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Save Changes
                 </Button>
                 <Button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log('Back to View button clicked');
-                    onClose();
-                  }} 
+                  onClick={onClose} 
                   variant="outline" 
                   size="sm"
                 >
@@ -181,15 +156,12 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
             </div>
           </header>
 
-          <div className="flex-1 overflow-hidden">
-            <div className="h-full flex">
-              <div className="flex-1 overflow-y-auto">
-                <Card className="m-4 h-[calc(100vh-120px)]">
-                  <div className="h-full p-4">
-                    <Textarea
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      placeholder={`Start typing or paste your content...
+          <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 p-4">
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder={`Start typing or paste your content...
 
 Use markup like:
 # Main Topic [tag1, tag2]
@@ -201,61 +173,58 @@ Content with **bold**, *italic*, and [links](url).
 
 ### Detail [tag5]
 More detailed content with \`code\`.`}
-                      className="h-full min-h-[400px] font-mono text-sm resize-none border-0 focus:ring-0 focus:border-0 p-0"
-                    />
-                  </div>
-                </Card>
-              </div>
+                className="h-full min-h-[400px] w-full font-mono text-sm resize-none bg-background border border-border rounded-md p-4 cursor-text focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              />
+            </div>
 
-              <div className="w-80 border-l border-border bg-muted/50 p-4 overflow-y-auto">
-                <h3 className="font-semibold mb-4">Markup Guide</h3>
-                <div className="space-y-4 text-sm">
-                  <div>
-                    <h4 className="font-medium mb-2">Headers & Hierarchy</h4>
-                    <div className="bg-background p-2 rounded border font-mono text-xs">
-                      # Level 1 [tags]<br/>
-                      ## Level 2 [tags]<br/>
-                      ### Level 3 [tags]<br/>
-                      #### Level 4 [tags]<br/>
-                      ##### Level 5 [tags]<br/>
-                      ###### Level 6 [tags]
-                    </div>
+            <div className="w-80 border-l border-border bg-muted/50 p-4 overflow-y-auto">
+              <h3 className="font-semibold mb-4">Markup Guide</h3>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h4 className="font-medium mb-2">Headers & Hierarchy</h4>
+                  <div className="bg-background p-2 rounded border font-mono text-xs">
+                    # Level 1 [tags]<br/>
+                    ## Level 2 [tags]<br/>
+                    ### Level 3 [tags]<br/>
+                    #### Level 4 [tags]<br/>
+                    ##### Level 5 [tags]<br/>
+                    ###### Level 6 [tags]
                   </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-2">Tags</h4>
-                    <p className="text-muted-foreground mb-2">
-                      Add tags in square brackets after headers:
-                    </p>
-                    <div className="bg-background p-2 rounded border font-mono text-xs">
-                      # Topic [tag1, tag2, tag3]
-                    </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-2">Tags</h4>
+                  <p className="text-muted-foreground mb-2">
+                    Add tags in square brackets after headers:
+                  </p>
+                  <div className="bg-background p-2 rounded border font-mono text-xs">
+                    # Topic [tag1, tag2, tag3]
                   </div>
+                </div>
 
-                  <div>
-                    <h4 className="font-medium mb-2">Content & Markdown</h4>
-                    <p className="text-muted-foreground mb-2">
-                      Write regular paragraphs after headers with full markdown support:
-                    </p>
-                    <div className="bg-background p-2 rounded border font-mono text-xs">
-                      **Bold text**<br/>
-                      *Italic text*<br/>
-                      \`inline code\`<br/>
-                      [Link text](url)<br/>
-                      - List items
-                    </div>
+                <div>
+                  <h4 className="font-medium mb-2">Content & Markdown</h4>
+                  <p className="text-muted-foreground mb-2">
+                    Write regular paragraphs after headers with full markdown support:
+                  </p>
+                  <div className="bg-background p-2 rounded border font-mono text-xs">
+                    **Bold text**<br/>
+                    *Italic text*<br/>
+                    \`inline code\`<br/>
+                    [Link text](url)<br/>
+                    - List items
                   </div>
+                </div>
 
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium mb-2">Tips</h4>
-                    <ul className="text-muted-foreground space-y-1 text-xs">
-                      <li>• Tags are hidden in display mode</li>
-                      <li>• Use consistent tag names</li>
-                      <li>• Headers create the hierarchy</li>
-                      <li>• Paste large documents easily</li>
-                      <li>• Save frequently</li>
-                    </ul>
-                  </div>
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Tips</h4>
+                  <ul className="text-muted-foreground space-y-1 text-xs">
+                    <li>• Tags are hidden in display mode</li>
+                    <li>• Use consistent tag names</li>
+                    <li>• Headers create the hierarchy</li>
+                    <li>• Paste large documents easily</li>
+                    <li>• Save frequently</li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -268,7 +237,7 @@ More detailed content with \`code\`.`}
   // Modal editor for sections
   return (
     <Dialog open={!!editorData} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col z-50" aria-describedby="section-editor-description">
+      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col z-40" aria-describedby="section-editor-description">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Edit Section</span>
