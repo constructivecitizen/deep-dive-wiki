@@ -45,36 +45,6 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
     onClose();
   };
 
-  const insertTemplate = () => {
-    const template = `# Main Topic [example-tag, important]
-This is the main content section. You can write **bold text**, *italic text*, and [links](https://example.com).
-
-## Subtopic A [technical, detailed]
-This is a subtopic with its own content and tags. Use markdown formatting:
-
-- **Bold text** for emphasis
-- *Italic text* for subtle emphasis
-- \`code snippets\` for technical terms
-- [External links](https://example.com) for references
-
-### Detail 1 [implementation]
-Detailed information about implementation. You can use:
-
-1. Numbered lists
-2. **Bold headings** within content
-3. *Emphasized points*
-
-### Detail 2 [theory, background]
-Background theory and concepts with \`inline code\` examples.
-
-## Subtopic B [practical, guide]
-Another subtopic with practical guidance and **markdown formatting**.
-
-# Another Main Topic [advanced]
-Start a new main section here with full markdown support.`;
-
-    setContent(template);
-  };
 
   const insertMarkdown = (type: string) => {
     const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
@@ -184,17 +154,6 @@ Start a new main section here with full markdown support.`;
                     <Link2 className="h-4 w-4" />
                   </Button>
                 </div>
-                <Button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log('Template button clicked');
-                    insertTemplate();
-                  }} 
-                  variant="outline" 
-                  size="sm"
-                >
-                  Insert Template
-                </Button>
                 <Button 
                   onClick={(e) => {
                     e.stopPropagation();
