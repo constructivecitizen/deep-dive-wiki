@@ -17,14 +17,7 @@ const App = () => (
         <Routes>
           {/* Dynamic content routes - handles all wiki content */}
           <Route path="/" element={<ContentPage />} />
-          <Route path="/getting-started" element={<ContentPage />} />
-          <Route path="/getting-started/intro" element={<ContentPage />} />
-          <Route path="/getting-started/setup" element={<ContentPage />} />
-          <Route path="/hierarchy-systems" element={<ContentPage />} />
-          <Route path="/tagging-strategies" element={<ContentPage />} />
-          <Route path="/knowledge-management" element={<ContentPage />} />
-          <Route path="/advanced-topics" element={<ContentPage />} />
-          <Route path="/deep-structures" element={<ContentPage />} />
+          <Route path="/*" element={<ContentPage />} />
           {/* Catch-all route for 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
