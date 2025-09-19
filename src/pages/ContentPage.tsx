@@ -341,7 +341,7 @@ const ContentPage = () => {
     const currentNavNode = findNodeByPath(navigationStructure, targetPath);
     const displayTitle = currentNavNode?.title || pageData.data.title || 'Page';
     
-    return <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>;
+    return <h1 className="text-4xl font-bold text-foreground">{displayTitle}</h1>;
   };
 
   // Render main content based on page type
