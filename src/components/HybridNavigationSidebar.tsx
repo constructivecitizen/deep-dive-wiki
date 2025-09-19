@@ -270,17 +270,19 @@ const FolderNode: React.FC<{
 
   return (
     <>
+      {/* Folder Header - Clickable to navigate */}
       <div
-        className={`flex items-center gap-2 py-2 px-3 rounded-md group transition-colors ${
+        className={`flex items-center gap-2 py-2 px-3 rounded-md group transition-colors cursor-pointer ${
           isActive 
             ? 'bg-primary/10 text-primary border-l-2 border-primary' 
             : 'hover:bg-accent/50'
         }`}
+        onClick={handleNodeClick}
       >
         {/* Expansion toggle */}
         <button
           onClick={toggleExpanded}
-          className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded"
+          className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded z-10"
         >
           {expanded ? (
             <ChevronDown className="w-3 h-3 text-muted-foreground" />
@@ -289,13 +291,10 @@ const FolderNode: React.FC<{
           )}
         </button>
 
-        {/* Title - editable - clicking navigates to folder content */}
-        <div 
-          className="flex-1 min-w-0 cursor-pointer" 
-          onClick={handleNodeClick}
-        >
+        {/* Title - editable */}
+        <div className="flex-1 min-w-0">
           {isEditing ? (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
               <Input
                 ref={inputRef}
                 value={editValue}
@@ -339,7 +338,10 @@ const FolderNode: React.FC<{
 
         {/* Action buttons */}
         {!isEditing && (
-          <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div 
+            className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Button
               variant="ghost"
               size="sm"
@@ -362,9 +364,9 @@ const FolderNode: React.FC<{
         )}
       </div>
 
-      {/* Document sections only - no nested folders */}
+      {/* Document sections - Separate container to prevent event conflicts */}
       {expanded && documentSections.length > 0 && (
-        <div>
+        <div className="mt-1">
           {documentSections
             .filter(section => section.children.length > 0)
             .map((section, index) => (
