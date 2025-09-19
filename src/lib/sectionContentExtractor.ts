@@ -16,34 +16,34 @@ export function extractSectionFullContent(
     level: number;
   }>;
 } {
-  // Build section hierarchy (direct ancestry only)
+  // Build section hierarchy using the same stack-based approach as the sidebar
   const sectionHierarchy: Array<{ title: string; level: number }> = [];
   const targetIndex = allSections.findIndex(s => s.id === targetSection.id);
   
   if (targetIndex >= 0) {
-    const ancestorStack: Array<{ title: string; level: number }> = [];
+    // Use stack-based approach to build ancestry while processing sections up to target
+    const ancestryStack: Array<{ title: string; level: number }> = [];
     
-    // Look backwards from target to find all direct ancestors
-    for (let i = targetIndex - 1; i >= 0; i--) {
+    // Process sections up to and including the target to build proper hierarchy
+    for (let i = 0; i <= targetIndex; i++) {
       const section = allSections[i];
       
-      // Only consider sections that could be ancestors (lower level numbers)
-      if (section.level < targetSection.level) {
-        // Remove any sections from stack that are at same or deeper level
-        while (ancestorStack.length > 0 && ancestorStack[ancestorStack.length - 1].level >= section.level) {
-          ancestorStack.pop();
-        }
-        
-        // Add this section as an ancestor
-        ancestorStack.push({
+      // Remove items from stack that are at same or deeper level
+      while (ancestryStack.length > 0 && ancestryStack[ancestryStack.length - 1].level >= section.level) {
+        ancestryStack.pop();
+      }
+      
+      // If this is not the target section, add it to the stack as a potential ancestor
+      if (i < targetIndex) {
+        ancestryStack.push({
           title: section.title,
           level: section.level
         });
+      } else {
+        // This is the target section - the current stack contains its direct ancestry
+        sectionHierarchy.push(...ancestryStack);
       }
     }
-    
-    // Reverse to get correct order (root to immediate parent)
-    sectionHierarchy.push(...ancestorStack.reverse());
   }
 
   // Build the full content
