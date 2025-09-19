@@ -103,7 +103,7 @@ const ContentSectionComponent: React.FC<{
         className="flex items-start gap-2 group"
         style={{ marginLeft: `${indentationPx}px` }}
       >
-        {(hasChildren || hasContent) ? (
+        {hasChildren ? (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex-shrink-0 mt-1 p-1 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-center"
@@ -116,35 +116,21 @@ const ContentSectionComponent: React.FC<{
             )}
           </button>
         ) : (
-          // Bullet point for leaf nodes
-          <div className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center">
-            <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-          </div>
+          // Empty space for leaf nodes to maintain alignment
+          <div className="flex-shrink-0 mt-1 w-6 h-6"></div>
         )}
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className={`${getHeadingClass(section.level)} ${(hasChildren || hasContent) ? 'cursor-pointer' : ''} flex-1`}
+            <h1 className={`${getHeadingClass(section.level)} ${hasChildren ? 'cursor-pointer' : ''} flex-1`}
                 onClick={() => {
                   if (onSectionClick) onSectionClick(section.id);
-                  if (hasChildren || hasContent) setIsExpanded(!isExpanded);
+                  if (hasChildren) setIsExpanded(!isExpanded);
                 }}>
               {section.title}
             </h1>
           </div>
           
-          {section.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1">
-              {section.tags.map((tag, index) => (
-                <span 
-                  key={index}
-                  className="px-1.5 py-0.5 bg-secondary text-secondary-foreground rounded text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
