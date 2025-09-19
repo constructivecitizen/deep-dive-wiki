@@ -16,21 +16,37 @@ export function extractSectionFullContent(
     level: number;
   }>;
 } {
-  // Build section hierarchy (parent sections)
+  // Build section hierarchy (direct ancestry only)
   const sectionHierarchy: Array<{ title: string; level: number }> = [];
   const targetIndex = allSections.findIndex(s => s.id === targetSection.id);
   
   if (targetIndex >= 0) {
-    // Look backwards to find parent sections
-    for (let i = targetIndex - 1; i >= 0; i--) {
-      const section = allSections[i];
-      if (section.level < targetSection.level) {
-        sectionHierarchy.unshift({
-          title: section.title,
-          level: section.level
-        });
-        // Continue looking for even higher level parents
-        if (section.level === 1) break;
+    let currentLevel = targetSection.level;
+    let searchIndex = targetIndex - 1;
+    
+    // Build direct ancestry chain by finding immediate parent at each level
+    while (currentLevel > 1 && searchIndex >= 0) {
+      const targetParentLevel = currentLevel - 1;
+      let foundParent = false;
+      
+      // Find the immediate parent (first section with level = currentLevel - 1)
+      for (let i = searchIndex; i >= 0; i--) {
+        const section = allSections[i];
+        if (section.level === targetParentLevel) {
+          sectionHierarchy.unshift({
+            title: section.title,
+            level: section.level
+          });
+          currentLevel = section.level;
+          searchIndex = i - 1;
+          foundParent = true;
+          break;
+        }
+      }
+      
+      // If no parent found at the expected level, break
+      if (!foundParent) {
+        break;
       }
     }
   }
