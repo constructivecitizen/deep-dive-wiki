@@ -309,7 +309,7 @@ More detailed content with \`code\`.`}
   // Modal editor for sections
   return (
     <Dialog open={!!editorData} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col" aria-describedby="section-editor-description">
+      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col z-50" aria-describedby="section-editor-description">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Edit Section</span>

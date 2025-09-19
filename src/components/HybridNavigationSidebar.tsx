@@ -37,6 +37,8 @@ interface HybridNavigationSidebarProps {
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   currentPath?: string;
   onStructureUpdate: () => void;
+  onNavigationClick?: (navId: string, path: string) => void;
+  currentNavId?: string | null;
 }
 
 const SectionItem: React.FC<{
@@ -126,13 +128,17 @@ const FolderNode: React.FC<{
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   currentPath?: string;
   onStructureUpdate: () => void;
+  onNavigationClick?: (navId: string, path: string) => void;
+  currentNavId?: string | null;
 }> = ({ 
   node, 
   contentNodes, 
   onSectionEdit, 
   onSectionView, 
   currentPath,
-  onStructureUpdate
+  onStructureUpdate,
+  onNavigationClick,
+  currentNavId
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -164,7 +170,11 @@ const FolderNode: React.FC<{
 
   const handleNodeClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigate(node.path);
+    if (onNavigationClick) {
+      onNavigationClick(node.id, node.path);
+    } else {
+      navigate(node.path);
+    }
   };
 
   const handleEditStart = (e: React.MouseEvent) => {
@@ -344,7 +354,9 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   onSectionEdit,
   onSectionView,
   currentPath,
-  onStructureUpdate
+  onStructureUpdate,
+  onNavigationClick,
+  currentNavId
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -400,6 +412,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               onSectionView={onSectionView}
               currentPath={currentPath}
               onStructureUpdate={onStructureUpdate}
+              onNavigationClick={onNavigationClick}
+              currentNavId={currentNavId}
             />
           ))
         ) : (

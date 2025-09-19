@@ -35,6 +35,7 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   } | null>(null);
+  const [currentNavId, setCurrentNavId] = useState<string | null>(null);
 
   const handleSectionEdit = (sectionData: {
     content: string;
@@ -94,7 +95,7 @@ const ContentPage = () => {
     loadNavigationStructure();
   }, []);
 
-  // Load content when route changes
+  // Load content when route changes or currentNavId changes
   useEffect(() => {
     const loadContent = async () => {
       console.log('🔄 ROUTE DEBUG: Route changed to:', location.pathname);
@@ -120,7 +121,7 @@ const ContentPage = () => {
     };
 
     loadContent();
-  }, [location.pathname]);
+  }, [location.pathname, currentNavId]);
 
   const handleFilter = (filters: {
     searchTerm: string;
@@ -158,8 +159,18 @@ const ContentPage = () => {
       )
     );
     
+    // Update current content if it matches
+    if (content && content.id === updatedNode.id) {
+      setContent(updatedNode);
+    }
+    
     // TODO: Implement database update
     console.log('Update node:', updatedNode.id, updatedNode);
+  };
+
+  const handleNavigationClick = (navId: string, path: string) => {
+    setCurrentNavId(navId);
+    navigate(path);
   };
 
   if (loading) {
@@ -235,6 +246,8 @@ const ContentPage = () => {
               onSectionView={handleSectionView}
               currentPath={location.pathname}
               onStructureUpdate={refreshAllData}
+              onNavigationClick={handleNavigationClick}
+              currentNavId={currentNavId}
             />
           }
         >
