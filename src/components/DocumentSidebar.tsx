@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
-
-// DocumentStructure interface removed - use ContentItem from contentService instead
-
-interface DocumentSection {
-  id: string;
-  level: number;
-  title: string;
-  tags: string[];
-  children: DocumentSection[];
-}
+import { buildSectionHierarchy, HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 
 interface DocumentSidebarProps {
   document: {
@@ -29,7 +20,7 @@ interface DocumentSidebarProps {
 
 
 const SectionItem: React.FC<{
-  section: DocumentSection;
+  section: HierarchicalDocumentSection;
   depth: number;
   onSectionClick?: (sectionId: string) => void;
   activeSectionId?: string;
@@ -105,20 +96,22 @@ export const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
   onSectionClick,
   activeSectionId
 }) => {
-  // Work directly with JSON sections - no parsing needed
+  // Build hierarchical sections from document content
   const rawSections = document.content_json?.sections || [];
-  const sections: DocumentSection[] = rawSections.map((section, index) => ({
+  const flatSections = rawSections.map((section, index) => ({
     id: section.id || `section-${index}`,
     level: section.level || 1,
     title: section.title || '',
-    tags: section.tags || [],
-    children: []
+    content: section.content || '',
+    tags: section.tags || []
   }));
+  
+  const hierarchicalSections = buildSectionHierarchy(flatSections);
 
-  if (sections.length === 0) {
+  if (hierarchicalSections.length === 0) {
     return (
       <div className="p-3 text-sm text-muted-foreground">
-        No sections found in document
+        No hierarchical sections found
       </div>
     );
   }
@@ -128,7 +121,7 @@ export const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-1">
         Document Outline
       </div>
-      {sections.map((section) => (
+      {hierarchicalSections.map((section) => (
         <SectionItem
           key={section.id}
           section={section}

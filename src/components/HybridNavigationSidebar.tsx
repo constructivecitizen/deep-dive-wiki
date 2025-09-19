@@ -11,14 +11,7 @@ import { NavigationNode, WikiDocument, ContentService } from '@/services/content
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-
-interface DocumentSection {
-  id: string;
-  level: number;
-  title: string;
-  tags: string[];
-  children: DocumentSection[];
-}
+import { buildSectionHierarchy, HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 
 interface HybridNavigationSidebarProps {
   structure: NavigationNode[];
@@ -31,7 +24,7 @@ interface HybridNavigationSidebarProps {
 }
 
 const SectionItem: React.FC<{
-  section: DocumentSection;
+  section: HierarchicalDocumentSection;
   depth: number;
   folderPath: string;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
@@ -133,19 +126,22 @@ const FolderNode: React.FC<{
   
   const isActive = currentPath === node.path;
 
-  // Find the associated content for this folder and get JSON sections
+  // Find the associated content for this folder and build hierarchical sections
   const associatedContent = contentNodes?.find(content => content.path === node.path);
-  const documentSections = useMemo(() => {
+  const hierarchicalSections = useMemo(() => {
     if (!associatedContent?.content_json) return [];
     
-    // Convert JSON sections to DocumentSection format
-    return associatedContent.content_json.map((section, index) => ({
-      id: `section-${index}`,
+    // Convert JSON sections to flat format first
+    const flatSections = associatedContent.content_json.map((section, index) => ({
+      id: section.id || `section-${index}`,
       level: section.level || 1,
       title: section.title || '',
-      tags: section.tags || [],
-      children: []
+      content: section.content || '',
+      tags: section.tags || []
     }));
+    
+    // Build hierarchical structure (only sections with children will be returned)
+    return buildSectionHierarchy(flatSections);
   }, [associatedContent?.content_json]);
 
   const toggleExpanded = (e: React.MouseEvent) => {
@@ -310,21 +306,19 @@ const FolderNode: React.FC<{
         )}
       </div>
 
-      {/* Document sections - Separate container to prevent event conflicts */}
-      {expanded && documentSections.length > 0 && (
+      {/* Document sections - Show hierarchical sections */}
+      {expanded && hierarchicalSections.length > 0 && (
         <div className="mt-1">
-          {documentSections
-            .filter(section => section.children.length > 0)
-            .map((section, index) => (
-              <SectionItem
-                key={section.id}
-                section={section}
-                depth={0}
-                folderPath={node.path}
-                onSectionView={onSectionView}
-                sectionPosition={index}
-              />
-            ))}
+          {hierarchicalSections.map((section, index) => (
+            <SectionItem
+              key={section.id}
+              section={section}
+              depth={0}
+              folderPath={node.path}
+              onSectionView={onSectionView}
+              sectionPosition={index}
+            />
+          ))}
         </div>
       )}
     </>
