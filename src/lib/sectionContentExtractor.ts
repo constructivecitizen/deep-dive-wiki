@@ -50,10 +50,6 @@ export function extractSectionFullContent(
   // Build the full content
   let fullContent = '';
   
-  // Add the section title as a header
-  const headerLevel = '#'.repeat(Math.max(1, targetSection.level || 1));
-  fullContent += `${headerLevel} ${targetSection.title}\n\n`;
-  
   // Add the section's own content if it exists
   if (targetSection.content && targetSection.content.trim()) {
     fullContent += targetSection.content.trim() + '\n\n';
