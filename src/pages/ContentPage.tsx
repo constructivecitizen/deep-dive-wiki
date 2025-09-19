@@ -312,7 +312,9 @@ const ContentPage = () => {
       }
     }
 
-    return breadcrumbItems.length > 1 ? (
+    // Hide breadcrumbs for top-level pages (e.g., /deep-structures)
+    // Only show breadcrumbs when there are 3+ items: Home + Top-level + Sub-page
+    return breadcrumbItems.length > 2 ? (
       <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
         {breadcrumbItems.map((item, index) => (
           <div key={index} className="flex items-center">
