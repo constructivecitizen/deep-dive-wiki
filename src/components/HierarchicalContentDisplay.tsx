@@ -116,8 +116,10 @@ const ContentSectionComponent: React.FC<{
             )}
           </button>
         ) : (
-          // Empty space for leaf nodes to maintain alignment
-          <div className="flex-shrink-0 mt-1 w-6 h-6"></div>
+          // Bullet point for leaf nodes with titles
+          <div className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center">
+            <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+          </div>
         )}
         
         <div className="flex-1 min-w-0">
