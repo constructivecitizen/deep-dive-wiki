@@ -241,8 +241,8 @@ const ContentPage = () => {
                   (isContentPage ? pageData.data.title : pageData.data.title) || 
                   'Page';
                 
-                // Only show breadcrumbs when viewing content documents (never for folders)
-                if (isContentPage) {
+                // Show breadcrumbs for content pages and folders with content, but not folder landing pages
+                if (isContentPage || (!isContentPage && pageData.data.content_json)) {
                   const breadcrumbItems = [];
                   const pathParts = pageData.data.path.split('/').filter(part => part);
                   
