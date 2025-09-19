@@ -86,7 +86,12 @@ const ContentPage = () => {
   useEffect(() => {
     const loadContent = async () => {
       console.log('🔄 ROUTE DEBUG: Route changed to:', location.pathname);
-      setLoading(true);
+      
+      // Only show loading for initial page load, not sidebar navigation
+      const isInitialLoad = !content && !currentFolder;
+      if (isInitialLoad) {
+        setLoading(true);
+      }
       
       // Clear section view when navigating to a new path
       console.log('🧹 ROUTE DEBUG: Clearing viewingSection state');
@@ -113,10 +118,12 @@ const ContentPage = () => {
         }
       }
       
-      // Load all content nodes for sidebar
-      const allNodes = await ContentService.getAllDocuments();
-      setAllContentNodes(allNodes);
-      setFilteredContent(allNodes);
+      // Load all content nodes for sidebar if not already loaded
+      if (allContentNodes.length === 0) {
+        const allNodes = await ContentService.getAllDocuments();
+        setAllContentNodes(allNodes);
+        setFilteredContent(allNodes);
+      }
       
       setLoading(false);
     };
