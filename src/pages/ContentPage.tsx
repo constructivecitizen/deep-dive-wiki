@@ -378,6 +378,14 @@ const ContentPage = () => {
                   onSectionClick={handleContentNodeClick}
                 />
               </div>
+            ) : currentFolder?.content_json ? (
+              <div className="bg-card rounded-lg border border-border p-8 relative">
+                <HierarchicalContent 
+                  sections={currentFolder.content_json as any || []}
+                  showTags={true}
+                  onSectionClick={handleContentNodeClick}
+                />
+              </div>
             ) : currentFolder ? (
               <FolderLandingPage
                 folder={currentFolder}
