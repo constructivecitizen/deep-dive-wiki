@@ -311,14 +311,13 @@ export class ContentService {
         return true;
       }
 
-      // Extract title and tags from sections
-      const title = sections[0]?.title || 'Untitled';
+      // Extract tags from sections but NOT title - folder title is managed independently
       const allTags = [...new Set(sections.flatMap(s => s.tags || []))];
       
       if (existingItem) {
         console.log('Updating existing item with id:', existingItem.id);
+        // Only update content_json and tags, NOT title - folder title is managed separately
         const success = await this.updateContentItem(existingItem.id, {
-          title,
           content_json: sections,
           tags: allTags.length > 0 ? allTags : []
         });
@@ -327,7 +326,9 @@ export class ContentService {
         return success;
       } else {
         console.log('Creating new document');
-        const newDocument = await this.createDocument(title, sections, path, allTags);
+        // For new documents, use a default title that can be changed via sidebar
+        const defaultTitle = path.split('/').pop()?.replace(/-/g, ' ').replace(/^\w/, c => c.toUpperCase()) || 'New Document';
+        const newDocument = await this.createDocument(defaultTitle, sections, path, allTags);
         console.log('New document created:', newDocument);
         return newDocument !== null;
       }
