@@ -153,18 +153,8 @@ const FolderNode: React.FC<{
   const documentSections = useMemo(() => {
     if (!associatedContent?.content_json) return [];
     
-    // Handle both array format and object with sections property
-    const contentJson = associatedContent.content_json;
-    let sections = [];
-    
-    if (Array.isArray(contentJson)) {
-      sections = contentJson;
-    } else if (contentJson && typeof contentJson === 'object' && 'sections' in contentJson) {
-      sections = (contentJson as any).sections || [];
-    }
-    
     // Convert JSON sections to DocumentSection format
-    return sections.map((section: any, index: number) => ({
+    return associatedContent.content_json.map((section, index) => ({
       id: `section-${index}`,
       level: section.level || 1,
       title: section.title || '',

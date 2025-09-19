@@ -30,6 +30,21 @@ export interface WikiDocument extends ContentItem {
 export interface NavigationNode extends ContentItem {}
 
 export class ContentService {
+  // Helper method to normalize content_json from database
+  private static normalizeContentJson(contentJson: any): DocumentSection[] | null {
+    if (!contentJson) return null;
+    
+    if (Array.isArray(contentJson)) {
+      return contentJson;
+    }
+    
+    if (contentJson && typeof contentJson === 'object' && 'sections' in contentJson) {
+      return contentJson.sections || [];
+    }
+    
+    return null;
+  }
+
   static async getNavigationStructure(): Promise<ContentItem[]> {
     const { data, error } = await supabase
       .from('content_items')
@@ -41,10 +56,10 @@ export class ContentService {
       return [];
     }
 
-    // Cast the data to ensure correct typing
+    // Cast the data to ensure correct typing and normalize content_json
     const typedData = (data || []).map(item => ({
       ...item,
-      content_json: item.content_json as unknown as DocumentSection[] | null
+      content_json: this.normalizeContentJson(item.content_json)
     }));
 
     return this.buildHierarchy(typedData);
@@ -64,9 +79,12 @@ export class ContentService {
 
     if (!data || !data.content_json) return null;
 
+    const normalizedContent = this.normalizeContentJson(data.content_json);
+    if (!normalizedContent) return null;
+
     return {
       ...data,
-      content_json: data.content_json as unknown as DocumentSection[]
+      content_json: normalizedContent
     };
   }
 
@@ -84,7 +102,7 @@ export class ContentService {
 
     return data ? {
       ...data,
-      content_json: data.content_json as unknown as DocumentSection[] | null
+      content_json: this.normalizeContentJson(data.content_json)
     } : null;
   }
 
@@ -109,7 +127,7 @@ export class ContentService {
 
     return (data || []).map(item => ({
       ...item,
-      content_json: item.content_json as unknown as DocumentSection[] | null
+      content_json: this.normalizeContentJson(item.content_json)
     }));
   }
 
@@ -126,11 +144,11 @@ export class ContentService {
     }
 
     return (data || [])
-      .filter(item => item.content_json)
       .map(doc => ({
         ...doc,
-        content_json: doc.content_json as unknown as DocumentSection[]
-      }));
+        content_json: this.normalizeContentJson(doc.content_json)
+      }))
+      .filter(doc => doc.content_json);
   }
 
   static async getAllDocuments(): Promise<WikiDocument[]> {
@@ -145,11 +163,11 @@ export class ContentService {
     }
 
     return (data || [])
-      .filter(item => item.content_json)
       .map(doc => ({
         ...doc,
-        content_json: doc.content_json as unknown as DocumentSection[]
-      }));
+        content_json: this.normalizeContentJson(doc.content_json)
+      }))
+      .filter(doc => doc.content_json);
   }
 
   static buildHierarchy<T extends { id: string; parent_id: string | null }>(
@@ -335,18 +353,8 @@ export class ContentService {
       }
 
       // Update the specific section in the JSON content  
-      const sections = (() => {
-        const contentJson = existingItem.content_json;
-        if (Array.isArray(contentJson)) {
-          return contentJson;
-        }
-        if (contentJson && typeof contentJson === 'object' && 'sections' in contentJson) {
-          return (contentJson as any).sections || [];
-        }
-        return [];
-      })();
-      
-      const updatedSections = sections.map((section: any) => 
+      const sections = existingItem.content_json || [];
+      const updatedSections = sections.map(section => 
         section.id === sectionId ? updatedSection : section
       );
 

@@ -381,16 +381,7 @@ const ContentPage = () => {
             ) : currentFolder?.content_json ? (
               <div className="bg-card rounded-lg border border-border p-8 relative">
                 <HierarchicalContent 
-                  sections={(() => {
-                    const contentJson = currentFolder.content_json;
-                    if (Array.isArray(contentJson)) {
-                      return contentJson;
-                    }
-                    if (contentJson && typeof contentJson === 'object' && 'sections' in contentJson) {
-                      return (contentJson as any).sections || [];
-                    }
-                    return [];
-                  })()}
+                  sections={currentFolder.content_json || []}
                   showTags={true}
                   onSectionClick={handleContentNodeClick}
                 />
@@ -433,16 +424,7 @@ const ContentPage = () => {
             const currentContent = await ContentService.getDocumentByPath(currentPath);
             if (currentContent && editorData.parentPath) {
               // Find the section and replace its content
-              const sections = (() => {
-                const contentJson = currentContent.content_json;
-                if (Array.isArray(contentJson)) {
-                  return contentJson;
-                }
-                if (contentJson && typeof contentJson === 'object' && 'sections' in contentJson) {
-                  return (contentJson as any).sections || [];
-                }
-                return [];
-              })();
+              const sections = currentContent.content_json || [];
               const contentString = sections.map(s => s.content || '').join('\n') || '';
               const updatedContent = replaceSectionContent(
                 contentString,
