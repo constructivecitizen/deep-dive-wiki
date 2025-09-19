@@ -1,4 +1,4 @@
-import { EditableNavigationSidebar } from "./EditableNavigationSidebar";
+import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
 
 interface WikiLayoutProps {
@@ -10,7 +10,7 @@ interface WikiLayoutProps {
   currentPath?: string;
   onStructureUpdate?: () => void;
   actionMenu?: React.ReactNode;
-  customSidebar?: React.ReactNode; // New prop for custom sidebar content
+  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
 }
 
 export const WikiLayout = ({ 
@@ -22,7 +22,7 @@ export const WikiLayout = ({
   currentPath,
   onStructureUpdate,
   actionMenu,
-  customSidebar
+  onSectionView
 }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
@@ -46,16 +46,13 @@ export const WikiLayout = ({
       
       <div className="flex h-[calc(100vh-80px)]">
         <aside className="w-80 flex-shrink-0 border-r border-border overflow-y-auto">
-          {customSidebar || (
-            <EditableNavigationSidebar 
-              structure={navigationStructure} 
-              contentNodes={contentNodes}
-              onContentNodeClick={onContentNodeClick}
-              activeNodeId={activeNodeId}
-              currentPath={currentPath}
-              onStructureUpdate={onStructureUpdate || (() => {})}
-            />
-          )}
+          <HybridNavigationSidebar 
+            structure={navigationStructure} 
+            contentNodes={contentNodes}
+            onSectionView={onSectionView}
+            currentPath={currentPath}
+            onStructureUpdate={onStructureUpdate || (() => {})}
+          />
         </aside>
         
         <main className="flex-1 overflow-y-auto">

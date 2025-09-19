@@ -4,7 +4,6 @@ import { WikiLayout } from "@/components/WikiLayout";
 import { ContentService, NavigationNode, WikiDocument } from "@/services/contentService";
 import { SimpleActionMenu } from "@/components/SimpleActionMenu";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
-import { HybridNavigationSidebar } from "@/components/HybridNavigationSidebar";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { TagManager } from "@/lib/tagManager";
 import { UnifiedEditor, EditorData } from "@/components/UnifiedEditor";
@@ -149,9 +148,6 @@ const ContentPage = () => {
     console.log('Update node:', updatedNode.id, updatedNode);
   };
 
-  const handleNavigationClick = (navId: string, path: string) => {
-    navigate(path);
-  };
 
   if (pageData?.type === 'loading') {
     return (
@@ -203,10 +199,8 @@ const ContentPage = () => {
         onContentNodeClick={handleContentNodeClick}
         activeNodeId={activeNodeId}
         currentPath={location.pathname}
-        onStructureUpdate={async () => {
-          const structure = await ContentService.getNavigationStructure();
-          setNavigationStructure(structure);
-        }}
+        onStructureUpdate={refreshAllData}
+        onSectionView={handleSectionView}
         actionMenu={
           <SimpleActionMenu 
             onToggleDocumentEditor={() => setEditorData({
@@ -216,17 +210,6 @@ const ContentPage = () => {
                 : '',
             })}
             onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
-          />
-        }
-        customSidebar={
-          <HybridNavigationSidebar 
-            structure={navigationStructure} 
-            contentNodes={allContentNodes}
-            onSectionView={handleSectionView}
-            currentPath={location.pathname}
-            onStructureUpdate={refreshAllData}
-            onNavigationClick={handleNavigationClick}
-            currentNavId={null}
           />
         }
       >
