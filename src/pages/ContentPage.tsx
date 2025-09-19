@@ -79,7 +79,6 @@ const ContentPage = () => {
   // Load content when route changes or currentNavId changes
   useEffect(() => {
     const loadContent = async () => {
-      // Get current path first
       const currentPath = location.pathname;
       
       // Only show loading for initial page load
@@ -88,37 +87,35 @@ const ContentPage = () => {
         setLoading(true);
       }
       
-      // Clear section view immediately
+      // Force clear ALL states immediately to prevent any stale data
       setViewingSection(null);
+      setContent(null);
+      setCurrentFolder(null);
+      setFolderChildren([]);
       
-      // Try to load content first (this is faster and prevents flashing)
+      // Small delay to ensure state clearing is complete
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+      // Now try to load the appropriate data type
       const contentData = await ContentService.getDocumentByPath(currentPath);
       
       if (contentData) {
-        // We have content - set it and clear folder states
+        // We have content document
         setContent(contentData);
+        // Ensure folder states remain null
         setCurrentFolder(null);
         setFolderChildren([]);
       } else if (currentPath !== '/') {
-        // No content, try to load as folder
+        // Try to load as folder
         const folderData = await ContentService.getNavigationNodeByPath(currentPath);
         if (folderData) {
-          // We have a folder - clear content first, then set folder states
-          setContent(null);
+          // We have a folder
           setCurrentFolder(folderData);
           const children = await ContentService.getNavigationNodeChildren(currentPath);
           setFolderChildren(children);
-        } else {
-          // Neither content nor folder found
+          // Ensure content remains null
           setContent(null);
-          setCurrentFolder(null);
-          setFolderChildren([]);
         }
-      } else {
-        // Root path - clear everything
-        setContent(null);
-        setCurrentFolder(null);
-        setFolderChildren([]);
       }
       
       // Load all content nodes for sidebar if not already loaded
@@ -285,8 +282,8 @@ const ContentPage = () => {
               const currentNavNode = findNodeByPath(navigationStructure, targetPath);
               const displayTitle = currentNavNode?.title || content?.title || currentFolder?.title || 'Page';
               
-              // Only show breadcrumbs when viewing content (not folders)
-              if (!currentFolder && content) {
+              // Only show breadcrumbs when viewing content documents (never for folders)
+              if (content && !currentFolder) {
                 const breadcrumbItems = [];
                 const pathParts = content.path.split('/').filter(part => part);
                 
