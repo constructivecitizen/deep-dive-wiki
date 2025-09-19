@@ -74,16 +74,15 @@ export const PageBreadcrumb = ({
       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 flex-wrap">
         {hierarchicalTrail.map((item, index) => (
           <div key={item.id} className="flex items-center gap-2">
-            <Badge 
-              variant="outline" 
-              className={`text-xs font-medium cursor-pointer hover:bg-accent transition-colors ${
-                index === hierarchicalTrail.length - 1 && !sectionTitle ? 'bg-primary/10 text-primary border-primary/20' : ''
+            <span 
+              className={`text-xs font-medium cursor-pointer hover:text-foreground transition-colors underline decoration-1 underline-offset-2 ${
+                index === hierarchicalTrail.length - 1 && !sectionTitle ? 'text-primary' : ''
               }`}
               onClick={() => handleNavigationClick(item)}
             >
               {item.title}
-            </Badge>
-            {(index < hierarchicalTrail.length - 1 || sectionTitle) && (
+            </span>
+            {index < hierarchicalTrail.length - 1 && (
               <ChevronRight className="h-3 w-3" />
             )}
           </div>
@@ -93,13 +92,12 @@ export const PageBreadcrumb = ({
         {sectionHierarchy.map((section, index) => (
           <div key={`section-${index}`} className="flex items-center gap-2">
             <ChevronRight className="h-3 w-3" />
-            <Badge 
-              variant="outline" 
-              className="text-xs font-medium cursor-pointer hover:bg-accent transition-colors"
+            <span 
+              className="text-xs font-medium cursor-pointer hover:text-foreground transition-colors underline decoration-1 underline-offset-2"
               onClick={() => onSectionNavigate?.(section.title)}
             >
               {section.title}
-            </Badge>
+            </span>
           </div>
         ))}
         
