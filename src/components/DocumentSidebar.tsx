@@ -43,35 +43,23 @@ const SectionItem: React.FC<{
           if (hasChildren) setIsExpanded(!isExpanded);
         }}
       >
-        {hasChildren ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsExpanded(!isExpanded);
-            }}
-            className="flex-shrink-0"
-          >
-            {isExpanded ? (
-              <ChevronDown className="h-3 w-3" />
-            ) : (
-              <ChevronRight className="h-3 w-3" />
-            )}
-          </button>
-        ) : (
-          <div className="w-3 h-3 flex-shrink-0 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
-          </div>
-        )}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (hasChildren) setIsExpanded(!isExpanded);
+          }}
+          className="flex-shrink-0"
+        >
+          <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${
+            isExpanded && hasChildren ? 'rotate-90' : ''
+          }`}>
+            ‣
+          </span>
+        </button>
         
         <span className="truncate flex-1" title={section.title}>
           {section.title}
         </span>
-        
-        {section.tags.length > 0 && (
-          <span className="text-xs bg-secondary text-secondary-foreground px-1 py-0.5 rounded flex-shrink-0">
-            {section.tags.length}
-          </span>
-        )}
       </div>
 
       {isExpanded && hasChildren && (
