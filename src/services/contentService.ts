@@ -136,6 +136,45 @@ export class ContentService {
     }));
   }
 
+  static async getNavigationNodeByPath(path: string): Promise<NavigationNode | null> {
+    const { data, error } = await supabase
+      .from('navigation_structure')
+      .select('*')
+      .eq('path', path)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching navigation node by path:', error);
+      return null;
+    }
+
+    if (!data) return null;
+
+    return {
+      ...data,
+      type: data.type as 'document' | 'folder'
+    };
+  }
+
+  static async getNavigationNodeChildren(parentPath: string): Promise<NavigationNode[]> {
+    const { data, error } = await supabase
+      .from('navigation_structure')
+      .select('*')
+      .like('path', `${parentPath}/%`)
+      .not('path', 'eq', parentPath)
+      .order('order_index');
+
+    if (error) {
+      console.error('Error fetching navigation node children:', error);
+      return [];
+    }
+
+    return (data || []).map(item => ({
+      ...item,
+      type: item.type as 'document' | 'folder'
+    }));
+  }
+
   // Navigation management methods
   static async createNavigationFolder(title: string, parentId: string | null = null): Promise<NavigationNode | null> {
     const path = parentId ? `/${title.toLowerCase().replace(/\s+/g, '-')}` : `/${title.toLowerCase().replace(/\s+/g, '-')}`;

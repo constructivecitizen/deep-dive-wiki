@@ -12,6 +12,7 @@ import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisp
 import { TagManager } from "@/lib/tagManager";
 import { UnifiedEditor, EditorData } from "@/components/UnifiedEditor";
 import { SectionView } from "@/components/SectionView";
+import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { toast } from "sonner";
 import { replaceSectionContent } from "@/lib/sectionExtractor";
 import { HierarchyParser } from "@/lib/hierarchyParser";
@@ -21,6 +22,8 @@ const ContentPage = () => {
   const navigate = useNavigate();
   const { pathname } = location;
   const [content, setContent] = useState<WikiDocument | null>(null);
+  const [currentFolder, setCurrentFolder] = useState<NavigationNode | null>(null);
+  const [folderChildren, setFolderChildren] = useState<NavigationNode[]>([]);
   const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
   const [allContentNodes, setAllContentNodes] = useState<WikiDocument[]>([]);
   const [filteredContent, setFilteredContent] = useState<WikiDocument[]>([]);
@@ -105,12 +108,26 @@ const ContentPage = () => {
       console.log('🧹 ROUTE DEBUG: Clearing viewingSection state');
       setViewingSection(null);
       
+      // Reset folder state
+      setCurrentFolder(null);
+      setFolderChildren([]);
+      
       // Get current path
       const currentPath = location.pathname;
       
       // Load content for regular paths
       const contentData = await ContentService.getDocumentByPath(currentPath);
       setContent(contentData);
+      
+      // If no content found, check if it's a navigation folder
+      if (!contentData && currentPath !== '/') {
+        const folderData = await ContentService.getNavigationNodeByPath(currentPath);
+        if (folderData && folderData.type === 'folder') {
+          setCurrentFolder(folderData);
+          const children = await ContentService.getNavigationNodeChildren(currentPath);
+          setFolderChildren(children);
+        }
+      }
       
       // Load all content nodes for sidebar
       const allNodes = await ContentService.getAllDocuments();
@@ -184,8 +201,8 @@ const ContentPage = () => {
     );
   }
 
-  // If no content found for this route, show 404-like message with better fallback
-  if (!content) {
+  // If no content found for this route, check if it's a folder or show 404
+  if (!content && !currentFolder) {
     return (
       <WikiLayout 
         navigationStructure={navigationStructure}
@@ -271,12 +288,12 @@ const ContentPage = () => {
               }}
               onBack={() => setViewingSection(null)}
             />
-          ) : content ? (
+          ) : content || currentFolder ? (
             <>
             {/* Breadcrumb and Title */}
             {(() => {
             const breadcrumbItems = [];
-            const pathParts = content.path.split('/').filter(part => part);
+            const pathParts = (content?.path || currentFolder?.path || location.pathname).split('/').filter(part => part);
             
             // Helper function to find navigation node by path
             const findNodeByPath = (nodes: NavigationNode[], targetPath: string): NavigationNode | null => {
@@ -288,6 +305,9 @@ const ContentPage = () => {
               return null;
             };
 
+            // If we're viewing a folder, use folder info for breadcrumbs
+            const targetContent = content || currentFolder;
+
             // Always start with Home
             breadcrumbItems.push({
               title: 'Home',
@@ -296,23 +316,27 @@ const ContentPage = () => {
             });
 
             // Build breadcrumb path for each segment
-            for (let i = 1; i <= pathParts.length; i++) {
-              const currentPath = '/' + pathParts.slice(0, i).join('/');
-              const isLast = i === pathParts.length;
+            if (targetContent) {
+              const targetPathParts = targetContent.path.split('/').filter(part => part);
               
-              const navNode = findNodeByPath(navigationStructure, currentPath);
-              if (navNode) {
-                breadcrumbItems.push({
-                  title: navNode.title,
-                  href: currentPath,
-                  isLast
-                });
+              for (let i = 1; i <= targetPathParts.length; i++) {
+                const currentPath = '/' + targetPathParts.slice(0, i).join('/');
+                const isLast = i === targetPathParts.length;
+                
+                const navNode = findNodeByPath(navigationStructure, currentPath);
+                if (navNode) {
+                  breadcrumbItems.push({
+                    title: navNode.title,
+                    href: currentPath,
+                    isLast
+                  });
+                }
               }
             }
 
             // Get the current folder/page title
-            const currentNavNode = findNodeByPath(navigationStructure, content.path);
-            const displayTitle = currentNavNode ? currentNavNode.title : content.title;
+            const currentNavNode = findNodeByPath(navigationStructure, targetContent?.path || location.pathname);
+            const displayTitle = currentNavNode ? currentNavNode.title : (content?.title || currentFolder?.title || 'Page');
             
             return (
               <>
@@ -345,13 +369,28 @@ const ContentPage = () => {
             );
           })()}
 
-            <div className="bg-card rounded-lg border border-border p-8 relative">
-              <HierarchicalContent 
-                sections={content.content_json?.sections || []}
-                showTags={true}
-                onSectionClick={handleContentNodeClick}
+            {/* Content Area */}
+            {content ? (
+              <div className="bg-card rounded-lg border border-border p-8 relative">
+                <HierarchicalContent 
+                  sections={content.content_json?.sections || []}
+                  showTags={true}
+                  onSectionClick={handleContentNodeClick}
+                />
+              </div>
+            ) : currentFolder ? (
+              <FolderLandingPage
+                folder={currentFolder}
+                children={folderChildren}
+                documents={allContentNodes}
+                onCreateDocument={() => {
+                  setEditorData({
+                    type: 'document',
+                    content: '',
+                  });
+                }}
               />
-            </div>
+            ) : null}
             </>
           ) : (
             <div className="text-center py-12">
