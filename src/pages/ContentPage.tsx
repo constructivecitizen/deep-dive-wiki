@@ -265,6 +265,7 @@ const ContentPage = () => {
             <SectionView 
               sectionData={viewingSection}
               onBack={() => setViewingSection(null)}
+              navigationStructure={navigationStructure}
             />
           ) : content || currentFolder ? (
             <>

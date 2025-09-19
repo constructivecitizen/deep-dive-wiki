@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit } from "lucide-react";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
+import { PageBreadcrumb } from "@/components/PageBreadcrumb";
 
 interface SectionViewProps {
   sectionData: {
@@ -10,15 +11,24 @@ interface SectionViewProps {
     parentPath: string;
   };
   onBack: () => void;
+  navigationStructure?: any[];
 }
 
 export const SectionView: React.FC<SectionViewProps> = ({ 
   sectionData, 
-  onBack 
+  onBack,
+  navigationStructure = []
 }) => {
   return (
     <div className="space-y-6">
-      {/* Header with navigation and actions */}
+      {/* Breadcrumb navigation */}
+      <PageBreadcrumb 
+        currentPath={sectionData.parentPath}
+        navigationStructure={navigationStructure}
+        pageTitle={sectionData.title}
+      />
+
+      {/* Header with navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button 
@@ -32,7 +42,6 @@ export const SectionView: React.FC<SectionViewProps> = ({
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">{sectionData.title}</h1>
-            <p className="text-sm text-muted-foreground">Level {sectionData.level} section</p>
           </div>
         </div>
       </div>

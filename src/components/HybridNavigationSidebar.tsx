@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { buildSectionHierarchy, HierarchicalDocumentSection } from '../lib/sectionHierarchy';
+import { EnhancedSectionItem } from './EnhancedSectionItem';
 
 interface HybridNavigationSidebarProps {
   structure: NavigationNode[];
@@ -23,79 +24,13 @@ interface HybridNavigationSidebarProps {
   currentNavId?: string | null;
 }
 
-const SectionItem: React.FC<{
-  section: HierarchicalDocumentSection;
-  depth: number;
-  folderPath: string;
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
-  sectionPosition: number;
-}> = ({ section, depth, folderPath, onSectionView, sectionPosition }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const hasChildren = section.children.length > 0;
-  const indentationPx = (depth + 2) * 16;
-
-  return (
-    <div className="text-sm">
-      <div 
-        className="flex items-center gap-2 py-1 px-3 rounded cursor-pointer hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
-        style={{ marginLeft: `${indentationPx}px` }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (onSectionView) {
-            onSectionView({
-              content: section.title,
-              title: section.title,
-              level: section.level,
-              parentPath: folderPath
-            });
-          }
-        }}
-      >
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (hasChildren) setIsExpanded(!isExpanded);
-          }}
-          className="flex-shrink-0"
-        >
-          <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${
-            isExpanded && hasChildren ? 'rotate-90' : ''
-          }`}>
-            ‣
-          </span>
-        </button>
-        
-        <span className="truncate flex-1" title={section.title}>
-          {section.title}
-        </span>
-      </div>
-
-      {isExpanded && hasChildren && (
-        <div className="mt-1">
-          {section.children.map((child, index) => (
-            <SectionItem
-              key={child.id}
-              section={child}
-              depth={depth + 1}
-              folderPath={folderPath}
-              onSectionView={onSectionView}
-              sectionPosition={sectionPosition + index + 1}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const FolderNode: React.FC<{
+  const FolderNode: React.FC<{
   node: NavigationNode;
   contentNodes?: WikiDocument[];
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   currentPath?: string;
   onStructureUpdate: () => void;
-  onNavigationClick?: (navId: string, path: string) => void;
+  onNavigationClick?: (navId: string, path: string) => void;  
   currentNavId?: string | null;
 }> = ({ 
   node, 
@@ -116,8 +51,8 @@ const FolderNode: React.FC<{
 
   // Find the associated content for this folder and build hierarchical sections
   const associatedContent = contentNodes?.find(content => content.path === node.path);
-  const hierarchicalSections = useMemo(() => {
-    if (!associatedContent?.content_json) return [];
+  const { hierarchicalSections, flatSections } = useMemo(() => {
+    if (!associatedContent?.content_json) return { hierarchicalSections: [], flatSections: [] };
     
     // Convert JSON sections to flat format first
     const flatSections = associatedContent.content_json.map((section, index) => ({
@@ -129,7 +64,9 @@ const FolderNode: React.FC<{
     }));
     
     // Build hierarchical structure (only sections with children will be returned)
-    return buildSectionHierarchy(flatSections);
+    const hierarchicalSections = buildSectionHierarchy(flatSections);
+    
+    return { hierarchicalSections, flatSections };
   }, [associatedContent?.content_json]);
 
   const toggleExpanded = (e: React.MouseEvent) => {
@@ -298,13 +235,14 @@ const FolderNode: React.FC<{
       {expanded && hierarchicalSections.length > 0 && (
         <div className="mt-1">
           {hierarchicalSections.map((section, index) => (
-            <SectionItem
+            <EnhancedSectionItem
               key={section.id}
               section={section}
               depth={0}
               folderPath={node.path}
               onSectionView={onSectionView}
               sectionPosition={index}
+              flatSections={flatSections}
             />
           ))}
         </div>
