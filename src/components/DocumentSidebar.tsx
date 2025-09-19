@@ -34,21 +34,6 @@ interface DocumentSidebarProps {
   activeSectionId?: string;
 }
 
-const parseDocumentSections = (jsonSections: Array<{
-  id?: string;
-  level?: number;
-  title?: string;
-  content?: string;
-  tags?: string[];
-}>): DocumentSection[] => {
-  return jsonSections.map((section, index) => ({
-    id: section.id || `section-${index}`,
-    level: section.level || 1,
-    title: section.title || '',
-    tags: section.tags || [],
-    children: []
-  }));
-};
 
 const SectionItem: React.FC<{
   section: DocumentSection;
@@ -127,7 +112,15 @@ export const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
   onSectionClick,
   activeSectionId
 }) => {
-  const sections = parseDocumentSections(document.content_json?.sections || []);
+  // Work directly with JSON sections - no parsing needed
+  const rawSections = document.content_json?.sections || [];
+  const sections: DocumentSection[] = rawSections.map((section, index) => ({
+    id: section.id || `section-${index}`,
+    level: section.level || 1,
+    title: section.title || '',
+    tags: section.tags || [],
+    children: []
+  }));
 
   if (sections.length === 0) {
     return (

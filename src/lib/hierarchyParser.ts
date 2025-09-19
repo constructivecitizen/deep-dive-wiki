@@ -1,5 +1,5 @@
-// This file is deprecated - keeping minimal functionality for backward compatibility
-// The new architecture uses JSON sections directly from the database
+// IMPORTANT: This should ONLY be used in DocumentEditor for markdown parsing
+// All other components should work directly with JSON sections from the database
 
 export interface ParsedContent {
   sections: Array<{

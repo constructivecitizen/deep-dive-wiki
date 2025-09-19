@@ -392,7 +392,7 @@ const ContentPage = () => {
               );
               
               const parsed = HierarchyParser.parseMarkup(updatedContent);
-              const success = await ContentService.saveDocumentContent(currentPath, []);
+              const success = await ContentService.saveDocumentContent(currentPath, parsed.sections);
               
               if (success) {
                 toast.success("Section saved successfully");
@@ -405,7 +405,7 @@ const ContentPage = () => {
             // Handle document save
             const currentPath = location.pathname;
             const parsed = HierarchyParser.parseMarkup(content);
-            const success = await ContentService.saveDocumentContent(currentPath, []);
+            const success = await ContentService.saveDocumentContent(currentPath, parsed.sections);
             
             if (success) {
               toast.success("Document saved successfully");
