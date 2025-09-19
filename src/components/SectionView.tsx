@@ -22,7 +22,7 @@ export const SectionView: React.FC<SectionViewProps> = ({
   navigationStructure = []
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Breadcrumb navigation */}
       <PageBreadcrumb 
         currentPath={sectionData.parentPath}

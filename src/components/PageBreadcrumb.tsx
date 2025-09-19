@@ -55,7 +55,8 @@ export const PageBreadcrumb = ({
 
   const hierarchicalTrail = buildHierarchicalTrail(currentPath, navigationStructure);
 
-  if (hierarchicalTrail.length === 0) {
+  // Don't show breadcrumb if we're at the folder level (no section hierarchy and no page content beyond folder)
+  if (hierarchicalTrail.length === 0 || (hierarchicalTrail.length === 1 && !sectionHierarchy.length && !sectionTitle)) {
     return null;
   }
 
@@ -70,8 +71,8 @@ export const PageBreadcrumb = ({
   };
 
   return (
-    <div className="animate-fade-in mb-6">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 flex-wrap">
+    <div className="animate-fade-in mb-3">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
         {hierarchicalTrail.map((item, index) => (
           <div key={item.id} className="flex items-center gap-2">
             <span 
@@ -102,7 +103,6 @@ export const PageBreadcrumb = ({
         ))}
         
       </div>
-      <div className="h-px bg-gradient-to-r from-border via-border/50 to-transparent w-full"></div>
     </div>
   );
 };
