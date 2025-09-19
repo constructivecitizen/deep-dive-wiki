@@ -25,7 +25,9 @@ export const SectionView: React.FC<SectionViewProps> = ({
       <PageBreadcrumb 
         currentPath={sectionData.parentPath}
         navigationStructure={navigationStructure}
-        pageTitle={sectionData.title}
+        pageTitle={undefined}
+        sectionTitle={sectionData.title}
+        onSectionBack={onBack}
       />
 
       {/* Header with navigation */}
