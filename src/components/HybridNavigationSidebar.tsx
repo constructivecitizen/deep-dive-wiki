@@ -67,7 +67,7 @@ const SectionItem: React.FC<{
             }}
             className="flex-shrink-0"
           >
-            <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl ${
+            <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${
               isExpanded ? 'rotate-90' : ''
             }`}>
               ‣
@@ -232,7 +232,7 @@ const FolderNode: React.FC<{
           onClick={toggleExpanded}
           className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded z-10"
         >
-          <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl ${expanded ? 'rotate-90' : ''}`}>
+          <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${expanded ? 'rotate-90' : ''}`}>
             ‣
           </span>
         </button>

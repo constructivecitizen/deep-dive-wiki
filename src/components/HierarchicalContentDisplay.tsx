@@ -109,7 +109,7 @@ const ContentSectionComponent: React.FC<{
             className="flex-shrink-0 mt-1 p-1 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-center"
             aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
-            <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl ${isExpanded ? 'rotate-90' : ''}`}>
+            <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${isExpanded ? 'rotate-90' : ''}`}>
               ‣
             </span>
           </button>
