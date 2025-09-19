@@ -40,7 +40,6 @@ const ContentPage = () => {
     parentPath: string;
   } | null>(null);
 
-
   const handleSectionView = (sectionData: {
     content: string;
     title: string;
@@ -147,7 +146,6 @@ const ContentPage = () => {
       setPageData({ type: 'content', data: updatedNode });
     }
     
-    // TODO: Implement database update
     console.log('Update node:', updatedNode.id, updatedNode);
   };
 
@@ -199,39 +197,39 @@ const ContentPage = () => {
 
   return (
     <>
-        <WikiLayout 
-          navigationStructure={navigationStructure}
-          contentNodes={filteredContent}
-          onContentNodeClick={handleContentNodeClick}
-          activeNodeId={activeNodeId}
-          currentPath={location.pathname}
-          onStructureUpdate={async () => {
-            const structure = await ContentService.getNavigationStructure();
-            setNavigationStructure(structure);
-          }}
-          actionMenu={
-            <SimpleActionMenu 
-              onToggleDocumentEditor={() => setEditorData({
-                type: 'document',
-                content: pageData?.type === 'content' 
-                  ? HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])
-                  : '',
-              })}
-              onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
-            />
-          }
-          customSidebar={
-            <HybridNavigationSidebar 
-              structure={navigationStructure} 
-              contentNodes={allContentNodes}
-              onSectionView={handleSectionView}
-              currentPath={location.pathname}
-              onStructureUpdate={refreshAllData}
-              onNavigationClick={handleNavigationClick}
-              currentNavId={null}
-            />
-          }
-        >
+      <WikiLayout 
+        navigationStructure={navigationStructure}
+        contentNodes={filteredContent}
+        onContentNodeClick={handleContentNodeClick}
+        activeNodeId={activeNodeId}
+        currentPath={location.pathname}
+        onStructureUpdate={async () => {
+          const structure = await ContentService.getNavigationStructure();
+          setNavigationStructure(structure);
+        }}
+        actionMenu={
+          <SimpleActionMenu 
+            onToggleDocumentEditor={() => setEditorData({
+              type: 'document',
+              content: pageData?.type === 'content' 
+                ? HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])
+                : '',
+            })}
+            onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
+          />
+        }
+        customSidebar={
+          <HybridNavigationSidebar 
+            structure={navigationStructure} 
+            contentNodes={allContentNodes}
+            onSectionView={handleSectionView}
+            currentPath={location.pathname}
+            onStructureUpdate={refreshAllData}
+            onNavigationClick={handleNavigationClick}
+            currentNavId={null}
+          />
+        }
+      >
         <div className="space-y-6">
           {viewingSection ? (
             <SectionView 
@@ -241,116 +239,116 @@ const ContentPage = () => {
             />
           ) : pageData ? (
             <>
-            {/* Title and Breadcrumb Logic */}
-            {(() => {
-              // Helper function to find navigation node by path
-              const findNodeByPath = (nodes: NavigationNode[], targetPath: string): NavigationNode | null => {
-                for (const node of nodes) {
-                  if (node.path === targetPath) return node;
-                  const found = findNodeByPath(node.children || [], targetPath);
-                  if (found) return found;
-                }
-                return null;
-              };
+              {/* Title and Breadcrumb Logic */}
+              {(() => {
+                // Helper function to find navigation node by path
+                const findNodeByPath = (nodes: NavigationNode[], targetPath: string): NavigationNode | null => {
+                  for (const node of nodes) {
+                    if (node.path === targetPath) return node;
+                    const found = findNodeByPath(node.children || [], targetPath);
+                    if (found) return found;
+                  }
+                  return null;
+                };
 
-              // Get the current page data and determine display info
-              const isContentPage = pageData.type === 'content';
-              const targetPath = isContentPage ? pageData.data.path : pageData.data.path;
-              const currentNavNode = findNodeByPath(navigationStructure, targetPath);
-              const displayTitle = currentNavNode?.title || 
-                (isContentPage ? pageData.data.title : pageData.data.title) || 
-                'Page';
-              
-              // Only show breadcrumbs when viewing content documents (never for folders)
-              if (isContentPage) {
-                const breadcrumbItems = [];
-                const pathParts = pageData.data.path.split('/').filter(part => part);
+                // Get the current page data and determine display info
+                const isContentPage = pageData.type === 'content';
+                const targetPath = isContentPage ? pageData.data.path : pageData.data.path;
+                const currentNavNode = findNodeByPath(navigationStructure, targetPath);
+                const displayTitle = currentNavNode?.title || 
+                  (isContentPage ? pageData.data.title : pageData.data.title) || 
+                  'Page';
                 
-                // Build breadcrumb path - start with Home if not root
-                if (pathParts.length > 0) {
-                  breadcrumbItems.push({
-                    title: 'Home',
-                    href: '/',
-                    isLast: false
-                  });
-                }
-
-                // Add each path segment
-                for (let i = 1; i <= pathParts.length; i++) {
-                  const currentPath = '/' + pathParts.slice(0, i).join('/');
-                  const isLast = i === pathParts.length;
+                // Only show breadcrumbs when viewing content documents (never for folders)
+                if (isContentPage) {
+                  const breadcrumbItems = [];
+                  const pathParts = pageData.data.path.split('/').filter(part => part);
                   
-                  const navNode = findNodeByPath(navigationStructure, currentPath);
-                  if (navNode) {
+                  // Build breadcrumb path - start with Home if not root
+                  if (pathParts.length > 0) {
                     breadcrumbItems.push({
-                      title: navNode.title,
-                      href: currentPath,
-                      isLast
+                      title: 'Home',
+                      href: '/',
+                      isLast: false
                     });
                   }
+
+                  // Add each path segment
+                  for (let i = 1; i <= pathParts.length; i++) {
+                    const currentPath = '/' + pathParts.slice(0, i).join('/');
+                    const isLast = i === pathParts.length;
+                    
+                    const navNode = findNodeByPath(navigationStructure, currentPath);
+                    if (navNode) {
+                      breadcrumbItems.push({
+                        title: navNode.title,
+                        href: currentPath,
+                        isLast
+                      });
+                    }
+                  }
+
+                  return (
+                    <>
+                      {/* Breadcrumb navigation - only for content pages */}
+                      {breadcrumbItems.length > 1 && (
+                        <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
+                          {breadcrumbItems.map((item, index) => (
+                            <div key={index} className="flex items-center">
+                              {index > 0 && <span className="h-4 w-4 mx-2">‣</span>}
+                              {item.isLast ? (
+                                <span className="text-foreground font-medium">
+                                  {item.title}
+                                </span>
+                              ) : (
+                                <Link 
+                                  to={item.href}
+                                  className="hover:text-foreground transition-colors"
+                                >
+                                  {item.title}
+                                </Link>
+                              )}
+                            </div>
+                          ))}
+                        </nav>
+                      )}
+                      <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>
+                    </>
+                  );
                 }
+                
+                // For folders, just show the title with no breadcrumbs
+                return <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>;
+              })()}
 
-                return (
-                  <>
-                    {/* Breadcrumb navigation - only for content pages */}
-                    {breadcrumbItems.length > 1 && (
-                      <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
-                        {breadcrumbItems.map((item, index) => (
-                          <div key={index} className="flex items-center">
-                            {index > 0 && <span className="h-4 w-4 mx-2">‣</span>}
-                            {item.isLast ? (
-                              <span className="text-foreground font-medium">
-                                {item.title}
-                              </span>
-                            ) : (
-                              <Link 
-                                to={item.href}
-                                className="hover:text-foreground transition-colors"
-                              >
-                                {item.title}
-                              </Link>
-                            )}
-                          </div>
-                        ))}
-                      </nav>
-                    )}
-                    <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>
-                  </>
-                );
-              }
-              
-              // For folders, just show the title with no breadcrumbs
-              return <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>;
-            })()}
-
-            {/* Content Area */}
-            {pageData.type === 'content' ? (
-              <div className="bg-card rounded-lg border border-border p-8 relative">
-                <HierarchicalContentDisplay 
-                  content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
-                  onSectionClick={handleContentNodeClick}
+              {/* Content Area */}
+              {pageData.type === 'content' ? (
+                <div className="bg-card rounded-lg border border-border p-8 relative">
+                  <HierarchicalContentDisplay 
+                    content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
+                    onSectionClick={handleContentNodeClick}
+                  />
+                </div>
+              ) : pageData.data.content_json ? (
+                <div className="bg-card rounded-lg border border-border p-8 relative">
+                  <HierarchicalContentDisplay 
+                    content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
+                    onSectionClick={handleContentNodeClick}
+                  />
+                </div>
+              ) : (
+                <FolderLandingPage
+                  folder={pageData.data}
+                  children={pageData.children}
+                  documents={allContentNodes}
+                  onCreateDocument={() => {
+                    setEditorData({
+                      type: 'document',
+                      content: '',
+                    });
+                  }}
                 />
-              </div>
-            ) : pageData.data.content_json ? (
-              <div className="bg-card rounded-lg border border-border p-8 relative">
-                <HierarchicalContentDisplay 
-                  content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
-                  onSectionClick={handleContentNodeClick}
-                />
-              </div>
-            ) : (
-              <FolderLandingPage
-                folder={pageData.data}
-                children={pageData.children}
-                documents={allContentNodes}
-                onCreateDocument={() => {
-                  setEditorData({
-                    type: 'document',
-                    content: '',
-                  });
-                }}
-              />
-            )}
+              )}
             </>
           ) : (
             <div className="text-center py-12">
@@ -358,7 +356,7 @@ const ContentPage = () => {
             </div>
           )}
         </div>
-        </WikiLayout>
+      </WikiLayout>
 
       <SimpleFilterPanel 
         isOpen={showFilterPanel}
