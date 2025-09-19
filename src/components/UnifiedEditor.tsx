@@ -90,6 +90,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
         <div 
           className="bg-background h-full w-full flex flex-col" 
+          style={{ pointerEvents: 'auto' }}
           role="dialog" 
           aria-modal="true"
           aria-labelledby="editor-title"
@@ -236,7 +237,7 @@ More detailed content with \`code\`.`}
 
   // Modal editor for sections
   return (
-    <Dialog open={!!editorData} onOpenChange={onClose}>
+    <Dialog open={!!editorData && !isFullscreen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col z-40" aria-describedby="section-editor-description">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
