@@ -50,11 +50,15 @@ const SectionItem: React.FC<{
           }}
           className="flex-shrink-0"
         >
-          <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${
-            isExpanded && hasChildren ? 'rotate-90' : ''
-          }`}>
-            ‣
-          </span>
+          {hasChildren ? (
+            isExpanded ? (
+              <ChevronDown className="w-3 h-3 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-3 h-3 text-muted-foreground" />
+            )
+          ) : (
+            <div className="w-3 h-3" />
+          )}
         </button>
         
         <span className="truncate flex-1" title={section.title}>

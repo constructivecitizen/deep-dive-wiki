@@ -21,34 +21,29 @@ export function extractSectionFullContent(
   const targetIndex = allSections.findIndex(s => s.id === targetSection.id);
   
   if (targetIndex >= 0) {
-    let currentLevel = targetSection.level;
-    let searchIndex = targetIndex - 1;
+    const ancestorStack: Array<{ title: string; level: number }> = [];
     
-    // Build direct ancestry chain by finding immediate parent at each level
-    while (currentLevel > 1 && searchIndex >= 0) {
-      const targetParentLevel = currentLevel - 1;
-      let foundParent = false;
+    // Look backwards from target to find all direct ancestors
+    for (let i = targetIndex - 1; i >= 0; i--) {
+      const section = allSections[i];
       
-      // Find the immediate parent (first section with level = currentLevel - 1)
-      for (let i = searchIndex; i >= 0; i--) {
-        const section = allSections[i];
-        if (section.level === targetParentLevel) {
-          sectionHierarchy.unshift({
-            title: section.title,
-            level: section.level
-          });
-          currentLevel = section.level;
-          searchIndex = i - 1;
-          foundParent = true;
-          break;
+      // Only consider sections that could be ancestors (lower level numbers)
+      if (section.level < targetSection.level) {
+        // Remove any sections from stack that are at same or deeper level
+        while (ancestorStack.length > 0 && ancestorStack[ancestorStack.length - 1].level >= section.level) {
+          ancestorStack.pop();
         }
-      }
-      
-      // If no parent found at the expected level, break
-      if (!foundParent) {
-        break;
+        
+        // Add this section as an ancestor
+        ancestorStack.push({
+          title: section.title,
+          level: section.level
+        });
       }
     }
+    
+    // Reverse to get correct order (root to immediate parent)
+    sectionHierarchy.push(...ancestorStack.reverse());
   }
 
   // Build the full content
