@@ -41,6 +41,7 @@ export function extractSectionFullContent(
         });
       } else {
         // This is the target section - the current stack contains its direct ancestry
+        // Don't include the target section itself since it's shown as the page title
         sectionHierarchy.push(...ancestryStack);
       }
     }
