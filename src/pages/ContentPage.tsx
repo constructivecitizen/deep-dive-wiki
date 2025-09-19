@@ -250,7 +250,7 @@ const ContentPage = () => {
               onToggleEdit={() => setEditMode(!editMode)}
                 onToggleDocumentEditor={() => setEditorData({
                   type: 'document',
-                  content: HierarchyParser.sectionsToMarkup(content?.content_json?.sections || []),
+                  content: HierarchyParser.sectionsToMarkup(content?.content_json || []),
                 })}
               onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
             />
@@ -373,7 +373,7 @@ const ContentPage = () => {
             {content ? (
               <div className="bg-card rounded-lg border border-border p-8 relative">
                 <HierarchicalContent 
-                  sections={content.content_json?.sections || []}
+                  sections={content.content_json || []}
                   showTags={true}
                   onSectionClick={handleContentNodeClick}
                 />
@@ -416,7 +416,7 @@ const ContentPage = () => {
             const currentContent = await ContentService.getDocumentByPath(currentPath);
             if (currentContent && editorData.parentPath) {
               // Find the section and replace its content
-              const contentString = currentContent.content_json?.sections?.map(s => s.content || '').join('\n') || '';
+              const contentString = currentContent.content_json?.map(s => s.content || '').join('\n') || '';
               const updatedContent = replaceSectionContent(
                 contentString,
                 {

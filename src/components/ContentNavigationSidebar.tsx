@@ -23,7 +23,7 @@ const ContentItem = ({ document, onNodeClick, activeNodeId }: ContentItemProps) 
   };
 
   // Get first section content for preview
-  const firstSection = document.content_json?.sections?.[0];
+  const firstSection = document.content_json?.[0];
   const displayContent = firstSection?.content || firstSection?.title || document.title;
   const truncatedContent = displayContent.length > 60 
     ? `${displayContent.substring(0, 60)}...`

@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_items: {
+        Row: {
+          content_json: Json | null
+          created_at: string
+          id: string
+          order_index: number | null
+          parent_id: string | null
+          path: string
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content_json?: Json | null
+          created_at?: string
+          id?: string
+          order_index?: number | null
+          parent_id?: string | null
+          path: string
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content_json?: Json | null
+          created_at?: string
+          id?: string
+          order_index?: number | null
+          parent_id?: string | null
+          path?: string
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_items_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content_json: Json

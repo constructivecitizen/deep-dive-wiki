@@ -151,16 +151,16 @@ const FolderNode: React.FC<{
   // Find the associated content for this folder and get JSON sections
   const associatedContent = contentNodes?.find(content => content.path === node.path);
   const documentSections = useMemo(() => {
-    if (!associatedContent?.content_json?.sections) return [];
+    if (!associatedContent?.content_json) return [];
     // Convert JSON sections to DocumentSection format
-    return associatedContent.content_json.sections.map((section, index) => ({
+    return associatedContent.content_json.map((section, index) => ({
       id: `section-${index}`,
       level: section.level || 1,
       title: section.title || '',
       tags: section.tags || [],
       children: []
     }));
-  }, [associatedContent?.content_json?.sections]);
+  }, [associatedContent?.content_json]);
 
   const toggleExpanded = (e: React.MouseEvent) => {
     e.preventDefault();

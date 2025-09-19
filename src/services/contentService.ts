@@ -8,33 +8,31 @@ export interface DocumentSection {
   tags: string[];
 }
 
-export interface WikiDocument {
+export interface ContentItem {
   id: string;
+  type: 'folder' | 'document';
   title: string;
-  path: string;
-  content_json: any; // Will be cast to DocumentSection[] when used
-  tags?: string[];
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface NavigationNode {
-  id: string;
-  title: string;
-  type: 'document' | 'folder';
   path: string;
   parent_id: string | null;
   order_index: number;
-  document_id: string | null;
+  content_json: DocumentSection[] | null;
+  tags: string[];
   created_at: string;
   updated_at: string;
-  children?: NavigationNode[];
+  children?: ContentItem[];
 }
 
+// Backwards compatibility aliases
+export interface WikiDocument extends Omit<ContentItem, 'content_json'> {
+  content_json: DocumentSection[];
+}
+
+export interface NavigationNode extends ContentItem {}
+
 export class ContentService {
-  static async getNavigationStructure(): Promise<NavigationNode[]> {
+  static async getNavigationStructure(): Promise<ContentItem[]> {
     const { data, error } = await supabase
-      .from('navigation_structure')
+      .from('content_items')
       .select('*')
       .order('order_index');
 
@@ -46,7 +44,8 @@ export class ContentService {
     // Cast the data to ensure correct typing
     const typedData = (data || []).map(item => ({
       ...item,
-      type: item.type as 'document' | 'folder'
+      type: item.type as 'document' | 'folder',
+      content_json: item.content_json as unknown as DocumentSection[] | null
     }));
 
     return this.buildHierarchy(typedData);
@@ -54,9 +53,10 @@ export class ContentService {
 
   static async getDocumentByPath(path: string): Promise<WikiDocument | null> {
     const { data, error } = await supabase
-      .from('documents')
+      .from('content_items')
       .select('*')
       .eq('path', path)
+      .eq('type', 'document')
       .maybeSingle();
 
     if (error) {
@@ -64,19 +64,65 @@ export class ContentService {
       return null;
     }
 
-    if (!data) return null;
+    if (!data || !data.content_json) return null;
 
-    // Cast content_json to proper type
     return {
       ...data,
+      type: data.type as 'document',
       content_json: data.content_json as unknown as DocumentSection[]
     };
   }
 
+  static async getContentItemByPath(path: string): Promise<ContentItem | null> {
+    const { data, error } = await supabase
+      .from('content_items')
+      .select('*')
+      .eq('path', path)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching content item by path:', error);
+      return null;
+    }
+
+    return data ? {
+      ...data,
+      type: data.type as 'document' | 'folder',
+      content_json: data.content_json as unknown as DocumentSection[] | null
+    } : null;
+  }
+
+  static async getNavigationNodeByPath(path: string): Promise<NavigationNode | null> {
+    return this.getContentItemByPath(path);
+  }
+
+  static async getNavigationNodeChildren(parentPath: string): Promise<ContentItem[]> {
+    const parent = await this.getContentItemByPath(parentPath);
+    if (!parent) return [];
+
+    const { data, error } = await supabase
+      .from('content_items')
+      .select('*')
+      .eq('parent_id', parent.id)
+      .order('order_index');
+
+    if (error) {
+      console.error('Error fetching navigation node children:', error);
+      return [];
+    }
+
+    return (data || []).map(item => ({
+      ...item,
+      type: item.type as 'document' | 'folder',
+      content_json: item.content_json as unknown as DocumentSection[] | null
+    }));
+  }
+
   static async searchDocuments(query: string): Promise<WikiDocument[]> {
     const { data, error } = await supabase
-      .from('documents')
+      .from('content_items')
       .select('*')
+      .eq('type', 'document')
       .or(`title.ilike.%${query}%,content_json::text.ilike.%${query}%`)
       .order('title');
 
@@ -85,10 +131,34 @@ export class ContentService {
       return [];
     }
 
-    return (data || []).map(doc => ({
-      ...doc,
-      content_json: doc.content_json as unknown as DocumentSection[]
-    }));
+    return (data || [])
+      .filter(item => item.content_json)
+      .map(doc => ({
+        ...doc,
+        type: doc.type as 'document',
+        content_json: doc.content_json as unknown as DocumentSection[]
+      }));
+  }
+
+  static async getAllDocuments(): Promise<WikiDocument[]> {
+    const { data, error } = await supabase
+      .from('content_items')
+      .select('*')
+      .eq('type', 'document')
+      .order('path');
+
+    if (error) {
+      console.error('Error fetching all documents:', error);
+      return [];
+    }
+
+    return (data || [])
+      .filter(item => item.content_json)
+      .map(doc => ({
+        ...doc,
+        type: doc.type as 'document',
+        content_json: doc.content_json as unknown as DocumentSection[]
+      }));
   }
 
   static buildHierarchy<T extends { id: string; parent_id: string | null }>(
@@ -119,135 +189,36 @@ export class ContentService {
     return roots;
   }
 
-  static async getAllDocuments(): Promise<WikiDocument[]> {
-    const { data, error } = await supabase
-      .from('documents')
-      .select('*')
-      .order('path');
-
-    if (error) {
-      console.error('Error fetching all documents:', error);
-      return [];
-    }
-
-    return (data || []).map(doc => ({
-      ...doc,
-      content_json: doc.content_json as unknown as DocumentSection[]
-    }));
-  }
-
-  static async getNavigationNodeByPath(path: string): Promise<NavigationNode | null> {
-    const { data, error } = await supabase
-      .from('navigation_structure')
-      .select('*')
-      .eq('path', path)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error fetching navigation node by path:', error);
-      return null;
-    }
-
-    if (!data) return null;
-
-    return {
-      ...data,
-      type: data.type as 'document' | 'folder'
-    };
-  }
-
-  static async getNavigationNodeChildren(parentPath: string): Promise<NavigationNode[]> {
-    const { data, error } = await supabase
-      .from('navigation_structure')
-      .select('*')
-      .like('path', `${parentPath}/%`)
-      .not('path', 'eq', parentPath)
-      .order('order_index');
-
-    if (error) {
-      console.error('Error fetching navigation node children:', error);
-      return [];
-    }
-
-    return (data || []).map(item => ({
-      ...item,
-      type: item.type as 'document' | 'folder'
-    }));
-  }
-
-  // Navigation management methods
-  static async createNavigationFolder(title: string, parentId: string | null = null): Promise<NavigationNode | null> {
-    const path = parentId ? `/${title.toLowerCase().replace(/\s+/g, '-')}` : `/${title.toLowerCase().replace(/\s+/g, '-')}`;
+  // Content management methods
+  static async createFolder(title: string, parentId: string | null = null): Promise<ContentItem | null> {
+    const parentPath = parentId ? (await this.getContentItemByPath(''))?.path || '' : '';
+    const path = parentPath ? `${parentPath}/${title.toLowerCase().replace(/\s+/g, '-')}` : `/${title.toLowerCase().replace(/\s+/g, '-')}`;
     
     const { data, error } = await supabase
-      .from('navigation_structure')
+      .from('content_items')
       .insert({
         title,
         type: 'folder',
         path,
         parent_id: parentId,
-        order_index: 999 // Add at the end
+        order_index: 999,
+        tags: []
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating navigation folder:', error);
+      console.error('Error creating folder:', error);
       return null;
     }
 
-    return {
+    return data ? {
       ...data,
-      type: 'folder' as const
-    };
+      type: data.type as 'folder',
+      content_json: null
+    } : null;
   }
 
-  static async updateNavigationNode(id: string, updates: Partial<NavigationNode>): Promise<boolean> {
-    const { error } = await supabase
-      .from('navigation_structure')
-      .update(updates)
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error updating navigation node:', error);
-      return false;
-    }
-
-    return true;
-  }
-
-  static async deleteNavigationNode(id: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('navigation_structure')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting navigation node:', error);
-      return false;
-    }
-
-    return true;
-  }
-
-  static async reorderNavigationNodes(nodeId: string, newParentId: string | null, newOrderIndex: number): Promise<boolean> {
-    const { error } = await supabase
-      .from('navigation_structure')
-      .update({
-        parent_id: newParentId,
-        order_index: newOrderIndex
-      })
-      .eq('id', nodeId);
-
-    if (error) {
-      console.error('Error reordering navigation node:', error);
-      return false;
-    }
-
-    return true;
-  }
-
-  // Document management methods
   static async createDocument(
     title: string, 
     content_json: DocumentSection[], 
@@ -255,12 +226,14 @@ export class ContentService {
     tags: string[] = []
   ): Promise<WikiDocument | null> {
     const { data, error } = await supabase
-      .from('documents')
+      .from('content_items')
       .insert({
         title,
+        type: 'document',
         content_json: content_json as any,
         path,
-        tags: tags.length > 0 ? tags : []
+        tags: tags.length > 0 ? tags : [],
+        order_index: 999
       })
       .select()
       .single();
@@ -272,27 +245,48 @@ export class ContentService {
 
     return {
       ...data,
+      type: data.type as 'document',
       content_json: data.content_json as unknown as DocumentSection[]
     };
   }
 
-  static async updateDocument(
+  static async updateContentItem(
     id: string, 
-    updates: Partial<Omit<WikiDocument, 'id' | 'created_at' | 'updated_at'>>
+    updates: Partial<Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>>
   ): Promise<boolean> {
-    // Cast content_json to any for Supabase
     const dbUpdates = {
       ...updates,
       content_json: updates.content_json ? updates.content_json as any : undefined
     };
 
     const { error } = await supabase
-      .from('documents')
+      .from('content_items')
       .update(dbUpdates)
       .eq('id', id);
 
     if (error) {
-      console.error('Error updating document:', error);
+      console.error('Error updating content item:', error);
+      return false;
+    }
+
+    return true;
+  }
+
+  static async updateDocument(
+    id: string, 
+    updates: Partial<Omit<WikiDocument, 'id' | 'created_at' | 'updated_at'>>
+  ): Promise<boolean> {
+    return this.updateContentItem(id, updates);
+  }
+
+  static async deleteContentItem(id: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('content_items')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting content item:', error);
       return false;
     }
 
@@ -303,9 +297,9 @@ export class ContentService {
     try {
       console.log('saveDocumentContent called with path:', path, 'sections:', sections);
       
-      // First, try to get existing document
-      const existingDocument = await this.getDocumentByPath(path);
-      console.log('Existing document found:', existingDocument);
+      // First, try to get existing content item
+      const existingItem = await this.getContentItemByPath(path);
+      console.log('Existing item found:', existingItem);
       
       if (sections.length === 0) {
         console.log('No sections to save, returning true');
@@ -316,10 +310,11 @@ export class ContentService {
       const title = sections[0]?.title || 'Untitled';
       const allTags = [...new Set(sections.flatMap(s => s.tags || []))];
       
-      if (existingDocument) {
-        console.log('Updating existing document with id:', existingDocument.id);
-        const success = await this.updateDocument(existingDocument.id, {
+      if (existingItem) {
+        console.log('Updating existing item with id:', existingItem.id);
+        const success = await this.updateContentItem(existingItem.id, {
           title,
+          type: 'document',
           content_json: sections,
           tags: allTags.length > 0 ? allTags : []
         });
@@ -338,7 +333,6 @@ export class ContentService {
     }
   }
 
-  // Section-specific update method
   static async updateSectionInDocument(
     path: string, 
     sectionId: string, 
@@ -348,19 +342,19 @@ export class ContentService {
       console.log('updateSectionInDocument called with:', { path, sectionId, updatedSection });
       
       // Get the existing document
-      const existingDocument = await this.getDocumentByPath(path);
-      if (!existingDocument) {
+      const existingItem = await this.getContentItemByPath(path);
+      if (!existingItem || !existingItem.content_json) {
         console.error('Document not found for section update');
         return false;
       }
 
       // Update the specific section in the JSON content
-      const updatedSections = (existingDocument.content_json as unknown as DocumentSection[]).map(section => 
+      const updatedSections = (existingItem.content_json as DocumentSection[]).map(section => 
         section.id === sectionId ? updatedSection : section
       );
 
       // Update the document with the new content
-      const success = await this.updateDocument(existingDocument.id, {
+      const success = await this.updateContentItem(existingItem.id, {
         content_json: updatedSections
       });
       
@@ -370,5 +364,35 @@ export class ContentService {
       console.error('Error updating section in document:', error);
       return false;
     }
+  }
+
+  // Navigation management methods (backwards compatibility)
+  static async createNavigationFolder(title: string, parentId: string | null = null): Promise<NavigationNode | null> {
+    return this.createFolder(title, parentId);
+  }
+
+  static async updateNavigationNode(id: string, updates: Partial<NavigationNode>): Promise<boolean> {
+    return this.updateContentItem(id, updates);
+  }
+
+  static async deleteNavigationNode(id: string): Promise<boolean> {
+    return this.deleteContentItem(id);
+  }
+
+  static async reorderNavigationNodes(nodeId: string, newParentId: string | null, newOrderIndex: number): Promise<boolean> {
+    const { error } = await supabase
+      .from('content_items')
+      .update({
+        parent_id: newParentId,
+        order_index: newOrderIndex
+      })
+      .eq('id', nodeId);
+
+    if (error) {
+      console.error('Error reordering navigation node:', error);
+      return false;
+    }
+
+    return true;
   }
 }
