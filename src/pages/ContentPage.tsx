@@ -59,6 +59,12 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   }) => {
+    console.log('🔍 SIDEBAR DEBUG: handleSectionView called with:', {
+      title: sectionData.title,
+      level: sectionData.level,
+      parentPath: sectionData.parentPath,
+      currentPath: location.pathname
+    });
     setViewingSection(sectionData);
   };
 
@@ -91,9 +97,11 @@ const ContentPage = () => {
   // Load content when route changes
   useEffect(() => {
     const loadContent = async () => {
+      console.log('🔄 ROUTE DEBUG: Route changed to:', location.pathname);
       setLoading(true);
       
       // Clear section view when navigating to a new path
+      console.log('🧹 ROUTE DEBUG: Clearing viewingSection state');
       setViewingSection(null);
       
       // Get current path
@@ -231,6 +239,10 @@ const ContentPage = () => {
           }
         >
         <div className="space-y-6">
+          {(() => {
+            console.log('🖼️ RENDER DEBUG: viewingSection state:', viewingSection ? `Section: ${viewingSection.title}` : 'null');
+            return null;
+          })()}
           {viewingSection ? (
             <SectionView 
               sectionData={viewingSection}

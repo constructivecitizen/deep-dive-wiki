@@ -104,7 +104,14 @@ const SectionItem: React.FC<{
       <div 
         className="flex items-center gap-2 py-1 px-3 rounded cursor-pointer hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
         style={{ marginLeft: `${indentationPx}px` }}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('📄 SECTION DEBUG: Section clicked:', {
+            title: section.title,
+            level: section.level,
+            folderPath: folderPath
+          });
           if (onSectionView) {
             const sectionContent = extractSectionContent(fullContent, section);
             onSectionView({
@@ -204,6 +211,7 @@ const FolderNode: React.FC<{
 
   const handleNodeClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    console.log('📁 FOLDER DEBUG: Folder clicked, navigating to:', node.path);
     navigate(node.path);
   };
 
