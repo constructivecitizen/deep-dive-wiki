@@ -119,10 +119,10 @@ const ContentPage = () => {
       const contentData = await ContentService.getDocumentByPath(currentPath);
       setContent(contentData);
       
-      // If no content found, check if it's a navigation folder
+      // If no content found, check if it's a navigation item without content
       if (!contentData && currentPath !== '/') {
         const folderData = await ContentService.getNavigationNodeByPath(currentPath);
-        if (folderData && folderData.type === 'folder') {
+        if (folderData) {
           setCurrentFolder(folderData);
           const children = await ContentService.getNavigationNodeChildren(currentPath);
           setFolderChildren(children);

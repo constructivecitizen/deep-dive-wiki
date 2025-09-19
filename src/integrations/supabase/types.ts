@@ -24,7 +24,6 @@ export type Database = {
           path: string
           tags: string[] | null
           title: string
-          type: string
           updated_at: string
         }
         Insert: {
@@ -36,7 +35,6 @@ export type Database = {
           path: string
           tags?: string[] | null
           title: string
-          type: string
           updated_at?: string
         }
         Update: {
@@ -48,7 +46,6 @@ export type Database = {
           path?: string
           tags?: string[] | null
           title?: string
-          type?: string
           updated_at?: string
         }
         Relationships: [

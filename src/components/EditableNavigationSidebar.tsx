@@ -70,11 +70,12 @@ const TreeNode = ({
   const handleNodeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     
-    if (node.type === 'folder') {
-      navigate(node.path);
+    // Navigate to the node path regardless of whether it has content
+    navigate(node.path);
+    
+    // If it has children, also toggle expansion  
+    if (hasChildren) {
       setExpanded(!expanded);
-    } else {
-      navigate(node.path);
     }
   };
 
@@ -157,15 +158,13 @@ const TreeNode = ({
         }`}
         style={indentationStyle}
         onClick={handleNodeClick}
-        draggable={node.type === 'folder'}
+        draggable={true}
         onDragStart={handleDragStart}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
         {/* Drag handle */}
-        {node.type === 'folder' && (
-          <GripVertical className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
-        )}
+        <GripVertical className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
 
         {/* Expansion toggle for folders with children */}
         {hasChildren && (
@@ -229,15 +228,15 @@ const TreeNode = ({
           )}
         </div>
 
-        {/* Action buttons - only for folders */}
-        {node.type === 'folder' && !isEditing && (
+        {/* Action buttons */}
+        {!isEditing && (
           <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0"
               onClick={handleEditStart}
-              title="Edit folder name"
+              title="Edit item name"
             >
               <Edit2 className="w-3 h-3" />
             </Button>
@@ -253,8 +252,8 @@ const TreeNode = ({
           </div>
         )}
 
-        {/* External link icon for documents */}
-        {node.type === 'document' && (
+        {/* External link icon for items with content */}
+        {node.content_json && (
           <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
         )}
       </div>

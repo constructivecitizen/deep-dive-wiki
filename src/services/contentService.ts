@@ -10,7 +10,6 @@ export interface DocumentSection {
 
 export interface ContentItem {
   id: string;
-  type: 'folder' | 'document';
   title: string;
   path: string;
   parent_id: string | null;
@@ -24,7 +23,7 @@ export interface ContentItem {
 
 // Type aliases for semantic clarity - these represent the same data as ContentItem
 // but provide clearer intent in different contexts
-export interface WikiDocument extends Omit<ContentItem, 'content_json'> {
+export interface WikiDocument extends ContentItem {
   content_json: DocumentSection[];
 }
 
@@ -45,7 +44,6 @@ export class ContentService {
     // Cast the data to ensure correct typing
     const typedData = (data || []).map(item => ({
       ...item,
-      type: item.type as 'document' | 'folder',
       content_json: item.content_json as unknown as DocumentSection[] | null
     }));
 
@@ -57,7 +55,6 @@ export class ContentService {
       .from('content_items')
       .select('*')
       .eq('path', path)
-      .eq('type', 'document')
       .maybeSingle();
 
     if (error) {
@@ -69,7 +66,6 @@ export class ContentService {
 
     return {
       ...data,
-      type: data.type as 'document',
       content_json: data.content_json as unknown as DocumentSection[]
     };
   }
@@ -88,7 +84,6 @@ export class ContentService {
 
     return data ? {
       ...data,
-      type: data.type as 'document' | 'folder',
       content_json: data.content_json as unknown as DocumentSection[] | null
     } : null;
   }
@@ -114,7 +109,6 @@ export class ContentService {
 
     return (data || []).map(item => ({
       ...item,
-      type: item.type as 'document' | 'folder',
       content_json: item.content_json as unknown as DocumentSection[] | null
     }));
   }
@@ -123,7 +117,6 @@ export class ContentService {
     const { data, error } = await supabase
       .from('content_items')
       .select('*')
-      .eq('type', 'document')
       .or(`title.ilike.%${query}%,content_json::text.ilike.%${query}%`)
       .order('title');
 
@@ -136,7 +129,6 @@ export class ContentService {
       .filter(item => item.content_json)
       .map(doc => ({
         ...doc,
-        type: doc.type as 'document',
         content_json: doc.content_json as unknown as DocumentSection[]
       }));
   }
@@ -145,7 +137,6 @@ export class ContentService {
     const { data, error } = await supabase
       .from('content_items')
       .select('*')
-      .eq('type', 'document')
       .order('path');
 
     if (error) {
@@ -157,7 +148,6 @@ export class ContentService {
       .filter(item => item.content_json)
       .map(doc => ({
         ...doc,
-        type: doc.type as 'document',
         content_json: doc.content_json as unknown as DocumentSection[]
       }));
   }
@@ -199,7 +189,6 @@ export class ContentService {
       .from('content_items')
       .insert({
         title,
-        type: 'folder',
         path,
         parent_id: parentId,
         order_index: 999,
@@ -215,7 +204,6 @@ export class ContentService {
 
     return data ? {
       ...data,
-      type: data.type as 'folder',
       content_json: null
     } : null;
   }
@@ -230,7 +218,6 @@ export class ContentService {
       .from('content_items')
       .insert({
         title,
-        type: 'document',
         content_json: content_json as any,
         path,
         tags: tags.length > 0 ? tags : [],
@@ -246,7 +233,6 @@ export class ContentService {
 
     return {
       ...data,
-      type: data.type as 'document',
       content_json: data.content_json as unknown as DocumentSection[]
     };
   }
@@ -315,7 +301,6 @@ export class ContentService {
         console.log('Updating existing item with id:', existingItem.id);
         const success = await this.updateContentItem(existingItem.id, {
           title,
-          type: 'document',
           content_json: sections,
           tags: allTags.length > 0 ? allTags : []
         });

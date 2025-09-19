@@ -35,13 +35,12 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId,
   const handleNodeClick = (e: React.MouseEvent) => {
     e.preventDefault();
     
-    if (node.type === 'folder') {
-      // For folders, navigate to the folder page and toggle expansion
-      navigate(node.path);
+    // Navigate to the node path regardless of whether it has content
+    navigate(node.path);
+    
+    // If it has children, also toggle expansion
+    if (hasChildren) {
       setExpanded(!expanded);
-    } else {
-      // For documents, navigate to the path
-      navigate(node.path);
     }
   };
 
@@ -79,10 +78,10 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId,
 
         {/* Icon */}
         <div className="flex-shrink-0">
-          {node.type === 'folder' ? (
-            <Folder className="w-4 h-4 text-muted-foreground" />
-          ) : (
+          {node.content_json ? (
             <FileText className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <Folder className="w-4 h-4 text-muted-foreground" />
           )}
         </div>
 
@@ -93,8 +92,8 @@ const TreeNode = ({ node, level, contentNodes, onContentNodeClick, activeNodeId,
           {node.title}
         </span>
 
-        {/* External link icon for documents */}
-        {node.type === 'document' && (
+        {/* External link icon for items with content */}
+        {node.content_json && (
           <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
         )}
       </div>
