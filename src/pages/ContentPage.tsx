@@ -93,6 +93,9 @@ const ContentPage = () => {
     const loadContent = async () => {
       setLoading(true);
       
+      // Clear section view when navigating to a new path
+      setViewingSection(null);
+      
       // Get current path
       const currentPath = location.pathname;
       
