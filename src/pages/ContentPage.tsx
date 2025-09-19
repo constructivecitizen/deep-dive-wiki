@@ -109,6 +109,10 @@ const ContentPage = () => {
     title: string;
     level: number;
     parentPath: string;
+    sectionHierarchy?: Array<{
+      title: string;
+      level: number;
+    }>;
   } | null>(null);
 
   const handleSectionView = (sectionData: {
@@ -118,6 +122,26 @@ const ContentPage = () => {
     parentPath: string;
   }) => {
     setViewingSection(sectionData);
+  };
+
+  const handleSectionNavigate = (sectionTitle: string) => {
+    // Find the section by title in the current document and navigate to it
+    if (pageData?.type === 'content' && pageData.data.content_json) {
+      const targetSection = pageData.data.content_json.find(section => section.title === sectionTitle);
+      if (targetSection) {
+        // Import the section content extractor
+        import('@/lib/sectionContentExtractor').then(({ extractSectionFullContent }) => {
+          const sectionData = extractSectionFullContent(targetSection, pageData.data.content_json || []);
+          setViewingSection({
+            content: sectionData.content,
+            title: sectionData.title,
+            level: sectionData.level,
+            parentPath: pageData.data.path,
+            sectionHierarchy: sectionData.sectionHierarchy
+          });
+        });
+      }
+    }
   };
 
   // Atomic page data loading function - returns data for synchronous handling
@@ -457,6 +481,7 @@ const ContentPage = () => {
             <SectionView 
               sectionData={viewingSection}
               onBack={() => setViewingSection(null)}
+              onSectionNavigate={handleSectionNavigate}
               navigationStructure={navigationStructure}
             />
           ) : (

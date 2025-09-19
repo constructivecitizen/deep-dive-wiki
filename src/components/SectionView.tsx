@@ -13,12 +13,14 @@ interface SectionViewProps {
     }>;
   };
   onBack: () => void;
+  onSectionNavigate?: (sectionTitle: string) => void;
   navigationStructure?: any[];
 }
 
 export const SectionView: React.FC<SectionViewProps> = ({ 
   sectionData, 
   onBack,
+  onSectionNavigate,
   navigationStructure = []
 }) => {
   return (
@@ -31,10 +33,10 @@ export const SectionView: React.FC<SectionViewProps> = ({
         sectionTitle={sectionData.title}
         sectionHierarchy={sectionData.sectionHierarchy}
         onSectionBack={onBack}
-        onSectionNavigate={(sectionTitle) => {
-          // Navigate to parent section - for now just go back to document
+        onSectionNavigate={onSectionNavigate || (() => {
+          // Fallback: go back to document if no specific handler provided
           onBack();
-        }}
+        })}
       />
 
       {/* Header */}
