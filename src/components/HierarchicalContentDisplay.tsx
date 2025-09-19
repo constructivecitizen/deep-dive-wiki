@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 
@@ -109,11 +109,9 @@ const ContentSectionComponent: React.FC<{
             className="flex-shrink-0 mt-1 p-1 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-center"
             aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
-            {isExpanded ? (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            )}
+            <span className={`text-muted-foreground transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+              ‣
+            </span>
           </button>
         ) : (
           // Bullet point for leaf nodes with titles

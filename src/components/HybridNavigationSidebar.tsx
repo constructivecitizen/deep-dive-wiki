@@ -1,7 +1,5 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { 
-  ChevronRight, 
-  ChevronDown, 
   Plus, 
   Edit2, 
   Check, 
@@ -69,11 +67,11 @@ const SectionItem: React.FC<{
             }}
             className="flex-shrink-0"
           >
-            {isExpanded ? (
-              <ChevronDown className="h-3 w-3" />
-            ) : (
-              <ChevronRight className="h-3 w-3" />
-            )}
+            <span className={`text-muted-foreground transform transition-transform duration-200 ${
+              isExpanded ? 'rotate-90' : ''
+            }`}>
+              ‣
+            </span>
           </button>
         ) : (
           <div className="w-3 h-3 flex-shrink-0 flex items-center justify-center">
@@ -234,11 +232,9 @@ const FolderNode: React.FC<{
           onClick={toggleExpanded}
           className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded z-10"
         >
-          {expanded ? (
-            <ChevronDown className="w-3 h-3 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="w-3 h-3 text-muted-foreground" />
-          )}
+          <span className={`text-muted-foreground transform transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}>
+            ‣
+          </span>
         </button>
 
         {/* Title - editable */}

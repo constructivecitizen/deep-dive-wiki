@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+// Removed ChevronRight import - using triangular bullet character instead
 import { WikiLayout } from "@/components/WikiLayout";
 import { ContentService, NavigationNode, WikiDocument } from "@/services/contentService";
 // Import removed - using HierarchicalContentDisplay instead
@@ -316,7 +316,7 @@ const ContentPage = () => {
                   <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
                     {breadcrumbItems.map((item, index) => (
                       <div key={index} className="flex items-center">
-                        {index > 0 && <ChevronRight className="h-4 w-4 mx-2" />}
+                        {index > 0 && <span className="h-4 w-4 mx-2">‣</span>}
                         {item.isLast ? (
                           <span className="text-foreground font-medium">
                             {item.title}
