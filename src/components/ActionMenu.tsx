@@ -7,27 +7,20 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Menu, Edit3, FileEdit, Filter, FolderTree } from 'lucide-react';
-import { DocumentStructure } from '@/components/DocumentSidebar';
+import { Menu, Edit3, FileEdit, Filter } from 'lucide-react';
 
 interface ActionMenuProps {
   editMode: boolean;
   onToggleEdit: (enabled: boolean) => void;
   onDocumentEdit: () => void;
   onToggleFilter: () => void;
-  navigationStructure: DocumentStructure[];
-  onStructureChange: (structure: DocumentStructure[]) => void;
-  showNavigationManager?: boolean;
 }
 
 export const ActionMenu = ({
   editMode,
   onToggleEdit,
   onDocumentEdit,
-  onToggleFilter,
-  navigationStructure,
-  onStructureChange,
-  showNavigationManager = true
+  onToggleFilter
 }: ActionMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -68,23 +61,6 @@ export const ActionMenu = ({
           <Filter className="h-4 w-4" />
           Toggle Filters
         </DropdownMenuItem>
-        
-        {showNavigationManager && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => handleItemClick(() => {
-                // Open navigation manager - we'll need to add this functionality
-                const event = new CustomEvent('openNavigationManager');
-                window.dispatchEvent(event);
-              })}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <FolderTree className="h-4 w-4" />
-              Manage Navigation
-            </DropdownMenuItem>
-          </>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

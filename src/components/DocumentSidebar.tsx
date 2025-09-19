@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 
-// Legacy interface for compatibility with existing files
-export interface DocumentStructure {
-  id: string;
-  title: string;
-  type: 'folder' | 'document';
-  path?: string;
-  children?: DocumentStructure[];
-}
+// DocumentStructure interface removed - use ContentItem from contentService instead
 
 interface DocumentSection {
   id: string;

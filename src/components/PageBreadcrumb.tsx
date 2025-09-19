@@ -1,10 +1,10 @@
 import { ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { DocumentStructure } from '@/components/DocumentSidebar';
+import { ContentItem } from '@/services/contentService';
 
 interface PageBreadcrumbProps {
   currentPath: string;
-  navigationStructure: DocumentStructure[];
+  navigationStructure: ContentItem[];
   pageTitle?: string;
 }
 
@@ -14,7 +14,7 @@ export const PageBreadcrumb = ({
   pageTitle 
 }: PageBreadcrumbProps) => {
   // Find the parent topic for the current page
-  const findParentTopic = (path: string, structure: DocumentStructure[]): DocumentStructure | null => {
+  const findParentTopic = (path: string, structure: ContentItem[]): ContentItem | null => {
     for (const item of structure) {
       if (item.children) {
         // Check if any child matches the current path

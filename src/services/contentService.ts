@@ -22,7 +22,8 @@ export interface ContentItem {
   children?: ContentItem[];
 }
 
-// Backwards compatibility aliases
+// Type aliases for semantic clarity - these represent the same data as ContentItem
+// but provide clearer intent in different contexts
 export interface WikiDocument extends Omit<ContentItem, 'content_json'> {
   content_json: DocumentSection[];
 }
