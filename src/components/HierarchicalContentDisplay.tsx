@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 
@@ -15,7 +15,6 @@ interface ContentSection {
 interface HierarchicalContentDisplayProps {
   content: string;
   onSectionClick?: (sectionId: string) => void;
-  onSectionNavigate?: (sectionData: any) => void;
   activeNodeId?: string;
 }
 
@@ -80,9 +79,8 @@ const ContentSectionComponent: React.FC<{
   section: ContentSection; 
   depth: number;
   onSectionClick?: (sectionId: string) => void;
-  onSectionNavigate?: (sectionData: any) => void;
   activeNodeId?: string;
-}> = ({ section, depth, onSectionClick, onSectionNavigate, activeNodeId }) => {
+}> = ({ section, depth, onSectionClick, activeNodeId }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
@@ -133,19 +131,14 @@ const ContentSectionComponent: React.FC<{
             </h1>
             <button
               onClick={() => {
-                if (onSectionNavigate) {
-                  onSectionNavigate({
-                    title: section.title,
-                    content: section.content,
-                    level: section.level,
-                    parentPath: window.location.pathname
-                  });
+                if (onSectionClick) {
+                  onSectionClick(section.id);
                 }
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
               aria-label={`Navigate to ${section.title} section`}
             >
-              <ArrowRight size={16} />
+              <FileText size={16} />
             </button>
           </div>
           
@@ -172,7 +165,6 @@ const ContentSectionComponent: React.FC<{
                   section={child} 
                   depth={depth + 1}
                   onSectionClick={onSectionClick}
-                  onSectionNavigate={onSectionNavigate}
                   activeNodeId={activeNodeId}
                 />
               ))}
@@ -186,8 +178,7 @@ const ContentSectionComponent: React.FC<{
 
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
   content, 
-  onSectionClick,
-  onSectionNavigate,
+  onSectionClick, 
   activeNodeId 
 }) => {
   // Clean tag syntax from content before parsing
@@ -211,7 +202,6 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
             section={section} 
             depth={0}
             onSectionClick={onSectionClick}
-            onSectionNavigate={onSectionNavigate}
             activeNodeId={activeNodeId}
           />
         ))}
