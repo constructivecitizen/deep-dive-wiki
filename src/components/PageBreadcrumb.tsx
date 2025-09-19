@@ -101,14 +101,6 @@ export const PageBreadcrumb = ({
           </div>
         ))}
         
-        {sectionTitle && (
-          <>
-            <ChevronRight className="h-3 w-3" />
-            <span className="font-medium text-foreground bg-primary/10 text-primary px-2 py-1 rounded text-xs border border-primary/20">
-              {sectionTitle}
-            </span>
-          </>
-        )}
       </div>
       <div className="h-px bg-gradient-to-r from-border via-border/50 to-transparent w-full"></div>
     </div>
