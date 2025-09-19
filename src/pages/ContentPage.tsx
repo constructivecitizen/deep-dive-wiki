@@ -120,10 +120,9 @@ const ContentPage = () => {
     setViewingSection(sectionData);
   };
 
-  // Atomic page data loading function
-  const loadPageData = async (currentPath: string) => {
+  // Atomic page data loading function - returns data for synchronous handling
+  const loadPageData = async (currentPath: string): Promise<PageData> => {
     setViewingSection(null);
-    dispatch({ type: 'SET_LOADING' });
     
     try {
       // Load all required data atomically
@@ -133,17 +132,17 @@ const ContentPage = () => {
         currentPath !== '/' ? ContentService.getNavigationNodeChildren(currentPath) : []
       ]);
       
-      // Set page data atomically based on what we found
+      // Return page data based on what we found
       if (contentData) {
-        dispatch({ type: 'SET_CONTENT', payload: contentData });
+        return { type: 'content', data: contentData };
       } else if (folderData) {
-        dispatch({ type: 'SET_FOLDER', payload: { data: folderData, children: folderChildren } });
+        return { type: 'folder', data: folderData, children: folderChildren };
       } else {
-        dispatch({ type: 'SET_NOT_FOUND' });
+        return null;
       }
     } catch (error) {
       console.error('Error loading page data:', error);
-      dispatch({ type: 'SET_NOT_FOUND' });
+      return null;
     }
   };
 
@@ -165,10 +164,28 @@ const ContentPage = () => {
     loadInitialData();
   }, []);
 
-  // Load page content when route changes
+  // Load page content when route changes - only if we don't already have data for this path
   useEffect(() => {
-    loadPageData(location.pathname);
-  }, [location.pathname]);
+    const currentPath = location.pathname;
+    const hasCorrectData = pageData && 
+      ((pageData.type === 'content' && pageData.data.path === currentPath) || 
+       (pageData.type === 'folder' && pageData.data.path === currentPath));
+
+    if (!hasCorrectData && pageData?.type !== 'loading') {
+      dispatch({ type: 'SET_LOADING' });
+      loadPageData(currentPath).then(data => {
+        if (data) {
+          if (data.type === 'content') {
+            dispatch({ type: 'SET_CONTENT', payload: data.data });
+          } else if (data.type === 'folder') {
+            dispatch({ type: 'SET_FOLDER', payload: { data: data.data, children: data.children } });
+          }
+        } else {
+          dispatch({ type: 'SET_NOT_FOUND' });
+        }
+      });
+    }
+  }, [location.pathname, pageData]);
 
   const handleFilter = (filters: {
     searchTerm: string;
@@ -203,14 +220,36 @@ const ContentPage = () => {
     console.log('Update node:', updatedNode.id, updatedNode);
   };
 
-  // Atomic navigation flow - no separate state updates
+  // Synchronized navigation flow - load data first, then navigate
   const handleNavigationClick = async (navId: string, path: string) => {
-    if (isNavigating) return; // Prevent multiple concurrent navigations
+    if (isNavigating || pageData?.type === 'loading') return; // Prevent multiple concurrent navigations
     
     dispatch({ type: 'SET_NAVIGATING', payload: true });
-    navigate(path);
-    // loadPageData will be triggered by useEffect on location.pathname change
-    dispatch({ type: 'SET_NAVIGATING', payload: false });
+    dispatch({ type: 'SET_LOADING' });
+    
+    try {
+      // Load data first
+      const data = await loadPageData(path);
+      
+      // Set data in state
+      if (data) {
+        if (data.type === 'content') {
+          dispatch({ type: 'SET_CONTENT', payload: data.data });
+        } else if (data.type === 'folder') {
+          dispatch({ type: 'SET_FOLDER', payload: { data: data.data, children: data.children } });
+        }
+      } else {
+        dispatch({ type: 'SET_NOT_FOUND' });
+      }
+      
+      // Navigate after data is ready
+      navigate(path, { replace: true });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      dispatch({ type: 'SET_NOT_FOUND' });
+    } finally {
+      dispatch({ type: 'SET_NAVIGATING', payload: false });
+    }
   };
 
   // Refresh all data atomically
@@ -224,7 +263,16 @@ const ContentPage = () => {
       dispatch({ type: 'SET_ALL_CONTENT', payload: allNodes });
       
       // Refresh current page data
-      await loadPageData(location.pathname);
+      const data = await loadPageData(location.pathname);
+      if (data) {
+        if (data.type === 'content') {
+          dispatch({ type: 'SET_CONTENT', payload: data.data });
+        } else if (data.type === 'folder') {
+          dispatch({ type: 'SET_FOLDER', payload: { data: data.data, children: data.children } });
+        }
+      } else {
+        dispatch({ type: 'SET_NOT_FOUND' });
+      }
     } catch (error) {
       console.error('Error refreshing data:', error);
     }
@@ -242,7 +290,8 @@ const ContentPage = () => {
 
   // Render breadcrumb navigation
   const renderBreadcrumb = () => {
-    if (!pageData || pageData.type !== 'content') return null; // Only show for content pages
+    // Only show for content pages, not during transitions
+    if (!pageData || pageData.type !== 'content' || isNavigating) return null;
     
     const breadcrumbItems = [];
     const pathParts = pageData.data.path.split('/').filter(part => part);
