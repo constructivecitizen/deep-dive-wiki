@@ -357,7 +357,6 @@ const ContentPage = () => {
         contentNodes={filteredContent}
         onContentNodeClick={handleContentNodeClick}
         activeNodeId={activeNodeId}
-        currentPath={location.pathname}
       >
         <div className="text-center py-16">
           <h1 className="text-4xl font-bold text-foreground mb-4">Content Not Found</h1>
@@ -387,7 +386,6 @@ const ContentPage = () => {
         contentNodes={filteredContent}
         onContentNodeClick={handleContentNodeClick}
         activeNodeId={activeNodeId}
-        currentPath={location.pathname}
         onStructureUpdate={refreshAllData}
         onSectionView={handleSectionView}
         onNavigationClick={handleNavigationClick}

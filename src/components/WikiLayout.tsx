@@ -7,7 +7,6 @@ interface WikiLayoutProps {
   contentNodes?: WikiDocument[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
-  currentPath?: string;
   onStructureUpdate?: () => void;
   actionMenu?: React.ReactNode;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
@@ -20,7 +19,6 @@ export const WikiLayout = ({
   contentNodes = [],
   onContentNodeClick,
   activeNodeId,
-  currentPath,
   onStructureUpdate,
   actionMenu,
   onSectionView,
