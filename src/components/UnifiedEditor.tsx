@@ -87,14 +87,14 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
   // Fullscreen editor for documents
   if (isFullscreen) {
     return (
-      <div 
-        className="fixed inset-0 bg-background z-40 overflow-hidden" 
-        role="dialog" 
-        aria-modal="true"
-        aria-labelledby="editor-title"
-        aria-describedby="editor-description"
-      >
-        <div className="h-full flex flex-col">
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div 
+          className="bg-background h-full w-full flex flex-col" 
+          role="dialog" 
+          aria-modal="true"
+          aria-labelledby="editor-title"
+          aria-describedby="editor-description"
+        >
           <header className="border-b border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
