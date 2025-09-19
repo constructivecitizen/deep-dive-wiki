@@ -109,14 +109,14 @@ const ContentSectionComponent: React.FC<{
             className="flex-shrink-0 mt-1 p-1 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-center"
             aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
-            <span className={`text-muted-foreground transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+            <span className={`text-muted-foreground transform transition-transform duration-200 text-lg ${isExpanded ? 'rotate-90' : ''}`}>
               ‣
             </span>
           </button>
         ) : (
           // Bullet point for leaf nodes with titles
           <div className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center">
-            <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+            <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
           </div>
         )}
         
