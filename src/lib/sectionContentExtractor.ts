@@ -4,41 +4,59 @@ import { DocumentSection } from '../services/contentService';
  * Extracts the full content for a section including all its nested content
  */
 export function extractSectionFullContent(
-  sections: DocumentSection[],
-  targetSectionId: string
-): string {
-  const findSectionAndContent = (
-    sectionList: DocumentSection[],
-    sectionId: string,
-    currentLevel: number = 1
-  ): string | null => {
-    for (let i = 0; i < sectionList.length; i++) {
-      const section = sectionList[i];
-      
-      if (section.id === sectionId) {
-        // Found the target section, now collect all content
-        let fullContent = '';
-        
-        // Add the section title as a header
-        const headerLevel = '#'.repeat(Math.max(1, section.level || 1));
-        fullContent += `${headerLevel} ${section.title}\n\n`;
-        
-        // Add the section's own content if it exists
-        if (section.content && section.content.trim()) {
-          fullContent += section.content.trim() + '\n\n';
-        }
-        
-        // Recursively add all nested content from the original sections array
-        fullContent += extractNestedContent(sectionList, section.id, section.level || 1);
-        
-        return fullContent.trim();
+  targetSection: DocumentSection,
+  allSections: DocumentSection[]
+): {
+  content: string;
+  title: string;
+  level: number;
+  parentPath: string;
+  sectionHierarchy: Array<{
+    title: string;
+    level: number;
+  }>;
+} {
+  // Build section hierarchy (parent sections)
+  const sectionHierarchy: Array<{ title: string; level: number }> = [];
+  const targetIndex = allSections.findIndex(s => s.id === targetSection.id);
+  
+  if (targetIndex >= 0) {
+    // Look backwards to find parent sections
+    for (let i = targetIndex - 1; i >= 0; i--) {
+      const section = allSections[i];
+      if (section.level < targetSection.level) {
+        sectionHierarchy.unshift({
+          title: section.title,
+          level: section.level
+        });
+        // Continue looking for even higher level parents
+        if (section.level === 1) break;
       }
     }
-    
-    return null;
-  };
+  }
 
-  return findSectionAndContent(sections, targetSectionId) || '';
+  // Build the full content
+  let fullContent = '';
+  
+  // Add the section title as a header
+  const headerLevel = '#'.repeat(Math.max(1, targetSection.level || 1));
+  fullContent += `${headerLevel} ${targetSection.title}\n\n`;
+  
+  // Add the section's own content if it exists
+  if (targetSection.content && targetSection.content.trim()) {
+    fullContent += targetSection.content.trim() + '\n\n';
+  }
+  
+  // Recursively add all nested content from the original sections array
+  fullContent += extractNestedContent(allSections, targetSection.id, targetSection.level || 1);
+
+  return {
+    content: fullContent.trim(),
+    title: targetSection.title,
+    level: targetSection.level,
+    parentPath: '',
+    sectionHierarchy
+  };
 }
 
 /**

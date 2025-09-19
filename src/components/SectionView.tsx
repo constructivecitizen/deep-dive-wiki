@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit } from "lucide-react";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { PageBreadcrumb } from "@/components/PageBreadcrumb";
 
@@ -9,6 +7,10 @@ interface SectionViewProps {
     title: string;
     level: number;
     parentPath: string;
+    sectionHierarchy?: Array<{
+      title: string;
+      level: number;
+    }>;
   };
   onBack: () => void;
   navigationStructure?: any[];
@@ -27,25 +29,17 @@ export const SectionView: React.FC<SectionViewProps> = ({
         navigationStructure={navigationStructure}
         pageTitle={undefined}
         sectionTitle={sectionData.title}
+        sectionHierarchy={sectionData.sectionHierarchy}
         onSectionBack={onBack}
+        onSectionNavigate={(sectionTitle) => {
+          // Navigate to parent section - for now just go back to document
+          onBack();
+        }}
       />
 
-      {/* Header with navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={onBack}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Document
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{sectionData.title}</h1>
-          </div>
-        </div>
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground">{sectionData.title}</h1>
       </div>
 
       {/* Section content */}

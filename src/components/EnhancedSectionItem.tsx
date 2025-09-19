@@ -7,7 +7,16 @@ interface EnhancedSectionItemProps {
   section: HierarchicalDocumentSection;
   depth: number;
   folderPath: string;
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
+  onSectionView?: (sectionData: { 
+    content: string; 
+    title: string; 
+    level: number; 
+    parentPath: string;
+    sectionHierarchy?: Array<{
+      title: string;
+      level: number;
+    }>;
+  }) => void;
   sectionPosition: number;
   flatSections: DocumentSection[];
 }
@@ -29,12 +38,10 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
     e.stopPropagation();
     if (onSectionView) {
       // Extract full content including all nested sections
-      const fullContent = extractSectionFullContent(flatSections, section.id);
+      const sectionData = extractSectionFullContent(section, flatSections);
       
       onSectionView({
-        content: fullContent,
-        title: section.title,
-        level: section.level,
+        ...sectionData,
         parentPath: folderPath
       });
     }
