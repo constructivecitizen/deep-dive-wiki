@@ -47,12 +47,6 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   }) => {
-    console.log('🔍 SIDEBAR DEBUG: handleSectionView called with:', {
-      title: sectionData.title,
-      level: sectionData.level,
-      parentPath: sectionData.parentPath,
-      currentPath: location.pathname
-    });
     setViewingSection(sectionData);
   };
 
@@ -85,21 +79,17 @@ const ContentPage = () => {
   // Load content when route changes or currentNavId changes
   useEffect(() => {
     const loadContent = async () => {
-      console.log('🔄 ROUTE DEBUG: Route changed to:', location.pathname);
-      
       // Only show loading for initial page load, not sidebar navigation
       const isInitialLoad = !content && !currentFolder;
       if (isInitialLoad) {
         setLoading(true);
       }
       
-      // Clear section view when navigating to a new path
-      console.log('🧹 ROUTE DEBUG: Clearing viewingSection state');
+      // Clear all view states when navigating to a new path
       setViewingSection(null);
-      
-      // Reset folder state
       setCurrentFolder(null);
       setFolderChildren([]);
+      setContent(null); // Clear content to prevent stale data
       
       // Get current path
       const currentPath = location.pathname;
@@ -257,10 +247,6 @@ const ContentPage = () => {
           }
         >
         <div className="space-y-6">
-          {(() => {
-            console.log('🖼️ RENDER DEBUG: viewingSection state:', viewingSection ? `Section: ${viewingSection.title}` : 'null');
-            return null;
-          })()}
           {viewingSection ? (
             <SectionView 
               sectionData={viewingSection}
@@ -269,84 +255,84 @@ const ContentPage = () => {
             />
           ) : content || currentFolder ? (
             <>
-            {/* Breadcrumb and Title */}
+            {/* Title and Breadcrumb Logic */}
             {(() => {
-            const breadcrumbItems = [];
-            const pathParts = (content?.path || currentFolder?.path || location.pathname).split('/').filter(part => part);
-            
-            // Helper function to find navigation node by path
-            const findNodeByPath = (nodes: NavigationNode[], targetPath: string): NavigationNode | null => {
-              for (const node of nodes) {
-                if (node.path === targetPath) return node;
-                const found = findNodeByPath(node.children || [], targetPath);
-                if (found) return found;
-              }
-              return null;
-            };
+              // Helper function to find navigation node by path
+              const findNodeByPath = (nodes: NavigationNode[], targetPath: string): NavigationNode | null => {
+                for (const node of nodes) {
+                  if (node.path === targetPath) return node;
+                  const found = findNodeByPath(node.children || [], targetPath);
+                  if (found) return found;
+                }
+                return null;
+              };
 
-            // If we're viewing a folder, use folder info for breadcrumbs
-            const targetContent = content || currentFolder;
-
-            // Always start with Home
-            breadcrumbItems.push({
-              title: 'Home',
-              href: '/',
-              isLast: pathParts.length === 0
-            });
-
-            // Build breadcrumb path for each segment
-            if (targetContent) {
-              const targetPathParts = targetContent.path.split('/').filter(part => part);
+              // Get the current folder/page title
+              const targetPath = content?.path || currentFolder?.path || location.pathname;
+              const currentNavNode = findNodeByPath(navigationStructure, targetPath);
+              const displayTitle = currentNavNode?.title || content?.title || currentFolder?.title || 'Page';
               
-              for (let i = 1; i <= targetPathParts.length; i++) {
-                const currentPath = '/' + targetPathParts.slice(0, i).join('/');
-                const isLast = i === targetPathParts.length;
+              // Only show breadcrumbs when viewing content (not folders)
+              if (!currentFolder && content) {
+                const breadcrumbItems = [];
+                const pathParts = content.path.split('/').filter(part => part);
                 
-                const navNode = findNodeByPath(navigationStructure, currentPath);
-                if (navNode) {
+                // Build breadcrumb path - start with Home if not root
+                if (pathParts.length > 0) {
                   breadcrumbItems.push({
-                    title: navNode.title,
-                    href: currentPath,
-                    isLast
+                    title: 'Home',
+                    href: '/',
+                    isLast: false
                   });
                 }
-              }
-            }
 
-            // Get the current folder/page title
-            const currentNavNode = findNodeByPath(navigationStructure, targetContent?.path || location.pathname);
-            const displayTitle = currentNavNode ? currentNavNode.title : (content?.title || currentFolder?.title || 'Page');
-            
-            return (
-              <>
-                {/* Breadcrumb navigation - hide when viewing folder directly */}
-                {breadcrumbItems.length > 1 && !currentFolder && (
-                  <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
-                    {breadcrumbItems.map((item, index) => (
-                      <div key={index} className="flex items-center">
-                        {index > 0 && <span className="h-4 w-4 mx-2">‣</span>}
-                        {item.isLast ? (
-                          <span className="text-foreground font-medium">
-                            {item.title}
-                          </span>
-                        ) : (
-                          <Link 
-                            to={item.href}
-                            className="hover:text-foreground transition-colors"
-                          >
-                            {item.title}
-                          </Link>
-                        )}
-                      </div>
-                    ))}
-                  </nav>
-                )}
-                
-                {/* Page title - use folder title when available */}
-                <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>
-              </>
-            );
-          })()}
+                // Add each path segment
+                for (let i = 1; i <= pathParts.length; i++) {
+                  const currentPath = '/' + pathParts.slice(0, i).join('/');
+                  const isLast = i === pathParts.length;
+                  
+                  const navNode = findNodeByPath(navigationStructure, currentPath);
+                  if (navNode) {
+                    breadcrumbItems.push({
+                      title: navNode.title,
+                      href: currentPath,
+                      isLast
+                    });
+                  }
+                }
+
+                return (
+                  <>
+                    {/* Breadcrumb navigation - only for content pages */}
+                    {breadcrumbItems.length > 1 && (
+                      <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
+                        {breadcrumbItems.map((item, index) => (
+                          <div key={index} className="flex items-center">
+                            {index > 0 && <span className="h-4 w-4 mx-2">‣</span>}
+                            {item.isLast ? (
+                              <span className="text-foreground font-medium">
+                                {item.title}
+                              </span>
+                            ) : (
+                              <Link 
+                                to={item.href}
+                                className="hover:text-foreground transition-colors"
+                              >
+                                {item.title}
+                              </Link>
+                            )}
+                          </div>
+                        ))}
+                      </nav>
+                    )}
+                    <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>
+                  </>
+                );
+              }
+              
+              // For folders, just show the title with no breadcrumbs
+              return <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>;
+            })()}
 
             {/* Content Area */}
             {content ? (
