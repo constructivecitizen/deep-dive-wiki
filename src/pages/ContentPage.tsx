@@ -171,7 +171,7 @@ const ContentPage = () => {
       ((pageData.type === 'content' && pageData.data.path === currentPath) || 
        (pageData.type === 'folder' && pageData.data.path === currentPath));
 
-    if (!hasCorrectData && pageData?.type !== 'loading') {
+    if (!hasCorrectData) {
       dispatch({ type: 'SET_LOADING' });
       loadPageData(currentPath).then(data => {
         if (data) {
@@ -185,7 +185,7 @@ const ContentPage = () => {
         }
       });
     }
-  }, [location.pathname, pageData]);
+  }, [location.pathname]);
 
   const handleFilter = (filters: {
     searchTerm: string;
