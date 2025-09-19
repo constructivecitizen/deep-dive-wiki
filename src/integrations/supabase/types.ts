@@ -14,57 +14,40 @@ export type Database = {
   }
   public: {
     Tables: {
-      content_nodes: {
+      documents: {
         Row: {
-          content: string | null
+          content_json: Json
           created_at: string
-          depth: number
           id: string
-          order_index: number | null
-          parent_id: string | null
           path: string
           tags: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
-          content?: string | null
+          content_json?: Json
           created_at?: string
-          depth?: number
           id?: string
-          order_index?: number | null
-          parent_id?: string | null
           path: string
           tags?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
-          content?: string | null
+          content_json?: Json
           created_at?: string
-          depth?: number
           id?: string
-          order_index?: number | null
-          parent_id?: string | null
           path?: string
           tags?: string[] | null
           title?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "content_nodes_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "content_nodes"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       navigation_structure: {
         Row: {
-          content_node_id: string | null
           created_at: string
+          document_id: string | null
           id: string
           order_index: number | null
           parent_id: string | null
@@ -74,8 +57,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          content_node_id?: string | null
           created_at?: string
+          document_id?: string | null
           id?: string
           order_index?: number | null
           parent_id?: string | null
@@ -85,8 +68,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          content_node_id?: string | null
           created_at?: string
+          document_id?: string | null
           id?: string
           order_index?: number | null
           parent_id?: string | null
@@ -97,10 +80,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "navigation_structure_content_node_id_fkey"
-            columns: ["content_node_id"]
+            foreignKeyName: "navigation_structure_document_id_fkey"
+            columns: ["document_id"]
             isOneToOne: false
-            referencedRelation: "content_nodes"
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
           {

@@ -1,17 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export interface ContentNode {
+export interface DocumentSection {
   id: string;
   title: string;
-  content: string | null;
-  parent_id: string | null;
+  level: number;
+  content: string;
+  tags: string[];
+}
+
+export interface WikiDocument {
+  id: string;
+  title: string;
   path: string;
-  depth: number;
-  tags: string[] | null;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-  children?: ContentNode[];
+  content_json: any; // Will be cast to DocumentSection[] when used
+  tags?: string[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface NavigationNode {
@@ -21,7 +25,7 @@ export interface NavigationNode {
   path: string;
   parent_id: string | null;
   order_index: number;
-  content_node_id: string | null;
+  document_id: string | null;
   created_at: string;
   updated_at: string;
   children?: NavigationNode[];
@@ -48,54 +52,43 @@ export class ContentService {
     return this.buildHierarchy(typedData);
   }
 
-  static async getContentByPath(path: string): Promise<ContentNode | null> {
+  static async getDocumentByPath(path: string): Promise<WikiDocument | null> {
     const { data, error } = await supabase
-      .from('content_nodes')
+      .from('documents')
       .select('*')
       .eq('path', path)
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching content by path:', error);
+      console.error('Error fetching document by path:', error);
       return null;
     }
 
-    if (!data) {
-      return null;
-    }
+    if (!data) return null;
 
-    // Get children of this content node
-    const children = await this.getContentChildren(data.id);
-
+    // Cast content_json to proper type
     return {
       ...data,
-      children
+      content_json: data.content_json as unknown as DocumentSection[]
     };
   }
 
-  static async getContentChildren(parentId: string): Promise<ContentNode[]> {
+  static async searchDocuments(query: string): Promise<WikiDocument[]> {
     const { data, error } = await supabase
-      .from('content_nodes')
+      .from('documents')
       .select('*')
-      .eq('parent_id', parentId)
-      .order('order_index');
+      .or(`title.ilike.%${query}%,content_json::text.ilike.%${query}%`)
+      .order('title');
 
     if (error) {
-      console.error('Error fetching content children:', error);
+      console.error('Error searching documents:', error);
       return [];
     }
 
-    const childrenWithGrandchildren = await Promise.all(
-      (data || []).map(async (child) => {
-        const grandchildren = await this.getContentChildren(child.id);
-        return {
-          ...child,
-          children: grandchildren
-        };
-      })
-    );
-
-    return childrenWithGrandchildren;
+    return (data || []).map(doc => ({
+      ...doc,
+      content_json: doc.content_json as unknown as DocumentSection[]
+    }));
   }
 
   static buildHierarchy<T extends { id: string; parent_id: string | null }>(
@@ -126,33 +119,21 @@ export class ContentService {
     return roots;
   }
 
-  static async searchContent(query: string): Promise<ContentNode[]> {
+  static async getAllDocuments(): Promise<WikiDocument[]> {
     const { data, error } = await supabase
-      .from('content_nodes')
-      .select('*')
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-      .order('title');
-
-    if (error) {
-      console.error('Error searching content:', error);
-      return [];
-    }
-
-    return data || [];
-  }
-
-  static async getAllContentNodes(): Promise<ContentNode[]> {
-    const { data, error } = await supabase
-      .from('content_nodes')
+      .from('documents')
       .select('*')
       .order('path');
 
     if (error) {
-      console.error('Error fetching all content nodes:', error);
+      console.error('Error fetching all documents:', error);
       return [];
     }
 
-    return this.buildHierarchy(data || []);
+    return (data || []).map(doc => ({
+      ...doc,
+      content_json: doc.content_json as unknown as DocumentSection[]
+    }));
   }
 
   // Navigation management methods
@@ -227,138 +208,90 @@ export class ContentService {
     return true;
   }
 
-  // Content management methods
-  static async createContentNode(
+  // Document management methods
+  static async createDocument(
     title: string, 
-    content: string, 
+    content_json: DocumentSection[], 
     path: string, 
-    parentId: string | null = null,
     tags: string[] = []
-  ): Promise<ContentNode | null> {
-    // Calculate depth based on path segments
-    const depth = path.split('/').filter(Boolean).length;
-    
+  ): Promise<WikiDocument | null> {
     const { data, error } = await supabase
-      .from('content_nodes')
+      .from('documents')
       .insert({
         title,
-        content,
+        content_json: content_json as any,
         path,
-        parent_id: parentId,
-        depth,
-        tags: tags.length > 0 ? tags : null,
-        order_index: 0
+        tags: tags.length > 0 ? tags : []
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating content node:', error);
+      console.error('Error creating document:', error);
       return null;
     }
 
-    return data;
+    return {
+      ...data,
+      content_json: data.content_json as unknown as DocumentSection[]
+    };
   }
 
-  static async updateContentNode(
+  static async updateDocument(
     id: string, 
-    updates: Partial<Omit<ContentNode, 'id' | 'created_at' | 'updated_at'>>
+    updates: Partial<Omit<WikiDocument, 'id' | 'created_at' | 'updated_at'>>
   ): Promise<boolean> {
+    // Cast content_json to any for Supabase
+    const dbUpdates = {
+      ...updates,
+      content_json: updates.content_json ? updates.content_json as any : undefined
+    };
+
     const { error } = await supabase
-      .from('content_nodes')
-      .update(updates)
+      .from('documents')
+      .update(dbUpdates)
       .eq('id', id);
 
     if (error) {
-      console.error('Error updating content node:', error);
+      console.error('Error updating document:', error);
       return false;
     }
 
     return true;
   }
 
-  static async saveDocumentContent(path: string, nodes: any[], originalMarkup?: string): Promise<boolean> {
+  static async saveDocumentContent(path: string, sections: DocumentSection[]): Promise<boolean> {
     try {
-      console.log('saveDocumentContent called with path:', path, 'originalMarkup provided:', !!originalMarkup);
+      console.log('saveDocumentContent called with path:', path, 'sections:', sections);
       
-      // First, try to get existing content
-      const existingContent = await this.getContentByPath(path);
-      console.log('Existing content found:', existingContent);
+      // First, try to get existing document
+      const existingDocument = await this.getDocumentByPath(path);
+      console.log('Existing document found:', existingDocument);
       
-      if (!originalMarkup && nodes.length === 0) {
-        console.log('No content to save, returning true');
+      if (sections.length === 0) {
+        console.log('No sections to save, returning true');
         return true;
       }
 
-      let fullContent = '';
-      let title = 'Untitled';
-      let allTags: string[] = [];
+      // Extract title and tags from sections
+      const title = sections[0]?.title || 'Untitled';
+      const allTags = [...new Set(sections.flatMap(s => s.tags || []))];
       
-      if (originalMarkup) {
-        // Use the original markup directly
-        console.log('Using original markup:', originalMarkup.substring(0, 200) + '...');
-        fullContent = originalMarkup.trim();
-        
-        // Extract title from the first line
-        const firstLine = fullContent.split('\n')[0];
-        const titleMatch = firstLine.match(/^#+\s*(.+?)(?:\s*\[.*?\])?$/);
-        title = titleMatch ? titleMatch[1].trim() : firstLine.replace(/^#+\s*/, '').trim() || 'Untitled';
-        
-        // Extract tags from the first line if they exist (format: [tag1, tag2])
-        const tagMatch = firstLine.match(/\[(.*?)\]/);
-        if (tagMatch) {
-          allTags = tagMatch[1].split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-        }
-        
-        console.log('Extracted from markup:', { title, tags: allTags });
-      } else {
-        // Fallback to reconstructing from nodes
-        const reconstructMarkdown = (nodeList: any[], currentDepth = 0): string => {
-          let result = '';
-          for (const node of nodeList) {
-            if (node.content) {
-              const headingLevel = '#'.repeat(Math.max(1, currentDepth + 1));
-              const content = node.content.trim();
-              
-              if (!content.startsWith('#')) {
-                result += `${headingLevel} ${content}\n\n`;
-              } else {
-                result += `${content}\n\n`;
-              }
-              
-              if (node.tags && node.tags.length > 0) {
-                allTags.push(...node.tags);
-              }
-            }
-            
-            if (node.children && node.children.length > 0) {
-              result += reconstructMarkdown(node.children, currentDepth + 1);
-            }
-          }
-          return result;
-        };
-
-        fullContent = reconstructMarkdown(nodes).trim();
-        const firstLine = fullContent.split('\n')[0];
-        title = firstLine.replace(/^#+\s*/, '').replace(/\[.*?\]/g, '').trim() || 'Untitled';
-        allTags = [...new Set(allTags)];
-      }
-
-      if (existingContent) {
-        console.log('Updating existing content with id:', existingContent.id);
-        const success = await this.updateContentNode(existingContent.id, {
+      if (existingDocument) {
+        console.log('Updating existing document with id:', existingDocument.id);
+        const success = await this.updateDocument(existingDocument.id, {
           title,
-          content: fullContent,
-          tags: allTags.length > 0 ? allTags : null
+          content_json: sections,
+          tags: allTags.length > 0 ? allTags : []
         });
         
         console.log('Update success:', success);
         return success;
       } else {
-        console.log('Creating new content');
-        const newContent = await this.createContentNode(title, fullContent, path, null, allTags.length > 0 ? allTags : []);
-        console.log('New content created:', newContent);
-        return newContent !== null;
+        console.log('Creating new document');
+        const newDocument = await this.createDocument(title, sections, path, allTags);
+        console.log('New document created:', newDocument);
+        return newDocument !== null;
       }
     } catch (error) {
       console.error('Error saving document content:', error);
@@ -370,27 +303,26 @@ export class ContentService {
   static async updateSectionInDocument(
     path: string, 
     sectionId: string, 
-    newSectionContent: string
+    updatedSection: DocumentSection
   ): Promise<boolean> {
     try {
-      console.log('updateSectionInDocument called with:', { path, sectionId, contentLength: newSectionContent.length });
+      console.log('updateSectionInDocument called with:', { path, sectionId, updatedSection });
       
       // Get the existing document
-      const existingContent = await this.getContentByPath(path);
-      if (!existingContent || !existingContent.content) {
+      const existingDocument = await this.getDocumentByPath(path);
+      if (!existingDocument) {
         console.error('Document not found for section update');
         return false;
       }
 
-      const updatedContent = this.replaceSectionInMarkup(existingContent.content, sectionId, newSectionContent);
-      if (!updatedContent) {
-        console.error('Failed to replace section in document');
-        return false;
-      }
+      // Update the specific section in the JSON content
+      const updatedSections = (existingDocument.content_json as unknown as DocumentSection[]).map(section => 
+        section.id === sectionId ? updatedSection : section
+      );
 
       // Update the document with the new content
-      const success = await this.updateContentNode(existingContent.id, {
-        content: updatedContent
+      const success = await this.updateDocument(existingDocument.id, {
+        content_json: updatedSections
       });
       
       console.log('Section update success:', success);
@@ -398,65 +330,6 @@ export class ContentService {
     } catch (error) {
       console.error('Error updating section in document:', error);
       return false;
-    }
-  }
-
-  // Helper method to replace section content within markup
-  static replaceSectionInMarkup(
-    originalContent: string, 
-    targetSectionId: string, 
-    newSectionContent: string
-  ): string | null {
-    try {
-      const lines = originalContent.split('\n');
-      let sectionCount = 0;
-      let sectionStartIndex = -1;
-      let sectionEndIndex = -1;
-      let sectionDepth = 0;
-      let found = false;
-
-      // Find the section boundaries
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
-        
-        if (headingMatch) {
-          const level = headingMatch[1].length;
-          sectionCount++;
-          const currentSectionId = `section-${sectionCount}`;
-          
-          if (currentSectionId === targetSectionId) {
-            found = true;
-            sectionStartIndex = i;
-            sectionDepth = level;
-          } else if (found && level <= sectionDepth) {
-            // We've hit a section at the same or higher level - end of our section
-            sectionEndIndex = i;
-            break;
-          }
-        }
-      }
-
-      if (!found) {
-        console.error('Section not found:', targetSectionId);
-        return null;
-      }
-
-      // If we didn't find an end, the section goes to the end of the document
-      if (sectionEndIndex === -1) {
-        sectionEndIndex = lines.length;
-      }
-
-      // Replace the section content
-      const beforeSection = lines.slice(0, sectionStartIndex);
-      const afterSection = lines.slice(sectionEndIndex);
-      const newSectionLines = newSectionContent.trim().split('\n');
-
-      const updatedLines = [...beforeSection, ...newSectionLines, ...afterSection];
-      return updatedLines.join('\n');
-    } catch (error) {
-      console.error('Error replacing section in markup:', error);
-      return null;
     }
   }
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { WikiLayout } from "@/components/WikiLayout";
-import { ContentService, ContentNode, NavigationNode } from "@/services/contentService";
+import { ContentService, NavigationNode, WikiDocument } from "@/services/contentService";
 import { HierarchicalContent } from "@/components/HierarchicalContent";
 import { SimpleActionMenu } from "@/components/SimpleActionMenu";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
@@ -20,10 +20,10 @@ const ContentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { pathname } = location;
-  const [content, setContent] = useState<ContentNode | null>(null);
+  const [content, setContent] = useState<WikiDocument | null>(null);
   const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
-  const [allContentNodes, setAllContentNodes] = useState<ContentNode[]>([]);
-  const [filteredContent, setFilteredContent] = useState<ContentNode[]>([]);
+  const [allContentNodes, setAllContentNodes] = useState<WikiDocument[]>([]);
+  const [filteredContent, setFilteredContent] = useState<WikiDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -71,13 +71,13 @@ const ContentPage = () => {
   const refreshAllData = async () => {
     const structure = await ContentService.getNavigationStructure();
     setNavigationStructure(structure);
-    const allNodes = await ContentService.getAllContentNodes();
+    const allNodes = await ContentService.getAllDocuments();
     setAllContentNodes(allNodes);
     setFilteredContent(allNodes);
     
     // Refresh current content if we're viewing a specific path
     if (location.pathname !== '/') {
-      const updatedContent = await ContentService.getContentByPath(location.pathname);
+      const updatedContent = await ContentService.getDocumentByPath(location.pathname);
       if (updatedContent) {
         setContent(updatedContent);
       }
@@ -395,7 +395,7 @@ const ContentPage = () => {
           if (editorData?.type === 'section') {
             // Handle section save
             const currentPath = location.pathname;
-            const currentContent = await ContentService.getContentByPath(currentPath);
+            const currentContent = await ContentService.getDocumentByPath(currentPath);
             if (currentContent && editorData.parentPath) {
               // Find the section and replace its content
               const updatedContent = replaceSectionContent(
@@ -412,7 +412,7 @@ const ContentPage = () => {
               );
               
               const parsed = HierarchyParser.parseMarkup(updatedContent);
-              const success = await ContentService.saveDocumentContent(currentPath, parsed.nodes, updatedContent);
+              const success = await ContentService.saveDocumentContent(currentPath, []);
               
               if (success) {
                 toast.success("Section saved successfully");
@@ -425,7 +425,7 @@ const ContentPage = () => {
             // Handle document save
             const currentPath = location.pathname;
             const parsed = HierarchyParser.parseMarkup(content);
-            const success = await ContentService.saveDocumentContent(currentPath, parsed.nodes, content);
+            const success = await ContentService.saveDocumentContent(currentPath, []);
             
             if (success) {
               toast.success("Document saved successfully");

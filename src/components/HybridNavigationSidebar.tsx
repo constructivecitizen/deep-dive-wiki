@@ -9,7 +9,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { NavigationNode, ContentNode, ContentService } from '@/services/contentService';
+import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -33,7 +33,7 @@ interface SectionEditData {
 
 interface HybridNavigationSidebarProps {
   structure: NavigationNode[];
-  contentNodes?: ContentNode[];
+  contentNodes?: WikiDocument[];
   onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   currentPath?: string;
@@ -176,7 +176,7 @@ const SectionItem: React.FC<{
 
 const FolderNode: React.FC<{
   node: NavigationNode;
-  contentNodes?: ContentNode[];
+  contentNodes?: WikiDocument[];
   onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   currentPath?: string;

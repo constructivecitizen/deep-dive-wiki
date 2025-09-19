@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { ChevronRight, ChevronDown, FileText, Folder, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { NavigationNode, ContentNode } from "@/services/contentService";
+import { NavigationNode, WikiDocument } from "@/services/contentService";
 
 interface DatabaseDocumentSidebarProps {
   structure: NavigationNode[];
-  contentNodes?: ContentNode[];
+  contentNodes?: WikiDocument[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
   currentPath?: string;
@@ -14,7 +14,7 @@ interface DatabaseDocumentSidebarProps {
 interface TreeNodeProps {
   node: NavigationNode;
   level: number;
-  contentNodes?: ContentNode[];
+  contentNodes?: WikiDocument[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
   currentPath?: string;

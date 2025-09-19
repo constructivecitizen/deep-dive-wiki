@@ -13,14 +13,14 @@ import {
   GripVertical
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { NavigationNode, ContentNode, ContentService } from "@/services/contentService";
+import { NavigationNode, WikiDocument, ContentService } from "@/services/contentService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 interface EditableNavigationSidebarProps {
   structure: NavigationNode[];
-  contentNodes?: ContentNode[];
+  contentNodes?: WikiDocument[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
   currentPath?: string;
@@ -30,7 +30,7 @@ interface EditableNavigationSidebarProps {
 interface TreeNodeProps {
   node: NavigationNode;
   level: number;
-  contentNodes?: ContentNode[];
+  contentNodes?: WikiDocument[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
   currentPath?: string;

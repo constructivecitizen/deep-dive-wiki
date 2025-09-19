@@ -1,10 +1,10 @@
 import { EditableNavigationSidebar } from "./EditableNavigationSidebar";
-import { NavigationNode, ContentNode } from "@/services/contentService";
+import { NavigationNode, WikiDocument } from "@/services/contentService";
 
 interface WikiLayoutProps {
   children: React.ReactNode;
   navigationStructure?: NavigationNode[];
-  contentNodes?: ContentNode[];
+  contentNodes?: WikiDocument[];
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
   currentPath?: string;

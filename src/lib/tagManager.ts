@@ -1,4 +1,4 @@
-import { ContentNode } from "@/services/contentService";
+import { ContentService, WikiDocument } from "@/services/contentService";
 
 export interface TagFilter {
   includeTags: string[];
@@ -6,112 +6,72 @@ export interface TagFilter {
 }
 
 export class TagManager {
-  static extractAllTags(nodes: ContentNode[]): string[] {
+  static extractAllTags(nodes: WikiDocument[]): string[] {
     const tags = new Set<string>();
     
-    const traverse = (node: ContentNode) => {
-      node.tags?.forEach(tag => tags.add(tag));
-      node.children?.forEach(traverse);
-    };
+    nodes.forEach(doc => {
+      doc.tags?.forEach(tag => tags.add(tag));
+    });
     
-    nodes.forEach(traverse);
     return Array.from(tags).sort();
   }
 
-  static buildTagIndex(nodes: ContentNode[]): Map<string, string[]> {
+  static buildTagIndex(nodes: WikiDocument[]): Map<string, string[]> {
     const tagIndex = new Map<string, string[]>();
     
-    const traverse = (node: ContentNode) => {
-      node.tags?.forEach(tag => {
+    nodes.forEach(doc => {
+      doc.tags?.forEach(tag => {
         if (!tagIndex.has(tag)) {
           tagIndex.set(tag, []);
         }
-        tagIndex.get(tag)!.push(node.id);
+        tagIndex.get(tag)!.push(doc.id);
       });
-      node.children?.forEach(traverse);
-    };
+    });
     
-    nodes.forEach(traverse);
     return tagIndex;
   }
 
-  static filterByTags(nodes: ContentNode[], includeTags: string[]): ContentNode[] {
+  static filterByTags(nodes: WikiDocument[], includeTags: string[]): WikiDocument[] {
     if (includeTags.length === 0) return nodes;
     
-    const filterNode = (node: ContentNode): ContentNode | null => {
-      const hasIncludedTag = includeTags.some(tag => node.tags?.includes(tag));
-      const filteredChildren = node.children?.map(filterNode).filter(Boolean) as ContentNode[] || [];
-      
-      if (hasIncludedTag || filteredChildren.length > 0) {
-        return {
-          ...node,
-          children: filteredChildren
-        };
-      }
-      
-      return null;
-    };
-
-    return nodes.map(filterNode).filter(Boolean) as ContentNode[];
+    return nodes.filter(doc => 
+      includeTags.some(tag => doc.tags?.includes(tag))
+    );
   }
 
-  static filterByContent(nodes: ContentNode[], searchTerm: string): ContentNode[] {
+  static filterByContent(nodes: WikiDocument[], searchTerm: string): WikiDocument[] {
     if (!searchTerm) return nodes;
     
     const search = searchTerm.toLowerCase();
-    const filterNode = (node: ContentNode): ContentNode | null => {
-      const matchesContent = node.content?.toLowerCase().includes(search) || false;
-      const filteredChildren = node.children?.map(filterNode).filter(Boolean) as ContentNode[] || [];
-      
-      if (matchesContent || filteredChildren.length > 0) {
-        return {
-          ...node,
-          children: filteredChildren
-        };
-      }
-      
-      return null;
-    };
-
-    return nodes.map(filterNode).filter(Boolean) as ContentNode[];
+    return nodes.filter(doc => 
+      doc.title.toLowerCase().includes(search) ||
+      JSON.stringify(doc.content_json).toLowerCase().includes(search)
+    );
   }
 
-  static getAllTags(nodes: ContentNode[]): string[] {
+  static getAllTags(nodes: WikiDocument[]): string[] {
     return this.extractAllTags(nodes);
   }
 
-  static filterNodes(nodes: ContentNode[], filter: TagFilter): ContentNode[] {
+  static filterNodes(nodes: WikiDocument[], filter: TagFilter): WikiDocument[] {
     const { includeTags, excludeTags } = filter;
     
     if (includeTags.length === 0 && excludeTags.length === 0) {
       return nodes;
     }
 
-    const filterNode = (node: ContentNode): ContentNode | null => {
-      const nodeTags = node.tags || [];
+    return nodes.filter(doc => {
+      const docTags = doc.tags || [];
       
-      // Check if node should be excluded
-      const shouldExclude = excludeTags.some(tag => nodeTags.includes(tag));
-      if (shouldExclude) return null;
+      // Check if document should be excluded
+      const shouldExclude = excludeTags.some(tag => docTags.includes(tag));
+      if (shouldExclude) return false;
       
-      // Check if node matches include filter (if any include tags are specified)
-      const matchesInclude = includeTags.length === 0 || includeTags.some(tag => nodeTags.includes(tag));
+      // Check if document matches include filter (if any include tags are specified)
+      const matchesInclude = includeTags.length === 0 || includeTags.some(tag => docTags.includes(tag));
       
-      // Filter children recursively
-      const filteredChildren = node.children?.map(filterNode).filter(Boolean) as ContentNode[] || [];
-      
-      // Include node if it matches filter or has matching children
-      if (matchesInclude || filteredChildren.length > 0) {
-        return {
-          ...node,
-          children: filteredChildren
-        };
-      }
-      
-      return null;
-    };
-
-    return nodes.map(filterNode).filter(Boolean) as ContentNode[];
+      return matchesInclude;
+    });
   }
 
   static getTagSuggestions(currentInput: string, allTags: string[]): string[] {

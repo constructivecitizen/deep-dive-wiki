@@ -9,8 +9,8 @@ import { ContentNode } from '@/services/contentService';
 import { TagManager, TagFilter } from '@/lib/tagManager';
 
 interface FilterPanelProps {
-  allNodes: ContentNode[];
-  onFilterChange: (filteredNodes: ContentNode[]) => void;
+  allNodes: WikiDocument[];
+  onFilterChange: (filteredNodes: WikiDocument[]) => void;
   isOpen: boolean;
   onToggle: () => void;
 }
