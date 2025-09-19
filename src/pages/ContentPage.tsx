@@ -299,8 +299,18 @@ const ContentPage = () => {
                   );
                 }
                 
-                // For folders, just show the title with no breadcrumbs
-                return <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>;
+                // For folders, show hidden breadcrumb to preserve spacing
+                return (
+                  <>
+                    {/* Hidden breadcrumb for consistent spacing */}
+                    <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2 invisible">
+                      <div className="flex items-center">
+                        <span className="text-foreground font-medium">Hidden</span>
+                      </div>
+                    </nav>
+                    <h1 className="text-3xl font-bold text-foreground">{displayTitle}</h1>
+                  </>
+                );
               })()}
 
               {/* Content Area */}
