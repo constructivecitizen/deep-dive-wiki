@@ -9,13 +9,11 @@ interface SectionViewProps {
     level: number;
     parentPath: string;
   };
-  onEdit: () => void;
   onBack: () => void;
 }
 
 export const SectionView: React.FC<SectionViewProps> = ({ 
   sectionData, 
-  onEdit, 
   onBack 
 }) => {
   return (
@@ -37,13 +35,6 @@ export const SectionView: React.FC<SectionViewProps> = ({
             <p className="text-sm text-muted-foreground">Level {sectionData.level} section</p>
           </div>
         </div>
-        <Button 
-          onClick={onEdit}
-          className="flex items-center gap-2"
-        >
-          <Edit className="h-4 w-4" />
-          Edit Section
-        </Button>
       </div>
 
       {/* Section content */}

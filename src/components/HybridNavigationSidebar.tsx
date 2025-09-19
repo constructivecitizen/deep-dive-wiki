@@ -22,18 +22,9 @@ interface DocumentSection {
   children: DocumentSection[];
 }
 
-interface SectionEditData {
-  content: string;
-  title: string;
-  level: number;
-  position: number;
-  parentPath: string;
-}
-
 interface HybridNavigationSidebarProps {
   structure: NavigationNode[];
   contentNodes?: WikiDocument[];
-  onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   currentPath?: string;
   onStructureUpdate: () => void;
@@ -45,10 +36,9 @@ const SectionItem: React.FC<{
   section: DocumentSection;
   depth: number;
   folderPath: string;
-  onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   sectionPosition: number;
-}> = ({ section, depth, folderPath, onSectionEdit, onSectionView, sectionPosition }) => {
+}> = ({ section, depth, folderPath, onSectionView, sectionPosition }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasChildren = section.children.length > 0;
   const indentationPx = (depth + 2) * 16;
@@ -110,7 +100,6 @@ const SectionItem: React.FC<{
               section={child}
               depth={depth + 1}
               folderPath={folderPath}
-              onSectionEdit={onSectionEdit}
               onSectionView={onSectionView}
               sectionPosition={sectionPosition + index + 1}
             />
@@ -124,7 +113,6 @@ const SectionItem: React.FC<{
 const FolderNode: React.FC<{
   node: NavigationNode;
   contentNodes?: WikiDocument[];
-  onSectionEdit?: (sectionData: SectionEditData) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   currentPath?: string;
   onStructureUpdate: () => void;
@@ -133,7 +121,6 @@ const FolderNode: React.FC<{
 }> = ({ 
   node, 
   contentNodes, 
-  onSectionEdit, 
   onSectionView, 
   currentPath,
   onStructureUpdate,
@@ -338,7 +325,6 @@ const FolderNode: React.FC<{
                 section={section}
                 depth={0}
                 folderPath={node.path}
-                onSectionEdit={onSectionEdit}
                 onSectionView={onSectionView}
                 sectionPosition={index}
               />
@@ -352,7 +338,6 @@ const FolderNode: React.FC<{
 export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = ({ 
   structure, 
   contentNodes = [],
-  onSectionEdit,
   onSectionView,
   currentPath,
   onStructureUpdate,
@@ -409,7 +394,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               key={item.id}
               node={item}
               contentNodes={contentNodes}
-              onSectionEdit={onSectionEdit}
+              
               onSectionView={onSectionView}
               currentPath={currentPath}
               onStructureUpdate={onStructureUpdate}

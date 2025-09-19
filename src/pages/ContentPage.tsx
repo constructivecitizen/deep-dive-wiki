@@ -40,22 +40,6 @@ const ContentPage = () => {
   } | null>(null);
   const [currentNavId, setCurrentNavId] = useState<string | null>(null);
 
-  const handleSectionEdit = (sectionData: {
-    content: string;
-    title: string;
-    level: number;
-    position: number;
-    parentPath: string;
-  }) => {
-    setEditorData({
-      type: 'section',
-      content: sectionData.content,
-      title: sectionData.title,
-      level: sectionData.level,
-      position: sectionData.position,
-      parentPath: sectionData.parentPath
-    });
-  };
 
   const handleSectionView = (sectionData: {
     content: string;
@@ -257,7 +241,6 @@ const ContentPage = () => {
             <HybridNavigationSidebar 
               structure={navigationStructure} 
               contentNodes={allContentNodes}
-              onSectionEdit={handleSectionEdit}
               onSectionView={handleSectionView}
               currentPath={location.pathname}
               onStructureUpdate={refreshAllData}
@@ -274,16 +257,6 @@ const ContentPage = () => {
           {viewingSection ? (
             <SectionView 
               sectionData={viewingSection}
-              onEdit={() => {
-                setEditorData({
-                  type: 'section',
-                  content: viewingSection.content,
-                  title: viewingSection.title,
-                  level: viewingSection.level,
-                  parentPath: viewingSection.parentPath
-                });
-                setViewingSection(null);
-              }}
               onBack={() => setViewingSection(null)}
             />
           ) : content || currentFolder ? (
@@ -415,50 +388,17 @@ const ContentPage = () => {
 
       <UnifiedEditor 
         editorData={editorData}
-        onSave={async (content: string, title?: string) => {
-          if (editorData?.type === 'section') {
-            // Handle section save
-            const currentPath = location.pathname;
-            const currentContent = await ContentService.getDocumentByPath(currentPath);
-            if (currentContent && editorData.parentPath) {
-              // Find the section and replace its content
-              const sections = currentContent.content_json || [];
-              const contentString = sections.map(s => s.content || '').join('\n') || '';
-              const updatedContent = replaceSectionContent(
-                contentString,
-                {
-                  id: `section-${editorData.level}-${title}`,
-                  level: editorData.level || 1,
-                  title: title || editorData.title || '',
-                  tags: [],
-                  children: []
-                },
-                content,
-                title
-              );
-              
-              const parsed = HierarchyParser.parseMarkup(updatedContent);
-              const success = await ContentService.saveDocumentContent(currentPath, parsed.sections);
-              
-              if (success) {
-                toast.success("Section saved successfully");
-                await refreshAllData();
-              } else {
-                toast.error("Failed to save section");
-              }
-            }
+        onSave={async (content: string) => {
+          // Handle document save
+          const currentPath = location.pathname;
+          const parsed = HierarchyParser.parseMarkup(content);
+          const success = await ContentService.saveDocumentContent(currentPath, parsed.sections);
+          
+          if (success) {
+            toast.success("Document saved successfully");
+            await refreshAllData();
           } else {
-            // Handle document save
-            const currentPath = location.pathname;
-            const parsed = HierarchyParser.parseMarkup(content);
-            const success = await ContentService.saveDocumentContent(currentPath, parsed.sections);
-            
-            if (success) {
-              toast.success("Document saved successfully");
-              await refreshAllData();
-            } else {
-              toast.error("Failed to save document");
-            }
+            toast.error("Failed to save document");
           }
         }}
         onClose={() => setEditorData(null)}

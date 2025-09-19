@@ -2,46 +2,32 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Eye, FileText, Save, Bold, Italic, List, Link2, X } from 'lucide-react';
+import { Eye, FileText, Save, Bold, Italic, List, Link2 } from 'lucide-react';
 import { ContentNode } from '@/components/HierarchicalContent';
 import { HierarchyParser } from '@/lib/hierarchyParser';
 
 export interface EditorData {
-  type: 'document' | 'section';
+  type: 'document';
   content: string;
-  title?: string;
-  level?: number;
-  position?: number;
-  parentPath?: string;
 }
 
 interface UnifiedEditorProps {
   editorData: EditorData | null;
-  onSave: (content: string, title?: string) => void;
+  onSave: (content: string) => void;
   onClose: () => void;
 }
 
 export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProps) => {
   const [content, setContent] = useState('');
-  const [title, setTitle] = useState('');
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (editorData) {
       setContent(editorData.content || '');
-      setTitle(editorData.title || '');
-      setIsFullscreen(editorData.type === 'document');
     }
   }, [editorData]);
 
   const handleSave = () => {
-    if (editorData?.type === 'section') {
-      onSave(content, title);
-    } else {
-      onSave(content);
-    }
+    onSave(content);
     onClose();
   };
 
@@ -84,10 +70,9 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
 
   if (!editorData) return null;
 
-  // Fullscreen editor for documents
-  if (isFullscreen) {
-    return (
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+  // Fullscreen document editor
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
         <div 
           className="bg-background h-full w-full flex flex-col" 
           style={{ pointerEvents: 'auto' }}
@@ -233,58 +218,4 @@ More detailed content with \`code\`.`}
         </div>
       </div>
     );
-  }
-
-  // Modal editor for sections
-  return (
-    <Dialog open={!!editorData && !isFullscreen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col z-40" aria-describedby="section-editor-description">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Edit Section</span>
-            <span id="section-editor-description" className="sr-only">Modal editor for editing section content and title</span>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex-1 space-y-4 overflow-hidden">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">
-              Section Title
-            </label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter section title..."
-              className="w-full"
-            />
-          </div>
-          
-          <div className="flex-1 flex flex-col">
-            <label className="text-sm font-medium text-foreground mb-2 block">
-              Content
-            </label>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Enter section content..."
-              className="flex-1 min-h-[300px] resize-none"
-            />
-          </div>
-        </div>
-        
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
-            Save Section
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
 };
