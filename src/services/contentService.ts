@@ -334,8 +334,19 @@ export class ContentService {
         return false;
       }
 
-      // Update the specific section in the JSON content
-      const updatedSections = (existingItem.content_json as DocumentSection[]).map(section => 
+      // Update the specific section in the JSON content  
+      const sections = (() => {
+        const contentJson = existingItem.content_json;
+        if (Array.isArray(contentJson)) {
+          return contentJson;
+        }
+        if (contentJson && typeof contentJson === 'object' && 'sections' in contentJson) {
+          return (contentJson as any).sections || [];
+        }
+        return [];
+      })();
+      
+      const updatedSections = sections.map((section: any) => 
         section.id === sectionId ? updatedSection : section
       );
 
