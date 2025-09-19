@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-// Removed ChevronRight import - using triangular bullet character instead
 import { WikiLayout } from "@/components/WikiLayout";
 import { ContentService, NavigationNode, WikiDocument } from "@/services/contentService";
-// Import removed - using HierarchicalContentDisplay instead
 import { SimpleActionMenu } from "@/components/SimpleActionMenu";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
-import { SimpleNavigationModal } from "@/components/SimpleNavigationModal";
 import { HybridNavigationSidebar } from "@/components/HybridNavigationSidebar";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { TagManager } from "@/lib/tagManager";
@@ -14,20 +11,24 @@ import { UnifiedEditor, EditorData } from "@/components/UnifiedEditor";
 import { SectionView } from "@/components/SectionView";
 import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { toast } from "sonner";
-import { replaceSectionContent } from "@/lib/sectionExtractor";
 import { HierarchyParser } from "@/lib/hierarchyParser";
+
+// Single state type for atomic page updates
+type PageData = 
+  | { type: 'loading' }
+  | { type: 'content'; data: WikiDocument }
+  | { type: 'folder'; data: NavigationNode; children: NavigationNode[] }
+  | null;
 
 const ContentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { pathname } = location;
-  const [content, setContent] = useState<WikiDocument | null>(null);
-  const [currentFolder, setCurrentFolder] = useState<NavigationNode | null>(null);
-  const [folderChildren, setFolderChildren] = useState<NavigationNode[]>([]);
+  
+  // Single atomic state for page data
+  const [pageData, setPageData] = useState<PageData>({ type: 'loading' });
   const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
   const [allContentNodes, setAllContentNodes] = useState<WikiDocument[]>([]);
   const [filteredContent, setFilteredContent] = useState<WikiDocument[]>([]);
-  const [loading, setLoading] = useState(true);
   
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
@@ -38,7 +39,6 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   } | null>(null);
-  const [currentNavId, setCurrentNavId] = useState<string | null>(null);
 
 
   const handleSectionView = (sectionData: {
@@ -57,12 +57,37 @@ const ContentPage = () => {
     setAllContentNodes(allNodes);
     setFilteredContent(allNodes);
     
-    // Refresh current content if we're viewing a specific path
+    // Refresh current page data if needed
     if (location.pathname !== '/') {
-      const updatedContent = await ContentService.getDocumentByPath(location.pathname);
-      if (updatedContent) {
-        setContent(updatedContent);
-      }
+      await loadPageData(location.pathname);
+    }
+  };
+
+  // Atomic page data loading function
+  const loadPageData = async (currentPath: string) => {
+    setViewingSection(null);
+    
+    // Load all required data first
+    const [contentData, folderData, folderChildren, allNodes] = await Promise.all([
+      ContentService.getDocumentByPath(currentPath),
+      currentPath !== '/' ? ContentService.getNavigationNodeByPath(currentPath) : null,
+      currentPath !== '/' ? ContentService.getNavigationNodeChildren(currentPath) : [],
+      allContentNodes.length === 0 ? ContentService.getAllDocuments() : Promise.resolve(allContentNodes)
+    ]);
+    
+    // Set sidebar data if needed
+    if (allContentNodes.length === 0) {
+      setAllContentNodes(allNodes);
+      setFilteredContent(allNodes);
+    }
+    
+    // Set page data atomically based on what we found
+    if (contentData) {
+      setPageData({ type: 'content', data: contentData });
+    } else if (folderData) {
+      setPageData({ type: 'folder', data: folderData, children: folderChildren });
+    } else {
+      setPageData(null);
     }
   };
 
@@ -76,60 +101,10 @@ const ContentPage = () => {
     loadNavigationStructure();
   }, []);
 
-  // Load content when route changes or currentNavId changes
+  // Load content when route changes (no circular dependencies)
   useEffect(() => {
-    const loadContent = async () => {
-      const currentPath = location.pathname;
-      
-      // Only show loading for initial page load
-      const isInitialLoad = !content && !currentFolder;
-      if (isInitialLoad) {
-        setLoading(true);
-      }
-      
-      // Force clear ALL states immediately to prevent any stale data
-      setViewingSection(null);
-      setContent(null);
-      setCurrentFolder(null);
-      setFolderChildren([]);
-      
-      // Small delay to ensure state clearing is complete
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
-      // Now try to load the appropriate data type
-      const contentData = await ContentService.getDocumentByPath(currentPath);
-      
-      if (contentData) {
-        // We have content document
-        setContent(contentData);
-        // Ensure folder states remain null
-        setCurrentFolder(null);
-        setFolderChildren([]);
-      } else if (currentPath !== '/') {
-        // Try to load as folder
-        const folderData = await ContentService.getNavigationNodeByPath(currentPath);
-        if (folderData) {
-          // We have a folder
-          setCurrentFolder(folderData);
-          const children = await ContentService.getNavigationNodeChildren(currentPath);
-          setFolderChildren(children);
-          // Ensure content remains null
-          setContent(null);
-        }
-      }
-      
-      // Load all content nodes for sidebar if not already loaded
-      if (allContentNodes.length === 0) {
-        const allNodes = await ContentService.getAllDocuments();
-        setAllContentNodes(allNodes);
-        setFilteredContent(allNodes);
-      }
-      
-      setLoading(false);
-    };
-
-    loadContent();
-  }, [location.pathname, currentNavId]);
+    loadPageData(location.pathname);
+  }, [location.pathname]);
 
   const handleFilter = (filters: {
     searchTerm: string;
@@ -168,8 +143,8 @@ const ContentPage = () => {
     );
     
     // Update current content if it matches
-    if (content && content.id === updatedNode.id) {
-      setContent(updatedNode);
+    if (pageData?.type === 'content' && pageData.data.id === updatedNode.id) {
+      setPageData({ type: 'content', data: updatedNode });
     }
     
     // TODO: Implement database update
@@ -177,11 +152,10 @@ const ContentPage = () => {
   };
 
   const handleNavigationClick = (navId: string, path: string) => {
-    setCurrentNavId(navId);
     navigate(path);
   };
 
-  if (loading) {
+  if (pageData?.type === 'loading') {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -192,8 +166,8 @@ const ContentPage = () => {
     );
   }
 
-  // If no content found for this route, check if it's a folder or show 404
-  if (!content && !currentFolder) {
+  // If no page data found for this route
+  if (!pageData) {
     return (
       <WikiLayout 
         navigationStructure={navigationStructure}
@@ -239,7 +213,9 @@ const ContentPage = () => {
             <SimpleActionMenu 
               onToggleDocumentEditor={() => setEditorData({
                 type: 'document',
-                content: HierarchyParser.sectionsToMarkup(content?.content_json || []),
+                content: pageData?.type === 'content' 
+                  ? HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])
+                  : '',
               })}
               onToggleFilter={() => setShowFilterPanel(!showFilterPanel)}
             />
@@ -252,7 +228,7 @@ const ContentPage = () => {
               currentPath={location.pathname}
               onStructureUpdate={refreshAllData}
               onNavigationClick={handleNavigationClick}
-              currentNavId={currentNavId}
+              currentNavId={null}
             />
           }
         >
@@ -263,7 +239,7 @@ const ContentPage = () => {
               onBack={() => setViewingSection(null)}
               navigationStructure={navigationStructure}
             />
-          ) : content || currentFolder ? (
+          ) : pageData ? (
             <>
             {/* Title and Breadcrumb Logic */}
             {(() => {
@@ -277,15 +253,18 @@ const ContentPage = () => {
                 return null;
               };
 
-              // Get the current folder/page title
-              const targetPath = content?.path || currentFolder?.path || location.pathname;
+              // Get the current page data and determine display info
+              const isContentPage = pageData.type === 'content';
+              const targetPath = isContentPage ? pageData.data.path : pageData.data.path;
               const currentNavNode = findNodeByPath(navigationStructure, targetPath);
-              const displayTitle = currentNavNode?.title || content?.title || currentFolder?.title || 'Page';
+              const displayTitle = currentNavNode?.title || 
+                (isContentPage ? pageData.data.title : pageData.data.title) || 
+                'Page';
               
               // Only show breadcrumbs when viewing content documents (never for folders)
-              if (content && !currentFolder) {
+              if (isContentPage) {
                 const breadcrumbItems = [];
-                const pathParts = content.path.split('/').filter(part => part);
+                const pathParts = pageData.data.path.split('/').filter(part => part);
                 
                 // Build breadcrumb path - start with Home if not root
                 if (pathParts.length > 0) {
@@ -345,24 +324,24 @@ const ContentPage = () => {
             })()}
 
             {/* Content Area */}
-            {content ? (
+            {pageData.type === 'content' ? (
               <div className="bg-card rounded-lg border border-border p-8 relative">
                 <HierarchicalContentDisplay 
-                  content={HierarchyParser.sectionsToMarkup(content.content_json || [])}
+                  content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
                   onSectionClick={handleContentNodeClick}
                 />
               </div>
-            ) : currentFolder?.content_json ? (
+            ) : pageData.data.content_json ? (
               <div className="bg-card rounded-lg border border-border p-8 relative">
                 <HierarchicalContentDisplay 
-                  content={HierarchyParser.sectionsToMarkup(currentFolder.content_json || [])}
+                  content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
                   onSectionClick={handleContentNodeClick}
                 />
               </div>
-            ) : currentFolder ? (
+            ) : (
               <FolderLandingPage
-                folder={currentFolder}
-                children={folderChildren}
+                folder={pageData.data}
+                children={pageData.children}
                 documents={allContentNodes}
                 onCreateDocument={() => {
                   setEditorData({
@@ -371,7 +350,7 @@ const ContentPage = () => {
                   });
                 }}
               />
-            ) : null}
+            )}
             </>
           ) : (
             <div className="text-center py-12">
