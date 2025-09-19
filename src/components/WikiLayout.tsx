@@ -11,6 +11,7 @@ interface WikiLayoutProps {
   onStructureUpdate?: () => void;
   actionMenu?: React.ReactNode;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
+  onNavigationClick?: (navId: string, path: string) => void;
 }
 
 export const WikiLayout = ({ 
@@ -22,7 +23,8 @@ export const WikiLayout = ({
   currentPath,
   onStructureUpdate,
   actionMenu,
-  onSectionView
+  onSectionView,
+  onNavigationClick
 }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
@@ -52,6 +54,7 @@ export const WikiLayout = ({
             onSectionView={onSectionView}
             currentPath={currentPath}
             onStructureUpdate={onStructureUpdate || (() => {})}
+            onNavigationClick={onNavigationClick}
           />
         </aside>
         

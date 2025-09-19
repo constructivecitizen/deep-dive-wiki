@@ -66,18 +66,11 @@ const ContentPage = () => {
     setViewingSection(null);
     
     // Load all required data first
-    const [contentData, folderData, folderChildren, allNodes] = await Promise.all([
+    const [contentData, folderData, folderChildren] = await Promise.all([
       ContentService.getDocumentByPath(currentPath),
       currentPath !== '/' ? ContentService.getNavigationNodeByPath(currentPath) : null,
-      currentPath !== '/' ? ContentService.getNavigationNodeChildren(currentPath) : [],
-      allContentNodes.length === 0 ? ContentService.getAllDocuments() : Promise.resolve(allContentNodes)
+      currentPath !== '/' ? ContentService.getNavigationNodeChildren(currentPath) : []
     ]);
-    
-    // Set sidebar data if needed
-    if (allContentNodes.length === 0) {
-      setAllContentNodes(allNodes);
-      setFilteredContent(allNodes);
-    }
     
     // Set page data atomically based on what we found
     if (contentData) {
@@ -148,6 +141,11 @@ const ContentPage = () => {
     console.log('Update node:', updatedNode.id, updatedNode);
   };
 
+  const handleNavigationClick = async (navId: string, path: string) => {
+    navigate(path);
+    await refreshAllData();
+  };
+
 
   if (pageData?.type === 'loading') {
     return (
@@ -201,6 +199,7 @@ const ContentPage = () => {
         currentPath={location.pathname}
         onStructureUpdate={refreshAllData}
         onSectionView={handleSectionView}
+        onNavigationClick={handleNavigationClick}
         actionMenu={
           <SimpleActionMenu 
             onToggleDocumentEditor={() => setEditorData({
