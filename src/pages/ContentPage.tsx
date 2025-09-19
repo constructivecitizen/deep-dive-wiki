@@ -319,8 +319,8 @@ const ContentPage = () => {
             
             return (
               <>
-                {/* Breadcrumb navigation */}
-                {breadcrumbItems.length > 1 && (
+                {/* Breadcrumb navigation - hide when viewing folder directly */}
+                {breadcrumbItems.length > 1 && !currentFolder && (
                   <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
                     {breadcrumbItems.map((item, index) => (
                       <div key={index} className="flex items-center">
