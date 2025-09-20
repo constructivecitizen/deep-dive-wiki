@@ -378,7 +378,7 @@ const ContentPage = () => {
           <HierarchicalContentDisplay 
             content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
             onSectionClick={handleContentNodeClick}
-            onSectionNavigate={handleSectionView}
+            onSectionView={handleSectionView}
           />
         </div>
       );
@@ -392,7 +392,7 @@ const ContentPage = () => {
             <HierarchicalContentDisplay 
               content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
               onSectionClick={handleContentNodeClick}
-              onSectionNavigate={handleSectionView}
+              onSectionView={handleSectionView}
             />
           </div>
         );
