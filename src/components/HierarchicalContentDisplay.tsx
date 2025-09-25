@@ -19,6 +19,36 @@ interface HierarchicalContentDisplayProps {
   activeNodeId?: string;
 }
 
+// Helper function to extract full hierarchical content for a section
+const extractSectionFullContent = (targetSection: ContentSection): string => {
+  let fullContent = '';
+  
+  // Add the section's own content if it exists
+  if (targetSection.content && targetSection.content.trim()) {
+    fullContent += targetSection.content.trim() + '\n\n';
+  }
+  
+  // Recursively extract all child content
+  const extractChildrenContent = (section: ContentSection): string => {
+    let childContent = '';
+    for (const child of section.children) {
+      const headerLevel = '#'.repeat(Math.max(1, child.level));
+      childContent += `${headerLevel} ${child.title}\n\n`;
+      
+      if (child.content && child.content.trim()) {
+        childContent += child.content.trim() + '\n\n';
+      }
+      
+      // Recursively extract nested children
+      childContent += extractChildrenContent(child);
+    }
+    return childContent;
+  };
+  
+  fullContent += extractChildrenContent(targetSection);
+  return fullContent.trim();
+};
+
 const parseHierarchicalContent = (content: string): ContentSection[] => {
   const lines = content.split('\n');
   const sections: ContentSection[] = [];
@@ -83,7 +113,7 @@ const ContentSectionComponent: React.FC<{
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   activeNodeId?: string;
 }> = ({ section, depth, onSectionClick, onSectionView, activeNodeId }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(true); // Always expanded by default
   const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
@@ -137,9 +167,11 @@ const ContentSectionComponent: React.FC<{
               onClick={(e) => {
                 e.stopPropagation();
                 if (onSectionView) {
+                  // Extract full hierarchical content like the sidebar does
+                  const fullContent = extractSectionFullContent(section);
                   onSectionView({
                     title: section.title,
-                    content: section.content,
+                    content: fullContent,
                     level: section.level,
                     parentPath: window.location.pathname
                   });
