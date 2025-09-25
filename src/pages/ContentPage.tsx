@@ -436,7 +436,7 @@ const ContentPage = () => {
         activeNodeId={activeNodeId}
       >
         <div className="text-center py-16">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Content Not Found</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4 ml-8">Content Not Found</h1>
           <p className="text-muted-foreground mb-8">
             The requested page doesn't exist yet. You can create it using the document editor.
           </p>

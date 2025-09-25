@@ -41,7 +41,7 @@ export const SectionView: React.FC<SectionViewProps> = ({
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-4xl font-bold text-foreground">{sectionData.title}</h1>
+        <h1 className="text-4xl font-bold text-foreground ml-8">{sectionData.title}</h1>
       </div>
 
       {/* Section content */}
