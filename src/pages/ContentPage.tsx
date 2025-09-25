@@ -339,7 +339,7 @@ const ContentPage = () => {
     // Hide breadcrumbs for top-level pages (e.g., /deep-structures)
     // Only show breadcrumbs when there are 3+ items: Home + Top-level + Sub-page
     return breadcrumbItems.length > 2 ? (
-      <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
+      <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2 ml-8">
         {breadcrumbItems.map((item, index) => (
           <div key={index} className="flex items-center">
             {index > 0 && <span className="h-4 w-4 mx-2">‣</span>}
@@ -365,7 +365,7 @@ const ContentPage = () => {
     const currentNavNode = findNodeByPath(navigationStructure, targetPath);
     const displayTitle = currentNavNode?.title || pageData.data.title || 'Page';
     
-    return <h1 className="text-4xl font-bold text-foreground">{displayTitle}</h1>;
+    return <h1 className="text-4xl font-bold text-foreground ml-8">{displayTitle}</h1>;
   };
 
   // Render main content based on page type
