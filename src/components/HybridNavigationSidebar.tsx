@@ -4,12 +4,15 @@ import {
   Edit2, 
   Check, 
   X, 
-  Trash2
+  Trash2,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { buildSectionHierarchy, HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 import { EnhancedSectionItem } from './EnhancedSectionItem';
@@ -252,6 +255,51 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   const [newFolderName, setNewFolderName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Filter states
+  const [expandedFilters, setExpandedFilters] = useState({
+    ventureLevel: true,
+    technology: true,
+    marketProduct: true,
+    content: true
+  });
+
+  const [filters, setFilters] = useState({
+    ventureLevel: {
+      early: false,
+      pmf: false,
+      scaleUp: false
+    },
+    technology: {
+      aiLlm: false,
+      aiOther: false,
+      nonAi: false
+    },
+    marketProduct: {
+      b2b: false,
+      b2c: false,
+      saas: false,
+      internalTooling: false,
+      shopSite: false,
+      multiMarketplace: false,
+      service: false
+    },
+    content: {
+      overviews: false,
+      pitfalls: false,
+      tips: false,
+      steps: false,
+      frameworks: false,
+      diligence: false,
+      gptTips: false,
+      agenticTools: false,
+      tooling: false,
+      news: false,
+      discussions: false,
+      debates: false,
+      postmortem: false
+    }
+  });
+
   const handleCreateFolder = async () => {
     if (newFolderName.trim()) {
       const folder = await ContentService.createNavigationFolder(newFolderName.trim());
@@ -285,8 +333,140 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   // Only show top-level nodes, no nested structure
   const topLevelNodes = structure.filter(node => !node.parent_id);
 
+  const toggleFilterSection = (section: keyof typeof expandedFilters) => {
+    setExpandedFilters(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const toggleFilter = (category: keyof typeof filters, filter: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [filter]: !prev[category][filter as keyof typeof prev[typeof category]]
+      }
+    }));
+  };
+
+  const FilterSection = ({ 
+    title, 
+    sectionKey, 
+    items 
+  }: { 
+    title: string; 
+    sectionKey: keyof typeof expandedFilters; 
+    items: { key: string; label: string }[] 
+  }) => (
+    <div className="mb-3">
+      <button
+        onClick={() => toggleFilterSection(sectionKey)}
+        className="flex items-center gap-2 w-full p-2 hover:bg-accent/50 rounded-md transition-colors"
+      >
+        {expandedFilters[sectionKey] ? (
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        )}
+        <span className="text-sm font-medium text-foreground">{title}</span>
+      </button>
+      
+      {expandedFilters[sectionKey] && (
+        <div className="ml-6 space-y-2 mt-2">
+          {items.map(item => (
+            <div key={item.key} className="flex items-center space-x-2">
+              <Checkbox
+                id={`${sectionKey}-${item.key}`}
+                checked={filters[sectionKey][item.key as keyof typeof filters[typeof sectionKey]]}
+                onCheckedChange={() => toggleFilter(sectionKey, item.key)}
+                className="h-4 w-4"
+              />
+              <label 
+                htmlFor={`${sectionKey}-${item.key}`}
+                className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+              >
+                {item.label}
+              </label>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const filterSections = [
+    {
+      title: "Venture level",
+      sectionKey: "ventureLevel" as const,
+      items: [
+        { key: "early", label: "early" },
+        { key: "pmf", label: "PMF" },
+        { key: "scaleUp", label: "scale-up" }
+      ]
+    },
+    {
+      title: "Technology",
+      sectionKey: "technology" as const,
+      items: [
+        { key: "aiLlm", label: "AI (LLM)" },
+        { key: "aiOther", label: "AI (other)" },
+        { key: "nonAi", label: "Non-AI" }
+      ]
+    },
+    {
+      title: "Market/Product type",
+      sectionKey: "marketProduct" as const,
+      items: [
+        { key: "b2b", label: "b2b" },
+        { key: "b2c", label: "b2c" },
+        { key: "saas", label: "saas" },
+        { key: "internalTooling", label: "internal tooling" },
+        { key: "shopSite", label: "shop site" },
+        { key: "multiMarketplace", label: "2/multi marketplace" },
+        { key: "service", label: "service" }
+      ]
+    },
+    {
+      title: "Content",
+      sectionKey: "content" as const,
+      items: [
+        { key: "overviews", label: "Overviews/summaries / critical commentary" },
+        { key: "pitfalls", label: "Top pitfalls" },
+        { key: "tips", label: "Tips" },
+        { key: "steps", label: "Steps" },
+        { key: "frameworks", label: "Frameworks" },
+        { key: "diligence", label: "Diligence/Checklists" },
+        { key: "gptTips", label: "GPT tips" },
+        { key: "agenticTools", label: "Agentic Tools / Approaches" },
+        { key: "tooling", label: "Tooling" },
+        { key: "news", label: "News" },
+        { key: "discussions", label: "Discussions" },
+        { key: "debates", label: "Debates" },
+        { key: "postmortem", label: "Postmortem Data" }
+      ]
+    }
+  ];
+
   return (
     <div className="h-full flex flex-col">
+      {/* Filters Section */}
+      <div className="border-b border-border p-3">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-1">
+          Filters
+        </div>
+        <div className="space-y-1">
+          {filterSections.map(section => (
+            <FilterSection
+              key={section.sectionKey}
+              title={section.title}
+              sectionKey={section.sectionKey}
+              items={section.items}
+            />
+          ))}
+        </div>
+      </div>
+
       {/* Navigation Tree */}
       <div className="flex-1 overflow-y-auto p-3">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-1">
