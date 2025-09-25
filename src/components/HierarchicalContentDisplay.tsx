@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 
@@ -111,14 +111,16 @@ const ContentSectionComponent: React.FC<{
             className="flex-shrink-0 mt-1 p-1 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-center"
             aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
-            <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${isExpanded ? 'rotate-90' : ''}`}>
-              ‣
-            </span>
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )}
           </button>
         ) : (
-          // Bullet point for leaf nodes with titles
+          // Diamond bullet for leaf nodes with titles
           <div className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full"></div>
+            <div className="w-2 h-2 bg-muted-foreground transform rotate-45"></div>
           </div>
         )}
         

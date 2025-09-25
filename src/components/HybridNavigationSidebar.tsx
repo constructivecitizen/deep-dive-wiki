@@ -147,9 +147,11 @@ interface HybridNavigationSidebarProps {
           onClick={toggleExpanded}
           className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded z-10"
         >
-          <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${expanded ? 'rotate-90' : ''}`}>
-            ‣
-          </span>
+          {expanded ? (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          )}
         </button>
 
         {/* Title - editable */}
