@@ -1,5 +1,6 @@
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
+import BetterProdLogo from "@/assets/BetterProd-logo.png";
 
 interface WikiLayoutProps {
   children: React.ReactNode;
@@ -29,11 +30,12 @@ export const WikiLayout = ({
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Document Wiki</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Hierarchical knowledge management system
-              </p>
+            <div className="flex items-center">
+              <img 
+                src={BetterProdLogo} 
+                alt="BetterProd" 
+                className="h-8 w-auto"
+              />
             </div>
             {actionMenu && (
               <div className="flex items-center">
