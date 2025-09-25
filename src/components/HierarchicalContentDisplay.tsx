@@ -120,7 +120,7 @@ const ContentSectionComponent: React.FC<{
         ) : (
           // Diamond bullet for leaf nodes with titles
           <div className="flex-shrink-0 mt-1 w-6 h-6 flex items-center justify-center">
-            <div className="w-2 h-2 bg-muted-foreground transform rotate-45"></div>
+            <div className="w-2 h-2 border border-muted-foreground transform rotate-45"></div>
           </div>
         )}
         

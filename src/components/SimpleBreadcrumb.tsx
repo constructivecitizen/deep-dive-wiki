@@ -1,4 +1,4 @@
-// Removed ChevronRight import - using triangular bullet character instead
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { NavigationNode } from '@/services/contentService';
 
@@ -52,7 +52,7 @@ export const SimpleBreadcrumb = ({ path, navigationStructure = [] }: SimpleBread
     <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
       {breadcrumbItems.map((item, index) => (
         <div key={item.href} className="flex items-center">
-          {index > 0 && <span className="w-4 h-4 mx-2">‣</span>}
+          {index > 0 && <ChevronRight className="w-4 h-4 mx-2 text-muted-foreground" />}
           {item.isLast ? (
             <span className="text-foreground font-medium">{item.title}</span>
           ) : (

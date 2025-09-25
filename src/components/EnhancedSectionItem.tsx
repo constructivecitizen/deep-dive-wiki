@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 import { extractSectionFullContent } from '../lib/sectionContentExtractor';
 import { DocumentSection } from '../services/contentService';
@@ -59,13 +60,17 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
             e.stopPropagation();
             if (hasChildren) setIsExpanded(!isExpanded);
           }}
-          className="flex-shrink-0"
+          className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded transition-colors"
         >
-          <span className={`text-muted-foreground transform transition-transform duration-200 text-2xl origin-center ${
-            isExpanded && hasChildren ? 'rotate-90' : ''
-          }`}>
-            ‣
-          </span>
+          {hasChildren ? (
+            isExpanded ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )
+          ) : (
+            <div className="w-2 h-2 border border-muted-foreground transform rotate-45"></div>
+          )}
         </button>
         
         <span className="truncate flex-1" title={section.title}>
