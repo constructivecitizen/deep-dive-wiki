@@ -121,29 +121,9 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   }) => {
-    // Find the section in the current document to build proper hierarchy
-    if (pageData?.type === 'content' && pageData.data.content_json) {
-      const targetSection = pageData.data.content_json.find(section => section.title === sectionData.title);
-      if (targetSection) {
-        // Import and use the section content extractor for proper hierarchy
-        import('@/lib/sectionContentExtractor').then(({ extractSectionFullContent }) => {
-          const fullSectionData = extractSectionFullContent(targetSection, pageData.data.content_json || []);
-          setViewingSection({
-            content: fullSectionData.content,
-            title: fullSectionData.title,
-            level: fullSectionData.level,
-            parentPath: pageData.data.path,
-            sectionHierarchy: fullSectionData.sectionHierarchy
-          });
-        });
-      } else {
-        // Fallback: use the content as provided (for page button clicks)
-        setViewingSection(sectionData);
-      }
-    } else {
-      // Use the content as provided
-      setViewingSection(sectionData);
-    }
+    // The HierarchicalContentDisplay component already extracts full hierarchical content
+    // when clicking page buttons, so we can directly use the provided sectionData
+    setViewingSection(sectionData);
   };
 
   const handleSectionNavigate = (sectionTitle: string) => {
