@@ -166,15 +166,20 @@ const ContentSectionComponent: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                console.log('Page button clicked for section:', section.title);
+                console.log('Has onSectionView callback:', !!onSectionView);
                 if (onSectionView) {
                   // Extract full hierarchical content like the sidebar does
                   const fullContent = extractSectionFullContent(section);
-                  onSectionView({
+                  console.log('Extracted full content:', fullContent);
+                  const sectionData = {
                     title: section.title,
                     content: fullContent,
                     level: section.level,
                     parentPath: window.location.pathname
-                  });
+                  };
+                  console.log('Calling onSectionView with:', sectionData);
+                  onSectionView(sectionData);
                 }
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
