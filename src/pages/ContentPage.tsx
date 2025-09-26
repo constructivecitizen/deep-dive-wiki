@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useReducer } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { PageBreadcrumb } from "@/components/PageBreadcrumb";
-import { SimpleActionMenu } from "@/components/SimpleActionMenu";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { UnifiedEditor } from "@/components/UnifiedEditor";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { FolderLandingPage } from "@/components/FolderLandingPage";
-import { WikiLayout } from "@/components/WikiLayout";
+import { useLayoutContext } from "@/components/PersistentLayout";
 import { NavigationNode, WikiDocument, ContentService, DocumentSection } from "@/services/contentService";
 import { extractSectionFullContent } from '@/lib/sectionContentExtractor';
 
@@ -17,81 +16,60 @@ const PAGE_TYPES = {
   FOLDER: 'folder'
 } as const;
 
-// State types
-interface AppState {
-  isLoading: boolean;
-  pageData: PageData | null;
-  allDocuments: WikiDocument[];
-  navigationStructure: NavigationNode[];
-  filteredNodes: WikiDocument[];
+// Interfaces
+interface PageData {
+  type: 'content' | 'folder';
+  title: string;
+  content?: string;
+  path: string;
+  children?: NavigationNode[];
 }
 
-type PageData = 
-  | { type: 'loading' }
-  | { type: 'content'; title: string; content: string; path: string }  
-  | { type: 'folder'; title: string; content: string; path: string }
-  | null;
+// State for managing content and UI
+interface ContentPageState {
+  // Current page data
+  pageData: PageData | null;
+  filteredDocuments: WikiDocument[];
+  
+  // UI states
+  isLoading: boolean;
+}
 
-type AppAction = 
-  | { type: 'SET_LOADING'; payload: boolean }
+// Actions for state management
+type ContentPageAction =  
+  // Page data actions
   | { type: 'SET_PAGE_DATA'; payload: PageData | null }
-  | { type: 'SET_ALL_DOCUMENTS'; payload: WikiDocument[] }
-  | { type: 'SET_NAVIGATION_STRUCTURE'; payload: NavigationNode[] }
-  | { type: 'SET_FILTERED_NODES'; payload: WikiDocument[] };
+  | { type: 'SET_FILTERED_DOCUMENTS'; payload: WikiDocument[] }
+  // UI actions
+  | { type: 'SET_LOADING'; payload: boolean };
 
-const appReducer = (state: AppState, action: AppAction): AppState => {
+// Initial state
+const initialState: ContentPageState = {
+  pageData: null,
+  filteredDocuments: [],
+  isLoading: true,
+};
+
+// Reducer function
+const contentPageReducer = (state: ContentPageState, action: ContentPageAction): ContentPageState => {
   switch (action.type) {
-    case 'SET_LOADING':
-      return { ...state, isLoading: action.payload };
     case 'SET_PAGE_DATA':
       return { ...state, pageData: action.payload };
-    case 'SET_ALL_DOCUMENTS':
-      return { ...state, allDocuments: action.payload };
-    case 'SET_NAVIGATION_STRUCTURE':
-      return { ...state, navigationStructure: action.payload };
-    case 'SET_FILTERED_NODES':
-      return { ...state, filteredNodes: action.payload };
+    case 'SET_FILTERED_DOCUMENTS':
+      return { ...state, filteredDocuments: action.payload };
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
     default:
       return state;
   }
 };
 
-const initialState: AppState = {
-  isLoading: true,
-  pageData: null,
-  allDocuments: [],
-  navigationStructure: [],
-  filteredNodes: []
-};
-
-const ContentPage = () => {
+const ContentPage: React.FC = () => {
+  const [state, dispatch] = useReducer(contentPageReducer, initialState);
+  const { showEditor, showFilters, setShowEditor, setShowFilters } = useLayoutContext();
   const location = useLocation();
   const navigate = useNavigate();
-  const [state, dispatch] = useReducer(appReducer, initialState);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showEditor, setShowEditor] = useState(false);
 
-  // Handle URL hash changes for section navigation
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1); // Remove the # symbol
-      if (hash && state.pageData?.type === 'content') {
-        // Scroll to section if it exists
-        const element = document.getElementById(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    };
-    
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange(); // Handle initial hash
-    
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [state.pageData]);
-
-  // Load page data function
   // Helper function to convert DocumentSection[] to markdown string
   const convertSectionsToMarkdown = (sections: DocumentSection[]): string => {
     if (!sections || sections.length === 0) return '';
@@ -119,205 +97,208 @@ const ContentPage = () => {
       // Try to get folder
       const folder = await ContentService.getNavigationNodeByPath(currentPath);
       if (folder) {
+        const children = await ContentService.getNavigationNodeChildren(currentPath);
         return {
           type: 'folder',
           title: folder.title,
-          content: '',
-          path: folder.path
+          path: folder.path,
+          children
         };
       }
 
-      return null;
+      // Default case - create a new document structure
+      return {
+        type: 'content',
+        title: 'New Document',
+        content: '',
+        path: currentPath
+      };
     } catch (error) {
       console.error('Error loading page data:', error);
-      return null;
+      throw error;
     }
   };
 
-  // Load initial data
+  const loadCurrentPageData = async (path: string) => {
+    try {
+      const pageData = await loadPageData(path);
+      dispatch({ type: 'SET_PAGE_DATA', payload: pageData });
+    } catch (error) {
+      console.error('Error loading current page data:', error);
+      dispatch({ type: 'SET_PAGE_DATA', payload: null });
+    }
+  };
+
+  const loadAllDocuments = async () => {
+    try {
+      const documents = await ContentService.getAllDocuments();
+      dispatch({ type: 'SET_FILTERED_DOCUMENTS', payload: documents });
+    } catch (error) {
+      console.error('Error loading documents:', error);
+    }
+  };
+
+  const handleFilter = async (filters: { 
+    searchTerm: string; 
+    selectedTags: string[];
+    dateRange: { start: Date | null; end: Date | null };
+  }) => {
+    try {
+      const documents = await ContentService.getAllDocuments();
+      let filtered = [...documents];
+
+      if (filters.searchTerm) {
+        const term = filters.searchTerm.toLowerCase();
+        filtered = filtered.filter(doc => 
+          doc.title.toLowerCase().includes(term) ||
+          convertSectionsToMarkdown(doc.content_json || []).toLowerCase().includes(term)
+        );
+      }
+
+      if (filters.selectedTags.length > 0) {
+        filtered = filtered.filter(doc => 
+          doc.tags?.some(tag => filters.selectedTags.includes(tag))
+        );
+      }
+
+      dispatch({ type: 'SET_FILTERED_DOCUMENTS', payload: filtered });
+    } catch (error) {
+      console.error('Error filtering documents:', error);
+    }
+  };
+
+  const handleStructureUpdate = async () => {
+    // Reload current page data to reflect any changes
+    if (location.pathname) {
+      await loadCurrentPageData(location.pathname);
+    }
+  };
+
+  const handleEditorSave = (content: string) => {
+    if (!state.pageData) return;
+    
+    // For now, just close the editor - actual save logic would go here
+    setShowEditor(false);
+  };
+
+  // Load current page on mount and path change
   useEffect(() => {
-    const loadInitialData = async () => {
+    const initializePage = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       
       try {
-        const [navStructure, documents] = await Promise.all([
-          ContentService.getNavigationStructure(),
-          ContentService.getAllDocuments()
-        ]);
+        // Load current page data
+        await loadCurrentPageData(location.pathname);
         
-        dispatch({ type: 'SET_NAVIGATION_STRUCTURE', payload: navStructure });
-        dispatch({ type: 'SET_ALL_DOCUMENTS', payload: documents });
-        dispatch({ type: 'SET_FILTERED_NODES', payload: documents });
+        // Load documents for filtering
+        await loadAllDocuments();
+        
       } catch (error) {
-        console.error('Error loading initial data:', error);
+        console.error('Error initializing page:', error);
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
 
-    loadInitialData();
-  }, []);
-
-  // Load page content when path changes
-  useEffect(() => {
-    const loadData = async () => {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      const data = await loadPageData(location.pathname);
-      dispatch({ type: 'SET_PAGE_DATA', payload: data });
-      dispatch({ type: 'SET_LOADING', payload: false });
-    };
-
-    loadData();
+    initializePage();
   }, [location.pathname]);
 
-  const handleFilter = (filters: { searchTerm: string; selectedTags: string[] }) => {
-    let filtered = [...state.allDocuments];
-
-    if (filters.searchTerm) {
-      const term = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(doc => 
-        doc.title.toLowerCase().includes(term) ||
-        convertSectionsToMarkdown(doc.content_json || []).toLowerCase().includes(term)
-      );
+  // Handle section extraction for section viewing
+  useEffect(() => {
+    if (location.hash && state.pageData?.type === 'content' && state.pageData.content) {
+      const sectionId = location.hash.substring(1);
+      try {
+        const sectionContent = extractSectionFullContent(state.pageData.content, sectionId);
+        
+        if (sectionContent && typeof sectionContent === 'object' && 'content' in sectionContent) {
+          // Update page data to show only the section content
+          dispatch({ 
+            type: 'SET_PAGE_DATA', 
+            payload: {
+              ...state.pageData,
+              content: sectionContent.content,
+              title: `${state.pageData.title} - ${sectionContent.title}`
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error extracting section content:', error);
+      }
     }
+  }, [location.hash, state.pageData?.content]);
 
-    if (filters.selectedTags.length > 0) {
-      filtered = filtered.filter(doc => 
-        doc.tags?.some(tag => filters.selectedTags.includes(tag))
-      );
-    }
-
-    dispatch({ type: 'SET_FILTERED_NODES', payload: filtered });
-  };
-
-  const handleContentNodeClick = (nodeId: string) => {
-    console.log('Content node clicked:', nodeId);
-  };
-
-  const handleNavigationClick = async (navId: string, path: string) => {
-    navigate(path);
-  };
-
-  const refreshAllData = async () => {
-    const [navStructure, documents] = await Promise.all([
-      ContentService.getNavigationStructure(),
-      ContentService.getAllDocuments()
-    ]);
-    
-    dispatch({ type: 'SET_NAVIGATION_STRUCTURE', payload: navStructure });
-    dispatch({ type: 'SET_ALL_DOCUMENTS', payload: documents });
-    dispatch({ type: 'SET_FILTERED_NODES', payload: documents });
-  };
-
-  const renderBreadcrumb = () => {
-    const hash = window.location.hash.slice(1);
-    
-    if (state.pageData?.type === 'content') {
+  const renderPageContent = () => {
+    if (!state.pageData) {
       return (
-        <PageBreadcrumb 
-          currentPath={state.pageData.path}
-          navigationStructure={state.navigationStructure}
-          pageTitle={state.pageData.title}
-          sectionTitle={hash || undefined}
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">Page not found</p>
+        </div>
+      );
+    }
+
+    if (state.pageData.type === 'folder') {
+      return (
+        <FolderLandingPage
+          folder={state.pageData as any}
+          children={state.pageData.children || []}
+          documents={state.filteredDocuments}
+          onCreateDocument={() => {}}
         />
       );
     }
-    
-    if (state.pageData?.type === 'folder') {
-      return (
-        <PageBreadcrumb 
-          currentPath={state.pageData.path}
-          navigationStructure={state.navigationStructure}
-          pageTitle={state.pageData.title}
-        />
-      );
-    }
-    
-    return null;
-  };
 
-  const renderPageTitle = () => {
-    const hash = window.location.hash.slice(1);
-    
-    if (state.pageData?.type === 'content') {
-      const title = hash ? `${state.pageData.title} - ${hash}` : state.pageData.title;
-      return <h1 className="text-4xl font-bold text-foreground mb-6">{title}</h1>;
-    }
-    
-    if (state.pageData?.type === 'folder') {
-      return <h1 className="text-4xl font-bold text-foreground mb-6">{state.pageData.title}</h1>;
-    }
-    
-    return <h1 className="text-4xl font-bold text-foreground mb-6">Content Not Found</h1>;
-  };
-
-  const renderContent = () => {
-    if (state.pageData?.type === 'content') {
-      return (
-        <div className="space-y-6">
-          {showEditor ? (
-            <div>Editor placeholder - {state.pageData.title}</div>
-          ) : (
-            <div className="bg-card rounded-lg border border-border p-8">
+    // Content page
+    return (
+      <div className="space-y-6">
+        <PageBreadcrumb currentPath={state.pageData.path} navigationStructure={[]} />
+        
+        {showEditor ? (
+          <UnifiedEditor
+            editorData={{ type: 'document', content: state.pageData.content || '' }}
+            onSave={handleEditorSave}
+            onClose={() => setShowEditor(false)}
+          />
+        ) : (
+          <div className="prose prose-slate dark:prose-invert max-w-none">
+            <h1 className="text-3xl font-bold mb-6">{state.pageData.title}</h1>
+            {state.pageData.content && (
               <HierarchicalContentDisplay 
                 content={state.pageData.content}
-                onSectionClick={handleContentNodeClick}
               />
-            </div>
-          )}
-        </div>
-      );
-    }
-    
-    if (state.pageData?.type === 'folder') {
-      return (
-        <div className="bg-card rounded-lg border border-border p-8">
-          <HierarchicalContentDisplay 
-            content={state.pageData.content}
-            onSectionClick={handleContentNodeClick}
-          />
-        </div>
-      );
-    }
-    
-    return (
-      <div className="bg-card rounded-lg border border-border p-8">
-        <div className="text-center py-12">
-          <p className="text-lg text-muted-foreground">Content not found</p>
-        </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
 
+  // Get all unique tags from filtered documents
+  const allTags = [...new Set(state.filteredDocuments.flatMap(doc => doc.tags || []))];
+
   if (state.isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
 
   return (
-    <WikiLayout
-      navigationStructure={state.navigationStructure}
-      contentNodes={state.filteredNodes}
-      onContentNodeClick={handleContentNodeClick}
-      onStructureUpdate={refreshAllData}
-      onNavigationClick={handleNavigationClick}
-      actionMenu={
-        <SimpleActionMenu 
-          onToggleDocumentEditor={() => setShowEditor(true)}
-          onToggleFilter={() => {}}
-        />
-      }
-    >
-      <div className="space-y-6">
-        {renderBreadcrumb()}
-        {renderPageTitle()}
-        {renderContent()}
-      </div>
-    </WikiLayout>
+    <>
+      {showFilters && (
+        <div className="mb-6">
+          <SimpleFilterPanel 
+            isOpen={showFilters}
+            onClose={() => setShowFilters(false)}
+            onFilter={handleFilter}
+            allTags={allTags}
+          />
+        </div>
+      )}
+
+      {/* Content based on page type */}
+      {renderPageContent()}
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { PersistentLayout } from "./components/PersistentLayout";
 import ContentPage from "./pages/ContentPage";
 import NotFound from "./pages/NotFound";
 
@@ -15,10 +16,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Dynamic content routes - handles all wiki content */}
-          <Route path="/" element={<ContentPage />} />
-          <Route path="/*" element={<ContentPage />} />
-          {/* Catch-all route for 404 */}
+          <Route path="/" element={<PersistentLayout />}>
+            {/* Dynamic content routes - handles all wiki content */}
+            <Route index element={<ContentPage />} />
+            <Route path="*" element={<ContentPage />} />
+          </Route>
+          {/* Catch-all route for 404 outside the layout */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
