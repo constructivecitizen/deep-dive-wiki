@@ -236,12 +236,16 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   activeNodeId,
   testProp
 }) => {
-  console.log('HierarchicalContentDisplay props:', { 
+  // FORCE CONSOLE LOG - This should definitely appear
+  console.log('=== HIERARCHICAL CONTENT DISPLAY RENDERED ===');
+  console.log('Props received:', { 
     hasOnSectionView: !!onSectionView,
     hasOnSectionClick: !!onSectionClick,
     testProp: testProp,
-    onSectionViewType: typeof onSectionView
+    onSectionViewType: typeof onSectionView,
+    onSectionViewString: String(onSectionView)
   });
+  console.log('=== END DEBUG ===');
   
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');

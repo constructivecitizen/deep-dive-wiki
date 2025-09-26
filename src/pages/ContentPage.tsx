@@ -127,7 +127,10 @@ const ContentPage = () => {
 
   // Debug: Log function existence
   React.useEffect(() => {
+    console.log('=== CONTENT PAGE USEEFFECT ===');
     console.log('handleSectionView function exists:', !!handleSectionView, typeof handleSectionView);
+    console.log('Function string:', String(handleSectionView));
+    console.log('=== END CONTENT PAGE DEBUG ===');
   }, [handleSectionView]);
 
   const handleSectionNavigate = (sectionTitle: string) => {
