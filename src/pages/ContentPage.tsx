@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from "react";
+import React, { useEffect, useState, useReducer } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { WikiLayout } from "@/components/WikiLayout";
 import { ContentService, NavigationNode, WikiDocument } from "@/services/contentService";
@@ -115,7 +115,7 @@ const ContentPage = () => {
     }>;
   } | null>(null);
 
-  const handleSectionView = (sectionData: {
+  const handleSectionView = React.useCallback((sectionData: {
     content: string;
     title: string;
     level: number;
@@ -123,7 +123,12 @@ const ContentPage = () => {
   }) => {
     console.log('ContentPage handleSectionView called with:', sectionData.title);
     setViewingSection(sectionData);
-  };
+  }, []);
+
+  // Debug: Log function existence
+  React.useEffect(() => {
+    console.log('handleSectionView function exists:', !!handleSectionView, typeof handleSectionView);
+  }, [handleSectionView]);
 
   const handleSectionNavigate = (sectionTitle: string) => {
     // Find the section by title in the current document and navigate to it
