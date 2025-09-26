@@ -68,6 +68,31 @@ export default {
           2: "hsl(var(--depth-bg-2))",
           3: "hsl(var(--depth-bg-3))",
         },
+        // Sidebar section backgrounds
+        section: {
+          1: "hsl(var(--section-bg-1))",
+          2: "hsl(var(--section-bg-2))",
+          3: "hsl(var(--section-bg-3))",
+          4: "hsl(var(--section-bg-4))",
+        },
+        // Content level colors
+        content: {
+          1: "hsl(var(--content-level-1))",
+          2: "hsl(var(--content-level-2))",
+          3: "hsl(var(--content-level-3))",
+          4: "hsl(var(--content-level-4))",
+          5: "hsl(var(--content-level-5))",
+          6: "hsl(var(--content-level-6))",
+        },
+        // Content border colors
+        "content-border": {
+          1: "hsl(var(--content-border-1))",
+          2: "hsl(var(--content-border-2))",
+          3: "hsl(var(--content-border-3))",
+          4: "hsl(var(--content-border-4))",
+          5: "hsl(var(--content-border-5))",
+          6: "hsl(var(--content-border-6))",
+        },
         tags: {
           blue: "hsl(var(--tag-blue))",
           green: "hsl(var(--tag-green))",

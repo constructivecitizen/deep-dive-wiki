@@ -69,20 +69,35 @@
     --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Subtle section backgrounds for sidebar */
+    --section-bg-1: 210 65% 97%;  /* Soft blue */
+    --section-bg-2: 265 60% 97%;  /* Gentle purple */
+    --section-bg-3: 25 70% 97%;   /* Warm amber */
+    --section-bg-4: 340 55% 97%;  /* Muted rose */
+
+    /* Content hierarchy color sequence */
+    --content-level-1: 155 40% 96%;  /* Soft emerald */
+    --content-level-2: 210 50% 96%;  /* Gentle blue */
+    --content-level-3: 265 45% 96%;  /* Soft purple */
+    --content-level-4: 25 55% 96%;   /* Warm amber */
+    --content-level-5: 340 40% 96%;  /* Muted rose */
+    --content-level-6: 180 45% 96%;  /* Sage green */
+
+    /* Border accents for content levels */
+    --content-border-1: 155 40% 75%;
+    --content-border-2: 210 50% 75%;
+    --content-border-3: 265 45% 75%;
+    --content-border-4: 25 55% 75%;
+    --content-border-5: 340 40% 75%;
+    --content-border-6: 180 45% 75%;
   }
 
   .dark {
@@ -121,6 +136,28 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Dark mode section backgrounds */
+    --section-bg-1: 210 35% 8%;   /* Soft blue */
+    --section-bg-2: 265 30% 8%;   /* Gentle purple */
+    --section-bg-3: 25 40% 8%;    /* Warm amber */
+    --section-bg-4: 340 25% 8%;   /* Muted rose */
+
+    /* Dark mode content hierarchy */
+    --content-level-1: 155 25% 8%;
+    --content-level-2: 210 30% 8%;
+    --content-level-3: 265 25% 8%;
+    --content-level-4: 25 35% 8%;
+    --content-level-5: 340 20% 8%;
+    --content-level-6: 180 25% 8%;
+
+    /* Dark mode border accents */
+    --content-border-1: 155 40% 35%;
+    --content-border-2: 210 50% 35%;
+    --content-border-3: 265 45% 35%;
+    --content-border-4: 25 55% 35%;
+    --content-border-5: 340 40% 35%;
+    --content-border-6: 180 45% 35%;
   }
 }
 
@@ -130,6 +167,20 @@
   .depth-1 { @apply bg-[hsl(var(--depth-bg-1))] border-l-2 border-l-primary/20; }
   .depth-2 { @apply bg-[hsl(var(--depth-bg-2))] border-l-2 border-l-primary/30; }
   .depth-3 { @apply bg-[hsl(var(--depth-bg-3))] border-l-2 border-l-primary/40; }
+
+  /* Sidebar section backgrounds */
+  .section-bg-1 { @apply bg-[hsl(var(--section-bg-1))]; }
+  .section-bg-2 { @apply bg-[hsl(var(--section-bg-2))]; }
+  .section-bg-3 { @apply bg-[hsl(var(--section-bg-3))]; }
+  .section-bg-4 { @apply bg-[hsl(var(--section-bg-4))]; }
+
+  /* Content level backgrounds and borders */
+  .content-level-1 { @apply bg-[hsl(var(--content-level-1))] border-l-2 border-l-[hsl(var(--content-border-1))]; }
+  .content-level-2 { @apply bg-[hsl(var(--content-level-2))] border-l-2 border-l-[hsl(var(--content-border-2))]; }
+  .content-level-3 { @apply bg-[hsl(var(--content-level-3))] border-l-2 border-l-[hsl(var(--content-border-3))]; }
+  .content-level-4 { @apply bg-[hsl(var(--content-level-4))] border-l-2 border-l-[hsl(var(--content-border-4))]; }
+  .content-level-5 { @apply bg-[hsl(var(--content-level-5))] border-l-2 border-l-[hsl(var(--content-border-5))]; }
+  .content-level-6 { @apply bg-[hsl(var(--content-level-6))] border-l-2 border-l-[hsl(var(--content-border-6))]; }
 
   /* Tag variants */
   .tag-blue { @apply bg-[hsl(var(--tag-blue)/0.15)] text-[hsl(var(--tag-blue))] border-[hsl(var(--tag-blue)/0.3)]; }

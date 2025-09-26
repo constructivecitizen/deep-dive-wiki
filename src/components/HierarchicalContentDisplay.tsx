@@ -114,7 +114,8 @@ const ContentSectionComponent: React.FC<{
   onSectionClick?: (sectionId: string) => void;
   activeNodeId?: string;
   documentPath?: string;
-}> = ({ section, depth, onSectionClick, activeNodeId, documentPath }) => {
+  siblingIndex?: number;
+}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0 }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Always expanded by default
   const navigate = useNavigate();
   const location = useLocation();
@@ -131,6 +132,10 @@ const ContentSectionComponent: React.FC<{
   // Calculate indentation: children align with parent's text (after the 24px button)
   const indentationPx = depth === 0 ? 0 : depth * 24; // 24px per level for child alignment
   const contentIndentationPx = indentationPx + 32; // 24px for button + 8px for gap to align with parent label text
+  
+  // Calculate color based on sibling position (cycling through 6 colors)
+  const colorIndex = ((siblingIndex % 6) + 1);
+  const contentColorClass = `content-level-${colorIndex}`;
 
   return (
     <div id={section.id}>
@@ -191,7 +196,7 @@ const ContentSectionComponent: React.FC<{
         <div className="mt-2">
           {hasContent && (
             <div 
-              className="prose prose-slate dark:prose-invert max-w-none prose-sm mb-4"
+              className={`prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 p-3 rounded-md ${contentColorClass}`}
               style={{ marginLeft: `${contentIndentationPx}px` }}
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(section.content.trim()) 
@@ -201,7 +206,7 @@ const ContentSectionComponent: React.FC<{
           
           {hasChildren && (
             <div className="space-y-2">
-              {section.children.map((child) => (
+              {section.children.map((child, index) => (
                 <ContentSectionComponent
                   key={child.id}
                   section={child}
@@ -209,6 +214,7 @@ const ContentSectionComponent: React.FC<{
                   onSectionClick={onSectionClick}
                   activeNodeId={activeNodeId}
                   documentPath={documentPath}
+                  siblingIndex={index}
                 />
               ))}
             </div>
@@ -240,9 +246,9 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
     );
   }
 
-  return (
+    return (
       <div className="space-y-4">
-        {sections.map((section) => (
+        {sections.map((section, index) => (
           <ContentSectionComponent
             key={section.id}
             section={section}
@@ -250,8 +256,9 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
             onSectionClick={onSectionClick}
             activeNodeId={activeNodeId}
             documentPath={documentPath}
+            siblingIndex={index}
           />
         ))}
       </div>
-  );
+    );
 };

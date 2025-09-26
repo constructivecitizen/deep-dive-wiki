@@ -377,17 +377,22 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   const FilterSection = ({ 
     title, 
     sectionKey, 
-    items 
+    items,
+    colorIndex 
   }: { 
     title: string; 
     sectionKey: keyof typeof expandedFilters; 
-    items: { key: string; label: string }[] 
-  }) => (
-    <div className="mb-3">
-      <button
-        onClick={() => toggleFilterSection(sectionKey)}
-        className="flex items-center gap-2 w-full p-2 hover:bg-accent/50 rounded-md transition-colors"
-      >
+    items: { key: string; label: string }[];
+    colorIndex: number;
+  }) => {
+    const sectionColorClass = `section-bg-${((colorIndex % 4) + 1)}`;
+    
+    return (
+      <div className="mb-3">
+        <button
+          onClick={() => toggleFilterSection(sectionKey)}
+          className={`flex items-center gap-2 w-full p-2 hover:bg-accent/50 rounded-md transition-colors ${sectionColorClass}`}
+        >
         {expandedFilters[sectionKey] ? (
           <ChevronDown className="w-4 h-4 text-muted-foreground" />
         ) : (
@@ -417,7 +422,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   const filterSections = [
     {
@@ -480,12 +486,13 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           Filters
         </div>
         <div className="space-y-1">
-          {filterSections.map(section => (
+          {filterSections.map((section, index) => (
             <FilterSection
               key={section.sectionKey}
               title={section.title}
               sectionKey={section.sectionKey}
               items={section.items}
+              colorIndex={index}
             />
           ))}
         </div>
