@@ -11,6 +11,7 @@ interface WikiLayoutProps {
   onStructureUpdate?: () => void;
   onNavigationClick?: (navId: string, path: string) => void;
   setShowEditor?: (show: boolean) => void;
+  currentPath?: string;
 }
 
 export const WikiLayout = ({ 
@@ -21,12 +22,13 @@ export const WikiLayout = ({
   activeNodeId,
   onStructureUpdate,
   onNavigationClick,
-  setShowEditor
+  setShowEditor,
+  currentPath
 }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background flex h-screen">
-      <aside className="w-80 flex-shrink-0 border-r border-border flex flex-col">
-        <header className="border-b border-border bg-card">
+      <aside className="w-80 flex-shrink-0 border-r border-sidebar-border flex flex-col bg-sidebar">
+        <header className="border-b border-sidebar-border bg-sidebar-accent/40">
           <div className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center pl-[0.75rem]">
@@ -47,6 +49,7 @@ export const WikiLayout = ({
             onStructureUpdate={onStructureUpdate || (() => {})}
             onNavigationClick={onNavigationClick}
             setShowEditor={setShowEditor}
+            currentPath={currentPath}
           />
         </div>
       </aside>

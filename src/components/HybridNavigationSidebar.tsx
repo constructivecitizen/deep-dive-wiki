@@ -25,6 +25,7 @@ interface HybridNavigationSidebarProps {
   onNavigationClick?: (navId: string, path: string) => void;
   currentNavId?: string | null;
   setShowEditor?: (show: boolean) => void;
+  currentPath?: string;
 }
 
   const FolderNode: React.FC<{
@@ -34,13 +35,15 @@ interface HybridNavigationSidebarProps {
   onNavigationClick?: (navId: string, path: string) => void;  
   currentNavId?: string | null;
   setShowEditor?: (show: boolean) => void;
+  currentPath?: string;
 }> = ({ 
   node, 
   contentNodes, 
   onStructureUpdate,
   onNavigationClick,
   currentNavId,
-  setShowEditor
+  setShowEditor,
+  currentPath
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -151,11 +154,18 @@ interface HybridNavigationSidebarProps {
     }
   };
 
+  // Check if this node is the currently active one
+  const isActiveNode = currentPath === node.path;
+
   return (
     <>
       {/* Folder Header - Clickable to navigate */}
       <div
-        className="flex items-center gap-2 py-2 px-3 rounded-md group transition-colors cursor-pointer hover:bg-accent/50"
+        className={`flex items-center gap-2 py-2 px-3 rounded-md group transition-colors cursor-pointer ${
+          isActiveNode 
+            ? 'bg-sidebar-primary/20 border border-sidebar-primary/30' 
+            : 'hover:bg-accent/50'
+        }`}
         onClick={handleNodeClick}
       >
         {/* Expansion toggle */}
@@ -207,7 +217,9 @@ interface HybridNavigationSidebarProps {
               </Button>
             </div>
           ) : (
-            <span className="text-sm truncate text-foreground group-hover:text-foreground/80">
+            <span className={`text-sm truncate group-hover:text-foreground/80 ${
+              isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
+            }`}>
               {node.title}
             </span>
           )}
@@ -275,7 +287,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   onStructureUpdate,
   onNavigationClick,
   currentNavId,
-  setShowEditor
+  setShowEditor,
+  currentPath
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -379,27 +392,17 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   const FilterSection = ({ 
     title, 
     sectionKey, 
-    items,
-    colorIndex 
+    items 
   }: { 
     title: string; 
     sectionKey: keyof typeof expandedFilters; 
     items: { key: string; label: string }[];
-    colorIndex: number;
   }) => {
-    // Use explicit class mapping instead of dynamic construction
-    const getSectionColorClass = (index: number) => {
-      const classes = ['section-bg-1', 'section-bg-2', 'section-bg-3', 'section-bg-4'];
-      return classes[index % 4];
-    };
-    
-    const sectionColorClass = getSectionColorClass(colorIndex);
-    
     return (
       <div className="mb-3">
         <button
           onClick={() => toggleFilterSection(sectionKey)}
-          className={`flex items-center gap-2 w-full p-2 hover:bg-accent/50 rounded-md transition-colors ${sectionColorClass}`}
+          className="flex items-center gap-2 w-full p-2 hover:bg-accent/50 rounded-md transition-colors"
         >
         {expandedFilters[sectionKey] ? (
           <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -486,29 +489,28 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
     }
   ];
 
-  return (
-    <div className="h-full flex flex-col">
+    return (
+    <div className="h-full flex flex-col bg-sidebar">
       {/* Filters Section */}
-      <div className="border-b border-border p-3">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-1">
+      <div className="border-b border-sidebar-border bg-sidebar-accent/30 p-3">
+        <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
           Filters
         </div>
         <div className="space-y-1">
-          {filterSections.map((section, index) => (
+          {filterSections.map((section) => (
             <FilterSection
               key={section.sectionKey}
               title={section.title}
               sectionKey={section.sectionKey}
               items={section.items}
-              colorIndex={index}
             />
           ))}
         </div>
       </div>
 
       {/* Navigation Tree */}
-      <div className="flex-1 overflow-y-auto p-3">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3 px-1">
+      <div className="flex-1 overflow-y-auto bg-sidebar-accent/20 p-3">
+        <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
           Navigation
         </div>
         {topLevelNodes.length > 0 ? (
@@ -521,6 +523,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               onNavigationClick={onNavigationClick}
               currentNavId={currentNavId}
               setShowEditor={setShowEditor}
+              currentPath={currentPath}
             />
           ))
         ) : (
