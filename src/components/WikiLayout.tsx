@@ -28,7 +28,7 @@ export const WikiLayout = ({
       <header className="border-b border-border bg-card">
         <div className="py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center" style={{ paddingLeft: 'calc(20rem + 0.75rem)' }}>
+            <div className="flex items-center" style={{ paddingLeft: 'calc(20rem + 1.5rem)' }}>
               <img 
                 src={BetterProdLogo} 
                 alt="BetterProd" 
