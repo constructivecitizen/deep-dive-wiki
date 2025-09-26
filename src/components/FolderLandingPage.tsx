@@ -34,7 +34,10 @@ export const FolderLandingPage: React.FC<FolderLandingPageProps> = ({
           {onToggleDocumentEditor ? (
             <h1 
               className="text-3xl font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
-              onClick={onToggleDocumentEditor}
+              onClick={() => {
+                console.log('Folder title clicked!', folder.title);
+                onToggleDocumentEditor();
+              }}
             >
               {folder.title}
             </h1>
