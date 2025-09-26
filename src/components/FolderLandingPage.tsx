@@ -31,19 +31,23 @@ export const FolderLandingPage: React.FC<FolderLandingPageProps> = ({
           <FolderIcon className="h-16 w-16 text-muted-foreground" />
         </div>
         <div className="mb-2">
-          {onToggleDocumentEditor ? (
-            <h1 
-              className="text-3xl font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
-              onClick={() => {
-                console.log('Folder title clicked!', folder.title);
-                onToggleDocumentEditor();
-              }}
-            >
-              {folder.title}
-            </h1>
-          ) : (
-            <h1 className="text-3xl font-bold text-foreground">{folder.title}</h1>
-          )}
+          {(() => {
+            console.log('onToggleDocumentEditor exists?', !!onToggleDocumentEditor, typeof onToggleDocumentEditor);
+            return onToggleDocumentEditor ? (
+              <h1 
+                className="text-3xl font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                onClick={() => {
+                  console.log('Folder title clicked!', folder.title);
+                  onToggleDocumentEditor();
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                {folder.title}
+              </h1>
+            ) : (
+              <h1 className="text-3xl font-bold text-foreground">{folder.title}</h1>
+            );
+          })()}
         </div>
         <p className="text-muted-foreground">
           This is a folder containing {children.length + folderDocuments.length} items
