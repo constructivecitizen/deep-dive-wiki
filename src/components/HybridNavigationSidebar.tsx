@@ -163,7 +163,7 @@ interface HybridNavigationSidebarProps {
       <div
         className={`flex items-center gap-2 py-2 px-3 rounded-md group transition-colors cursor-pointer ${
           isActiveNode 
-            ? 'bg-sidebar-primary/20 border border-sidebar-primary/30' 
+            ? 'bg-sidebar-primary/10 border-l-2 border-l-sidebar-primary' 
             : 'hover:bg-accent/50'
         }`}
         onClick={handleNodeClick}
@@ -273,6 +273,7 @@ interface HybridNavigationSidebarProps {
               folderPath={node.path}
               sectionPosition={index}
               flatSections={flatSections}
+              currentPath={currentPath}
             />
           ))}
         </div>
@@ -492,7 +493,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
     return (
     <div className="h-full flex flex-col bg-sidebar">
       {/* Filters Section */}
-      <div className="border-b border-sidebar-border bg-sidebar-accent/30 p-3">
+      <div className="border-b border-sidebar-border section-bg-2 p-3">
         <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
           Filters
         </div>
@@ -509,7 +510,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       </div>
 
       {/* Navigation Tree */}
-      <div className="flex-1 overflow-y-auto bg-sidebar-accent/20 p-3">
+      <div className="flex-1 overflow-y-auto section-bg-3 p-3">
         <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
           Navigation
         </div>

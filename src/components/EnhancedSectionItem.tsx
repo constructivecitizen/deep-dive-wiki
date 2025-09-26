@@ -9,6 +9,7 @@ interface EnhancedSectionItemProps {
   folderPath: string;
   sectionPosition: number;
   flatSections: any[];
+  currentPath?: string;
 }
 
 export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
@@ -16,7 +17,8 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   depth,
   folderPath,
   sectionPosition,
-  flatSections
+  flatSections,
+  currentPath
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
@@ -40,7 +42,11 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   return (
     <div className="text-sm">
       <div 
-        className="flex items-center gap-2 py-1 px-3 rounded cursor-pointer hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+        className={`flex items-center gap-2 py-1 px-3 rounded cursor-pointer transition-colors ${
+          currentPath?.includes(section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')) 
+            ? 'bg-sidebar-primary/10 border-l-2 border-l-sidebar-primary text-sidebar-primary' 
+            : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+        }`}
         style={{ marginLeft: `${indentationPx}px` }}
         onClick={handleSectionClick}
       >
@@ -77,6 +83,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
               folderPath={folderPath}
               sectionPosition={sectionPosition + index + 1}
               flatSections={flatSections}
+              currentPath={currentPath}
             />
           ))}
         </div>

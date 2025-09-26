@@ -28,7 +28,7 @@ export const WikiLayout = ({
   return (
     <div className="min-h-screen bg-background flex h-screen">
       <aside className="w-80 flex-shrink-0 border-r border-sidebar-border flex flex-col bg-sidebar">
-        <header className="border-b border-sidebar-border bg-sidebar-accent/40">
+        <header className="border-b border-sidebar-border section-bg-1">
           <div className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center pl-[0.75rem]">
