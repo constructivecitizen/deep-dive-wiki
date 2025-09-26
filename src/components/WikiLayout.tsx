@@ -28,7 +28,7 @@ export const WikiLayout = ({
       <header className="border-b border-border bg-card">
         <div className="py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center pl-[20.75rem]">
+            <div className="flex items-center pl-[0.75rem]">
               <img 
                 src={BetterProdLogo} 
                 alt="BetterProd" 
