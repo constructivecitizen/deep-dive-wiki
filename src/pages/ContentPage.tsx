@@ -188,11 +188,28 @@ const ContentPage: React.FC = () => {
     }
   };
 
-  const handleEditorSave = (content: string) => {
+  const handleEditorSave = async (content: string) => {
     if (!state.pageData) return;
     
-    // For now, just close the editor - actual save logic would go here
-    setShowEditor(false);
+    try {
+      // Parse the markdown content into sections
+      const { HierarchyParser } = await import('@/lib/hierarchyParser');
+      const sections = HierarchyParser.parseMarkup(content).sections;
+      
+      // Save the document content
+      await ContentService.saveDocumentContent(state.pageData.path, sections);
+      
+      // Reload the page data to reflect changes
+      await loadCurrentPageData(state.pageData.path);
+      
+      // Close the editor
+      setShowEditor(false);
+      
+      console.log('Document saved successfully');
+    } catch (error) {
+      console.error('Error saving document:', error);
+      // Keep editor open on error so user doesn't lose their changes
+    }
   };
 
   // Load current page on mount and path change
