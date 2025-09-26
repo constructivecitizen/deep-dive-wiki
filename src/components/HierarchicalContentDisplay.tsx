@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { renderMarkdown } from '@/lib/markdownRenderer';
+import { generateSectionId } from '@/lib/sectionUtils';
 
 interface ContentSection {
   level: number;
@@ -16,7 +17,8 @@ interface HierarchicalContentDisplayProps {
   content: string;
   onSectionClick?: (sectionId: string) => void;
   activeNodeId?: string;
-  testProp?: string;
+  currentSectionId?: string;
+  documentPath?: string;
 }
 
 // Helper function to extract full hierarchical content for a section
@@ -111,7 +113,8 @@ const ContentSectionComponent: React.FC<{
   depth: number;
   onSectionClick?: (sectionId: string) => void;
   activeNodeId?: string;
-}> = ({ section, depth, onSectionClick, activeNodeId }) => {
+  documentPath?: string;
+}> = ({ section, depth, onSectionClick, activeNodeId, documentPath }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Always expanded by default
   const navigate = useNavigate();
   const location = useLocation();
@@ -166,22 +169,13 @@ const ContentSectionComponent: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Create a URL-safe section ID from the title
-                const sectionId = section.title.toLowerCase()
-                  .replace(/[^a-z0-9]+/g, '-')
-                  .replace(/^-+|-+$/g, '');
+                // Generate URL-safe section ID using the new utility
+                const sectionId = generateSectionId(section.title);
                 
-                // Navigate to the same page with the section hash
-                const newPath = `${location.pathname}#${sectionId}`;
+                // Navigate to the section using the document path if provided
+                const basePath = documentPath || location.pathname;
+                const newPath = `${basePath}#${sectionId}`;
                 navigate(newPath);
-                
-                // Scroll to the section
-                setTimeout(() => {
-                  const element = document.getElementById(sectionId);
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }, 100);
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
               aria-label={`Navigate to ${section.title} section`}
@@ -208,13 +202,14 @@ const ContentSectionComponent: React.FC<{
           {hasChildren && (
             <div className="space-y-2">
               {section.children.map((child) => (
-            <ContentSectionComponent
-              key={child.id}
-              section={child}
-              depth={depth + 1}
-              onSectionClick={onSectionClick}
-              activeNodeId={activeNodeId}
-            />
+                <ContentSectionComponent
+                  key={child.id}
+                  section={child}
+                  depth={depth + 1}
+                  onSectionClick={onSectionClick}
+                  activeNodeId={activeNodeId}
+                  documentPath={documentPath}
+                />
               ))}
             </div>
           )}
@@ -228,7 +223,8 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   content,
   onSectionClick,
   activeNodeId,
-  testProp
+  currentSectionId,
+  documentPath
 }) => {
   
   // Clean tag syntax from content before parsing
@@ -247,13 +243,14 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   return (
       <div className="space-y-4">
         {sections.map((section) => (
-        <ContentSectionComponent
-          key={section.id}
-          section={section}
-          depth={0}
-          onSectionClick={onSectionClick}
-          activeNodeId={activeNodeId}
-        />
+          <ContentSectionComponent
+            key={section.id}
+            section={section}
+            depth={0}
+            onSectionClick={onSectionClick}
+            activeNodeId={activeNodeId}
+            documentPath={documentPath}
+          />
         ))}
       </div>
   );
