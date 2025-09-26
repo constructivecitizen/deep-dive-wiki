@@ -26,19 +26,21 @@ export const WikiLayout = ({
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
-        <div className="flex items-center justify-between py-4">
-          <div className="flex items-center" style={{ paddingLeft: `calc(20rem + 1.5rem)` }}>
-            <img 
-              src={BetterProdLogo} 
-              alt="BetterProd" 
-              className="h-8 w-auto"
-            />
-          </div>
-          {actionMenu && (
-            <div className="flex items-center pr-6">
-              {actionMenu}
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <img 
+                src={BetterProdLogo} 
+                alt="BetterProd" 
+                className="h-8 w-auto"
+              />
             </div>
-          )}
+            {actionMenu && (
+              <div className="flex items-center">
+                {actionMenu}
+              </div>
+            )}
+          </div>
         </div>
       </header>
       
