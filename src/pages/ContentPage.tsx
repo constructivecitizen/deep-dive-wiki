@@ -8,7 +8,7 @@ import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { useLayoutContext } from "@/components/PersistentLayout";
 import { NavigationNode, WikiDocument, ContentService, DocumentSection } from "@/services/contentService";
 import { extractSectionFullContent } from '@/lib/sectionContentExtractor';
-import { findSectionByHash } from '@/lib/sectionUtils';
+import { findSectionByHash, generateSectionId } from '@/lib/sectionUtils';
 
 // Constants
 const PAGE_TYPES = {
@@ -80,7 +80,7 @@ const contentPageReducer = (state: ContentPageState, action: ContentPageAction):
 
 const ContentPage: React.FC = () => {
   const [state, dispatch] = useReducer(contentPageReducer, initialState);
-  const { showEditor, showFilters, setShowEditor, setShowFilters } = useLayoutContext();
+  const { showEditor, showFilters, setShowEditor, setShowFilters, navigationStructure } = useLayoutContext();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -278,15 +278,13 @@ const ContentPage: React.FC = () => {
       <div className="space-y-6">
         <PageBreadcrumb 
           currentPath={state.pageData.path} 
-          navigationStructure={[]} 
+          navigationStructure={navigationStructure} 
           sectionTitle={state.sectionView?.title}
           sectionHierarchy={state.sectionView?.sectionHierarchy}
           onSectionBack={() => navigate(state.pageData?.path || location.pathname)}
           onSectionNavigate={(sectionTitle) => {
-            // Navigate to section by finding it and creating a proper hash
-            const sectionId = sectionTitle.toLowerCase()
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/^-+|-+$/g, '');
+            // Navigate to section using proper generateSectionId utility
+            const sectionId = generateSectionId(sectionTitle);
             navigate(`${state.pageData?.path || location.pathname}#${sectionId}`);
           }}
         />

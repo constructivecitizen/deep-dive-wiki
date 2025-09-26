@@ -10,6 +10,7 @@ interface LayoutContextType {
   showFilters: boolean;
   setShowEditor: (show: boolean) => void;
   setShowFilters: (show: boolean) => void;
+  navigationStructure: NavigationNode[];
 }
 
 const LayoutContext = createContext<LayoutContextType | null>(null);
@@ -67,7 +68,8 @@ export const PersistentLayout: React.FC = () => {
       showEditor, 
       showFilters, 
       setShowEditor, 
-      setShowFilters 
+      setShowFilters,
+      navigationStructure
     }}>
       <WikiLayout
         navigationStructure={navigationStructure}
