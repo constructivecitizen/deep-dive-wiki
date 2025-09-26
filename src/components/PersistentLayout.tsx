@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { WikiLayout } from './WikiLayout';
 
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
@@ -24,11 +24,14 @@ export const useLayoutContext = () => {
 };
 
 export const PersistentLayout: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
   const [contentNodes, setContentNodes] = useState<WikiDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [hasInitialNavigation, setHasInitialNavigation] = useState(false);
 
   const loadNavigationData = async () => {
     try {
@@ -50,6 +53,17 @@ export const PersistentLayout: React.FC = () => {
   useEffect(() => {
     loadNavigationData();
   }, []);
+
+  // Navigate to first root folder on initial load
+  useEffect(() => {
+    if (!hasInitialNavigation && navigationStructure.length > 0 && location.pathname === '/') {
+      const firstRootFolder = navigationStructure.find(node => !node.parent_id);
+      if (firstRootFolder) {
+        navigate(firstRootFolder.path, { replace: true });
+        setHasInitialNavigation(true);
+      }
+    }
+  }, [navigationStructure, hasInitialNavigation, location.pathname, navigate]);
 
   const handleStructureUpdate = () => {
     loadNavigationData();

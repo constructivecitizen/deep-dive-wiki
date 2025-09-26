@@ -256,46 +256,46 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
 
   // Filter states
   const [expandedFilters, setExpandedFilters] = useState({
-    ventureLevel: true,
-    technology: true,
-    marketProduct: true,
-    content: true
+    ventureLevel: false,
+    technology: false,
+    marketProduct: false,
+    content: false
   });
 
   const [filters, setFilters] = useState({
     ventureLevel: {
-      early: false,
-      pmf: false,
-      scaleUp: false
+      early: true,
+      pmf: true,
+      scaleUp: true
     },
     technology: {
-      aiLlm: false,
-      aiOther: false,
-      nonAi: false
+      aiLlm: true,
+      aiOther: true,
+      nonAi: true
     },
     marketProduct: {
-      b2b: false,
-      b2c: false,
-      saas: false,
-      internalTooling: false,
-      shopSite: false,
-      multiMarketplace: false,
-      service: false
+      b2b: true,
+      b2c: true,
+      saas: true,
+      internalTooling: true,
+      shopSite: true,
+      multiMarketplace: true,
+      service: true
     },
     content: {
-      overviews: false,
-      pitfalls: false,
-      tips: false,
-      steps: false,
-      frameworks: false,
-      diligence: false,
-      gptTips: false,
-      agenticTools: false,
-      tooling: false,
-      news: false,
-      discussions: false,
-      debates: false,
-      postmortem: false
+      overviews: true,
+      pitfalls: true,
+      tips: true,
+      steps: true,
+      frameworks: true,
+      diligence: true,
+      gptTips: true,
+      agenticTools: true,
+      tooling: true,
+      news: true,
+      discussions: true,
+      debates: true,
+      postmortem: true
     }
   });
 
