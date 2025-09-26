@@ -166,15 +166,24 @@ const ContentSectionComponent: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                console.log('Page button clicked, onSectionView exists:', !!onSectionView);
                 if (onSectionView) {
                   // Extract full hierarchical content like the sidebar does
                   const fullContent = extractSectionFullContent(section);
+                  console.log('Calling onSectionView with:', {
+                    title: section.title,
+                    contentLength: fullContent.length,
+                    level: section.level,
+                    parentPath: window.location.pathname
+                  });
                   onSectionView({
                     title: section.title,
                     content: fullContent,
                     level: section.level,
                     parentPath: window.location.pathname
                   });
+                } else {
+                  console.log('onSectionView callback is not defined');
                 }
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
