@@ -6,10 +6,12 @@ import {
   X, 
   Trash2,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
+import { useLayoutContext } from './PersistentLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,6 +47,7 @@ interface HybridNavigationSidebarProps {
   const [editValue, setEditValue] = useState(node.title);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { setShowEditor } = useLayoutContext();
 
   // Find the associated content for this folder and build hierarchical sections
   const associatedContent = contentNodes?.find(content => content.path === node.path);
@@ -134,6 +137,19 @@ interface HybridNavigationSidebarProps {
     }
   };
 
+  const handleEditContent = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Navigate to the folder and enable editor mode
+    if (onNavigationClick) {
+      onNavigationClick(node.id, node.path);
+    } else {
+      navigate(node.path);
+    }
+    // Enable editor mode
+    setShowEditor(true);
+  };
+
   return (
     <>
       {/* Folder Header - Clickable to navigate */}
@@ -202,6 +218,15 @@ interface HybridNavigationSidebarProps {
             className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={(e) => e.stopPropagation()}
           >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={handleEditContent}
+              title="Edit folder content"
+            >
+              <FileText className="w-3 h-3" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
