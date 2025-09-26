@@ -7,7 +7,7 @@ import { UnifiedEditor } from "@/components/UnifiedEditor";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { WikiLayout } from "@/components/WikiLayout";
-import { NavigationNode, WikiDocument, ContentService } from "@/services/contentService";
+import { NavigationNode, WikiDocument, ContentService, DocumentSection } from "@/services/contentService";
 import { extractSectionFullContent } from '@/lib/sectionContentExtractor';
 
 // Constants
@@ -92,6 +92,17 @@ const ContentPage = () => {
   }, [state.pageData]);
 
   // Load page data function
+  // Helper function to convert DocumentSection[] to markdown string
+  const convertSectionsToMarkdown = (sections: DocumentSection[]): string => {
+    if (!sections || sections.length === 0) return '';
+    
+    return sections.map(section => {
+      const headerLevel = '#'.repeat(Math.max(1, section.level));
+      const tags = section.tags?.length > 0 ? ` [${section.tags.join(', ')}]` : '';
+      return `${headerLevel} ${section.title}${tags}\n\n${section.content || ''}\n\n`;
+    }).join('').trim();
+  };
+
   const loadPageData = async (currentPath: string): Promise<PageData> => {
     try {
       // Try to get document first
@@ -100,7 +111,7 @@ const ContentPage = () => {
         return {
           type: 'content',
           title: document.title,
-          content: document.content_markup || '',
+          content: convertSectionsToMarkdown(document.content_json || []),
           path: document.path
         };
       }
@@ -164,7 +175,7 @@ const ContentPage = () => {
       const term = filters.searchTerm.toLowerCase();
       filtered = filtered.filter(doc => 
         doc.title.toLowerCase().includes(term) ||
-        doc.content_markup?.toLowerCase().includes(term)
+        convertSectionsToMarkdown(doc.content_json || []).toLowerCase().includes(term)
       );
     }
 
