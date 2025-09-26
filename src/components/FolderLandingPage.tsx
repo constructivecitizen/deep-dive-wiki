@@ -30,7 +30,7 @@ export const FolderLandingPage: React.FC<FolderLandingPageProps> = ({
         <div className="flex justify-center mb-4">
           <FolderIcon className="h-16 w-16 text-muted-foreground" />
         </div>
-        <div className="flex items-center justify-between max-w-2xl mx-auto mb-2">
+        <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold text-foreground">{folder.title}</h1>
           {onToggleDocumentEditor && (
             <Button 
