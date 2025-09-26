@@ -121,13 +121,9 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   }) => {
-    console.log('handleSectionView called with:', sectionData);
-    console.log('Current pageData:', pageData);
-    
-    // The HierarchicalContentDisplay component already extracts full hierarchical content
-    // when clicking page buttons, so we can directly use the provided sectionData
+    // Add a toast notification to confirm this is being called
+    toast.success(`Navigating to section: ${sectionData.title}`);
     setViewingSection(sectionData);
-    console.log('Set viewingSection to:', sectionData);
   };
 
   const handleSectionNavigate = (sectionTitle: string) => {
