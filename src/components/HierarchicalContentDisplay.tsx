@@ -166,6 +166,7 @@ const ContentSectionComponent: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                alert(`Button clicked for: ${section.title}`); // Simple test
                 if (onSectionView) {
                   // Extract full hierarchical content like the sidebar does
                   const fullContent = extractSectionFullContent(section);
