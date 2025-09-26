@@ -15,7 +15,6 @@ interface ContentSection {
 interface HierarchicalContentDisplayProps {
   content: string;
   onSectionClick?: (sectionId: string) => void;
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   activeNodeId?: string;
 }
 
@@ -110,9 +109,8 @@ const ContentSectionComponent: React.FC<{
   section: ContentSection; 
   depth: number;
   onSectionClick?: (sectionId: string) => void;
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   activeNodeId?: string;
-}> = ({ section, depth, onSectionClick, onSectionView, activeNodeId }) => {
+}> = ({ section, depth, onSectionClick, activeNodeId }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Always expanded by default
   const navigate = useNavigate();
   const hasChildren = section.children.length > 0;
@@ -166,16 +164,10 @@ const ContentSectionComponent: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (onSectionView) {
-                  // Extract full hierarchical content like the sidebar does
-                  const fullContent = extractSectionFullContent(section);
-                  onSectionView({
-                    title: section.title,
-                    content: fullContent,
-                    level: section.level,
-                    parentPath: window.location.pathname
-                  });
-                }
+                // Navigate to section URL like sidebar does
+                const currentPath = window.location.pathname;
+                const sectionUrl = `${currentPath}/${section.id}`;
+                navigate(sectionUrl);
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
               aria-label={`Navigate to ${section.title} section`}
@@ -207,7 +199,6 @@ const ContentSectionComponent: React.FC<{
                   section={child} 
                   depth={depth + 1}
                   onSectionClick={onSectionClick}
-                  onSectionView={onSectionView}
                   activeNodeId={activeNodeId}
                 />
               ))}
@@ -222,7 +213,6 @@ const ContentSectionComponent: React.FC<{
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
   content, 
   onSectionClick,
-  onSectionView,
   activeNodeId 
 }) => {
   
@@ -247,7 +237,6 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
             section={section} 
             depth={0}
             onSectionClick={onSectionClick}
-            onSectionView={onSectionView}
             activeNodeId={activeNodeId}
           />
         ))}
