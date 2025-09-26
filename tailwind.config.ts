@@ -4,6 +4,11 @@ export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   prefix: "",
+  safelist: [
+    // Ensure our custom color classes are included
+    'section-bg-1', 'section-bg-2', 'section-bg-3', 'section-bg-4',
+    'content-level-1', 'content-level-2', 'content-level-3', 'content-level-4', 'content-level-5', 'content-level-6'
+  ],
   theme: {
     container: {
       center: true,

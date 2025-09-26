@@ -134,8 +134,12 @@ const ContentSectionComponent: React.FC<{
   const contentIndentationPx = indentationPx + 32; // 24px for button + 8px for gap to align with parent label text
   
   // Calculate color based on sibling position (cycling through 6 colors)
-  const colorIndex = ((siblingIndex % 6) + 1);
-  const contentColorClass = `content-level-${colorIndex}`;
+  const getContentColorClass = (index: number) => {
+    const classes = ['content-level-1', 'content-level-2', 'content-level-3', 'content-level-4', 'content-level-5', 'content-level-6'];
+    return classes[index % 6];
+  };
+  
+  const contentColorClass = getContentColorClass(siblingIndex);
 
   return (
     <div id={section.id}>

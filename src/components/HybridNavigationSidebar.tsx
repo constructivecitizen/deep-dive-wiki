@@ -387,7 +387,13 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
     items: { key: string; label: string }[];
     colorIndex: number;
   }) => {
-    const sectionColorClass = `section-bg-${((colorIndex % 4) + 1)}`;
+    // Use explicit class mapping instead of dynamic construction
+    const getSectionColorClass = (index: number) => {
+      const classes = ['section-bg-1', 'section-bg-2', 'section-bg-3', 'section-bg-4'];
+      return classes[index % 4];
+    };
+    
+    const sectionColorClass = getSectionColorClass(colorIndex);
     
     return (
       <div className="mb-3">
