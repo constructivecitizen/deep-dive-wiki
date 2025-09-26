@@ -121,8 +121,8 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   }) => {
-    // Add a toast notification to confirm this is being called
-    toast.success(`Navigating to section: ${sectionData.title}`);
+    console.log('handleSectionView called with title:', sectionData.title);
+    console.log('Setting viewingSection to:', sectionData);
     setViewingSection(sectionData);
   };
 
