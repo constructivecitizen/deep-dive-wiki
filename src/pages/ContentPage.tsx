@@ -269,6 +269,7 @@ const ContentPage: React.FC = () => {
           children={state.pageData.children || []}
           documents={state.filteredDocuments}
           onCreateDocument={() => {}}
+          onToggleDocumentEditor={() => setShowEditor(!showEditor)}
         />
       );
     }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { NavigationNode, WikiDocument } from '@/services/contentService';
-import { FolderIcon, FileTextIcon, PlusIcon } from 'lucide-react';
+import { FolderIcon, FileTextIcon, PlusIcon, FileEdit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface FolderLandingPageProps {
@@ -9,13 +9,15 @@ interface FolderLandingPageProps {
   children: NavigationNode[];
   documents: WikiDocument[];
   onCreateDocument: () => void;
+  onToggleDocumentEditor?: () => void;
 }
 
 export const FolderLandingPage: React.FC<FolderLandingPageProps> = ({
   folder,
   children,
   documents,
-  onCreateDocument
+  onCreateDocument,
+  onToggleDocumentEditor
 }) => {
   // Get documents that belong to this folder
   const folderDocuments = documents.filter(doc => 
@@ -28,7 +30,19 @@ export const FolderLandingPage: React.FC<FolderLandingPageProps> = ({
         <div className="flex justify-center mb-4">
           <FolderIcon className="h-16 w-16 text-muted-foreground" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">{folder.title}</h1>
+        <div className="flex items-center justify-between max-w-2xl mx-auto mb-2">
+          <h1 className="text-3xl font-bold text-foreground">{folder.title}</h1>
+          {onToggleDocumentEditor && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onToggleDocumentEditor}
+              className="h-8 w-8 p-0"
+            >
+              <FileEdit className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
         <p className="text-muted-foreground">
           This is a folder containing {children.length + folderDocuments.length} items
         </p>

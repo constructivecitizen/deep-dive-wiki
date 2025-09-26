@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Outlet } from 'react-router-dom';
 import { WikiLayout } from './WikiLayout';
-import { SimpleActionMenu } from './SimpleActionMenu';
+
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
 
 // Context for sharing editor/filter state between layout and pages
@@ -75,12 +75,6 @@ export const PersistentLayout: React.FC = () => {
         navigationStructure={navigationStructure}
         contentNodes={contentNodes}
         onStructureUpdate={handleStructureUpdate}
-        actionMenu={
-          <SimpleActionMenu 
-            onToggleDocumentEditor={() => setShowEditor(!showEditor)}
-            onToggleFilter={() => setShowFilters(!showFilters)}
-          />
-        }
       >
         <Outlet />
       </WikiLayout>

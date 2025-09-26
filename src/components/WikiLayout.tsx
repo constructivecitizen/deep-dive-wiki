@@ -9,7 +9,6 @@ interface WikiLayoutProps {
   onContentNodeClick?: (nodeId: string) => void;
   activeNodeId?: string;
   onStructureUpdate?: () => void;
-  actionMenu?: React.ReactNode;
   onNavigationClick?: (navId: string, path: string) => void;
 }
 
@@ -20,7 +19,6 @@ export const WikiLayout = ({
   onContentNodeClick,
   activeNodeId,
   onStructureUpdate,
-  actionMenu,
   onNavigationClick
 }: WikiLayoutProps) => {
   return (
@@ -36,11 +34,6 @@ export const WikiLayout = ({
                   className="h-16 w-auto"
                 />
               </div>
-              {actionMenu && (
-                <div className="flex items-center pr-6">
-                  {actionMenu}
-                </div>
-              )}
             </div>
           </div>
         </header>
