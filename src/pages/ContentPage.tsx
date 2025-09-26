@@ -7,7 +7,7 @@ import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { TagManager } from "@/lib/tagManager";
 import { UnifiedEditor, EditorData } from "@/components/UnifiedEditor";
-
+import { SectionView } from "@/components/SectionView";
 import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { toast } from "sonner";
 import { HierarchyParser } from "@/lib/hierarchyParser";
@@ -104,9 +104,49 @@ const ContentPage = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);  
   const [editorData, setEditorData] = useState<EditorData | null>(null);
+  const [viewingSection, setViewingSection] = useState<{
+    content: string;
+    title: string;
+    level: number;
+    parentPath: string;
+    sectionHierarchy?: Array<{
+      title: string;
+      level: number;
+    }>;
+  } | null>(null);
+
+  const handleSectionView = (sectionData: {
+    content: string;
+    title: string;
+    level: number;
+    parentPath: string;
+  }) => {
+    setViewingSection(sectionData);
+  };
+
+  const handleSectionNavigate = (sectionTitle: string) => {
+    // Find the section by title in the current document and navigate to it
+    if (pageData?.type === 'content' && pageData.data.content_json) {
+      const targetSection = pageData.data.content_json.find(section => section.title === sectionTitle);
+      if (targetSection) {
+        // Import the section content extractor
+        import('@/lib/sectionContentExtractor').then(({ extractSectionFullContent }) => {
+          const sectionData = extractSectionFullContent(targetSection, pageData.data.content_json || []);
+          setViewingSection({
+            content: sectionData.content,
+            title: sectionData.title,
+            level: sectionData.level,
+            parentPath: pageData.data.path,
+            sectionHierarchy: sectionData.sectionHierarchy
+          });
+        });
+      }
+    }
+  };
 
   // Atomic page data loading function - returns data for synchronous handling
   const loadPageData = async (currentPath: string): Promise<PageData> => {
+    setViewingSection(null);
     
     try {
       // Load all required data atomically
@@ -335,10 +375,11 @@ const ContentPage = () => {
     if (pageData.type === 'content') {
       return (
         <div className="bg-card rounded-lg border border-border p-8 relative">
-          <HierarchicalContentDisplay 
-            content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
-            onSectionClick={handleContentNodeClick}
-          />
+            <HierarchicalContentDisplay 
+              content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
+              onSectionClick={handleContentNodeClick}
+              onSectionView={handleSectionView}
+            />
         </div>
       );
     }
@@ -348,10 +389,11 @@ const ContentPage = () => {
       if (pageData.data.content_json) {
         return (
           <div className="bg-card rounded-lg border border-border p-8 relative">
-            <HierarchicalContentDisplay 
-              content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
-              onSectionClick={handleContentNodeClick}
-            />
+          <HierarchicalContentDisplay 
+            content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
+            onSectionClick={handleContentNodeClick}
+            onSectionView={handleSectionView}
+          />
           </div>
         );
       }
@@ -422,6 +464,7 @@ const ContentPage = () => {
         onContentNodeClick={handleContentNodeClick}
         activeNodeId={activeNodeId}
         onStructureUpdate={refreshAllData}
+        onSectionView={handleSectionView}
         onNavigationClick={handleNavigationClick}
         actionMenu={
           <SimpleActionMenu 
@@ -436,9 +479,20 @@ const ContentPage = () => {
         }
       >
         <div className="space-y-6">
-          {renderBreadcrumb()}
-          {renderPageTitle()}
-          {renderContent()}
+          {viewingSection ? (
+            <SectionView 
+              sectionData={viewingSection}
+              onBack={() => setViewingSection(null)}
+              onSectionNavigate={handleSectionNavigate}
+              navigationStructure={navigationStructure}
+            />
+          ) : (
+            <>
+              {renderBreadcrumb()}
+              {renderPageTitle()}
+              {renderContent()}
+            </>
+          )}
         </div>
       </WikiLayout>
 
