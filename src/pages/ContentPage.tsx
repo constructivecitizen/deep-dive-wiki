@@ -121,6 +121,7 @@ const ContentPage = () => {
     level: number;
     parentPath: string;
   }) => {
+    console.log('ContentPage handleSectionView called with:', sectionData.title);
     setViewingSection(sectionData);
   };
 
@@ -375,11 +376,15 @@ const ContentPage = () => {
     if (pageData.type === 'content') {
       return (
         <div className="bg-card rounded-lg border border-border p-8 relative">
-            <HierarchicalContentDisplay 
-              content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
-              onSectionClick={handleContentNodeClick}
-              onSectionView={handleSectionView}
-            />
+          <HierarchicalContentDisplay 
+            content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
+            onSectionClick={handleContentNodeClick}
+            onSectionView={handleSectionView}
+          />
+          {/* DEBUG: Check if handleSectionView exists */}
+          <script type="application/json" id="debug-handler">
+            {JSON.stringify({ hasHandler: !!handleSectionView })}
+          </script>
         </div>
       );
     }
