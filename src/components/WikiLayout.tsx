@@ -24,7 +24,7 @@ export const WikiLayout = ({
   onNavigationClick
 }: WikiLayoutProps) => {
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex h-screen">
       <aside className="w-80 flex-shrink-0 border-r border-border flex flex-col">
         <header className="border-b border-border bg-card">
           <div className="py-4">
