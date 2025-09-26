@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
-import { useLayoutContext } from './PersistentLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -25,29 +24,29 @@ interface HybridNavigationSidebarProps {
   onStructureUpdate: () => void;
   onNavigationClick?: (navId: string, path: string) => void;
   currentNavId?: string | null;
+  setShowEditor?: (show: boolean) => void;
 }
 
   const FolderNode: React.FC<{
   node: NavigationNode;
   contentNodes?: WikiDocument[];
-  
   onStructureUpdate: () => void;
   onNavigationClick?: (navId: string, path: string) => void;  
   currentNavId?: string | null;
+  setShowEditor?: (show: boolean) => void;
 }> = ({ 
   node, 
   contentNodes, 
-   
   onStructureUpdate,
   onNavigationClick,
-  currentNavId
+  currentNavId,
+  setShowEditor
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(node.title);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
-  const { setShowEditor } = useLayoutContext();
 
   // Find the associated content for this folder and build hierarchical sections
   const associatedContent = contentNodes?.find(content => content.path === node.path);
@@ -147,7 +146,9 @@ interface HybridNavigationSidebarProps {
       navigate(node.path);
     }
     // Enable editor mode
-    setShowEditor(true);
+    if (setShowEditor) {
+      setShowEditor(true);
+    }
   };
 
   return (
@@ -273,7 +274,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   contentNodes = [],
   onStructureUpdate,
   onNavigationClick,
-  currentNavId
+  currentNavId,
+  setShowEditor
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -509,10 +511,10 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               key={item.id}
               node={item}
               contentNodes={contentNodes}
-              
               onStructureUpdate={onStructureUpdate}
               onNavigationClick={onNavigationClick}
               currentNavId={currentNavId}
+              setShowEditor={setShowEditor}
             />
           ))
         ) : (

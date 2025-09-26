@@ -89,6 +89,7 @@ export const PersistentLayout: React.FC = () => {
         navigationStructure={navigationStructure}
         contentNodes={contentNodes}
         onStructureUpdate={handleStructureUpdate}
+        setShowEditor={setShowEditor}
       >
         <Outlet />
       </WikiLayout>

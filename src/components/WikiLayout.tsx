@@ -10,6 +10,7 @@ interface WikiLayoutProps {
   activeNodeId?: string;
   onStructureUpdate?: () => void;
   onNavigationClick?: (navId: string, path: string) => void;
+  setShowEditor?: (show: boolean) => void;
 }
 
 export const WikiLayout = ({ 
@@ -19,7 +20,8 @@ export const WikiLayout = ({
   onContentNodeClick,
   activeNodeId,
   onStructureUpdate,
-  onNavigationClick
+  onNavigationClick,
+  setShowEditor
 }: WikiLayoutProps) => {
   return (
     <div className="min-h-screen bg-background flex h-screen">
@@ -44,6 +46,7 @@ export const WikiLayout = ({
             contentNodes={contentNodes}
             onStructureUpdate={onStructureUpdate || (() => {})}
             onNavigationClick={onNavigationClick}
+            setShowEditor={setShowEditor}
           />
         </div>
       </aside>
