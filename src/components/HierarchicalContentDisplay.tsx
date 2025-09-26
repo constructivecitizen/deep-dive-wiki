@@ -166,19 +166,15 @@ const ContentSectionComponent: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('Button clicked, onSectionView exists:', !!onSectionView);
                 if (onSectionView) {
                   // Extract full hierarchical content like the sidebar does
                   const fullContent = extractSectionFullContent(section);
-                  console.log('Calling onSectionView with full content length:', fullContent.length);
                   onSectionView({
                     title: section.title,
                     content: fullContent,
                     level: section.level,
                     parentPath: window.location.pathname
                   });
-                } else {
-                  console.log('onSectionView callback is not defined');
                 }
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
@@ -229,10 +225,6 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   onSectionView,
   activeNodeId 
 }) => {
-  console.log('HierarchicalContentDisplay props:', { 
-    hasOnSectionView: !!onSectionView,
-    hasOnSectionClick: !!onSectionClick 
-  });
   
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
