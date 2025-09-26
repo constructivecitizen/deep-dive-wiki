@@ -229,6 +229,11 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   onSectionView,
   activeNodeId 
 }) => {
+  console.log('HierarchicalContentDisplay props:', { 
+    hasOnSectionView: !!onSectionView,
+    hasOnSectionClick: !!onSectionClick 
+  });
+  
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
   const sections = parseHierarchicalContent(content); // Use original content with tags for parsing
