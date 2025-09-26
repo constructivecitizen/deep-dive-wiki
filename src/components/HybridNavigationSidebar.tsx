@@ -20,7 +20,6 @@ import { EnhancedSectionItem } from './EnhancedSectionItem';
 interface HybridNavigationSidebarProps {
   structure: NavigationNode[];
   contentNodes?: WikiDocument[];
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   onStructureUpdate: () => void;
   onNavigationClick?: (navId: string, path: string) => void;
   currentNavId?: string | null;
@@ -29,14 +28,14 @@ interface HybridNavigationSidebarProps {
   const FolderNode: React.FC<{
   node: NavigationNode;
   contentNodes?: WikiDocument[];
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
+  
   onStructureUpdate: () => void;
   onNavigationClick?: (navId: string, path: string) => void;  
   currentNavId?: string | null;
 }> = ({ 
   node, 
   contentNodes, 
-  onSectionView, 
+   
   onStructureUpdate,
   onNavigationClick,
   currentNavId
@@ -234,7 +233,6 @@ interface HybridNavigationSidebarProps {
               section={section}
               depth={0}
               folderPath={node.path}
-              onSectionView={onSectionView}
               sectionPosition={index}
               flatSections={flatSections}
             />
@@ -245,10 +243,9 @@ interface HybridNavigationSidebarProps {
   );
 };
 
-export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = ({ 
-  structure, 
+export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = ({
+  structure,
   contentNodes = [],
-  onSectionView,
   onStructureUpdate,
   onNavigationClick,
   currentNavId
@@ -480,7 +477,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               key={item.id}
               node={item}
               contentNodes={contentNodes}
-              onSectionView={onSectionView}
+              
               onStructureUpdate={onStructureUpdate}
               onNavigationClick={onNavigationClick}
               currentNavId={currentNavId}

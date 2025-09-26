@@ -10,7 +10,6 @@ interface WikiLayoutProps {
   activeNodeId?: string;
   onStructureUpdate?: () => void;
   actionMenu?: React.ReactNode;
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   onNavigationClick?: (navId: string, path: string) => void;
 }
 
@@ -22,7 +21,6 @@ export const WikiLayout = ({
   activeNodeId,
   onStructureUpdate,
   actionMenu,
-  onSectionView,
   onNavigationClick
 }: WikiLayoutProps) => {
   return (
@@ -51,7 +49,6 @@ export const WikiLayout = ({
           <HybridNavigationSidebar 
             structure={navigationStructure} 
             contentNodes={contentNodes}
-            onSectionView={onSectionView}
             onStructureUpdate={onStructureUpdate || (() => {})}
             onNavigationClick={onNavigationClick}
           />

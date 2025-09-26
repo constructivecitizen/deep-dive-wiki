@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, ChevronDown, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 
 interface ContentSection {
@@ -15,7 +15,6 @@ interface ContentSection {
 interface HierarchicalContentDisplayProps {
   content: string;
   onSectionClick?: (sectionId: string) => void;
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   activeNodeId?: string;
   testProp?: string;
 }
@@ -107,15 +106,15 @@ const parseHierarchicalContent = (content: string): ContentSection[] => {
   return sections;
 };
 
-const ContentSectionComponent: React.FC<{ 
-  section: ContentSection; 
+const ContentSectionComponent: React.FC<{
+  section: ContentSection;
   depth: number;
   onSectionClick?: (sectionId: string) => void;
-  onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   activeNodeId?: string;
-}> = ({ section, depth, onSectionClick, onSectionView, activeNodeId }) => {
+}> = ({ section, depth, onSectionClick, activeNodeId }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Always expanded by default
   const navigate = useNavigate();
+  const location = useLocation();
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
@@ -167,25 +166,22 @@ const ContentSectionComponent: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('Page button clicked, onSectionView exists:', !!onSectionView);
-                if (onSectionView) {
-                  // Extract full hierarchical content like the sidebar does
-                  const fullContent = extractSectionFullContent(section);
-                  console.log('Calling onSectionView with:', {
-                    title: section.title,
-                    contentLength: fullContent.length,
-                    level: section.level,
-                    parentPath: window.location.pathname
-                  });
-                  onSectionView({
-                    title: section.title,
-                    content: fullContent,
-                    level: section.level,
-                    parentPath: window.location.pathname
-                  });
-                } else {
-                  console.log('onSectionView callback is not defined');
-                }
+                // Create a URL-safe section ID from the title
+                const sectionId = section.title.toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/^-+|-+$/g, '');
+                
+                // Navigate to the same page with the section hash
+                const newPath = `${location.pathname}#${sectionId}`;
+                navigate(newPath);
+                
+                // Scroll to the section
+                setTimeout(() => {
+                  const element = document.getElementById(sectionId);
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }, 100);
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
               aria-label={`Navigate to ${section.title} section`}
@@ -212,14 +208,13 @@ const ContentSectionComponent: React.FC<{
           {hasChildren && (
             <div className="space-y-2">
               {section.children.map((child) => (
-                <ContentSectionComponent 
-                  key={child.id} 
-                  section={child} 
-                  depth={depth + 1}
-                  onSectionClick={onSectionClick}
-                  onSectionView={onSectionView}
-                  activeNodeId={activeNodeId}
-                />
+            <ContentSectionComponent
+              key={child.id}
+              section={child}
+              depth={depth + 1}
+              onSectionClick={onSectionClick}
+              activeNodeId={activeNodeId}
+            />
               ))}
             </div>
           )}
@@ -229,23 +224,12 @@ const ContentSectionComponent: React.FC<{
   );
 };
 
-export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
-  content, 
+export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({
+  content,
   onSectionClick,
-  onSectionView,
   activeNodeId,
   testProp
 }) => {
-  // FORCE CONSOLE LOG - This should definitely appear
-  console.log('=== HIERARCHICAL CONTENT DISPLAY RENDERED ===');
-  console.log('Props received:', { 
-    hasOnSectionView: !!onSectionView,
-    hasOnSectionClick: !!onSectionClick,
-    testProp: testProp,
-    onSectionViewType: typeof onSectionView,
-    onSectionViewString: String(onSectionView)
-  });
-  console.log('=== END DEBUG ===');
   
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
@@ -263,14 +247,13 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   return (
       <div className="space-y-4">
         {sections.map((section) => (
-          <ContentSectionComponent 
-            key={section.id} 
-            section={section} 
-            depth={0}
-            onSectionClick={onSectionClick}
-            onSectionView={onSectionView}
-            activeNodeId={activeNodeId}
-          />
+        <ContentSectionComponent
+          key={section.id}
+          section={section}
+          depth={0}
+          onSectionClick={onSectionClick}
+          activeNodeId={activeNodeId}
+        />
         ))}
       </div>
   );

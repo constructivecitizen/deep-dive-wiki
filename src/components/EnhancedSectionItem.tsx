@@ -1,52 +1,41 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { HierarchicalDocumentSection } from '../lib/sectionHierarchy';
-import { extractSectionFullContent } from '../lib/sectionContentExtractor';
-import { DocumentSection } from '../services/contentService';
+import { useNavigate } from 'react-router-dom';
 
 interface EnhancedSectionItemProps {
   section: HierarchicalDocumentSection;
   depth: number;
   folderPath: string;
-  onSectionView?: (sectionData: { 
-    content: string; 
-    title: string; 
-    level: number; 
-    parentPath: string;
-    sectionHierarchy?: Array<{
-      title: string;
-      level: number;
-    }>;
-  }) => void;
   sectionPosition: number;
-  flatSections: DocumentSection[];
+  flatSections: any[];
 }
 
-export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({ 
-  section, 
-  depth, 
-  folderPath, 
-  onSectionView, 
+export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
+  section,
+  depth,
+  folderPath,
   sectionPosition,
-  flatSections 
+  flatSections
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const hasChildren = section.children.length > 0;
-  const indentationPx = (depth + 2) * 16;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
 
   const handleSectionClick = (e: React.MouseEvent) => {
-    e.preventDefault();
     e.stopPropagation();
-    if (onSectionView) {
-      // Extract full content including all nested sections
-      const sectionData = extractSectionFullContent(section, flatSections);
-      
-      onSectionView({
-        ...sectionData,
-        parentPath: folderPath
-      });
-    }
+    
+    // Create a URL-safe section ID from the title
+    const sectionId = section.title.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    
+    // Navigate to the document with section hash
+    const newPath = `${folderPath}#${sectionId}`;
+    navigate(newPath);
   };
+
+  const hasChildren = section.children && section.children.length > 0;
+  const indentationPx = (depth + 2) * 16;
 
   return (
     <div className="text-sm">
@@ -82,11 +71,10 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
         <div className="mt-1">
           {section.children.map((child, index) => (
             <EnhancedSectionItem
-              key={child.id}
+              key={`${child.title}-${index}`}
               section={child}
               depth={depth + 1}
               folderPath={folderPath}
-              onSectionView={onSectionView}
               sectionPosition={sectionPosition + index + 1}
               flatSections={flatSections}
             />
