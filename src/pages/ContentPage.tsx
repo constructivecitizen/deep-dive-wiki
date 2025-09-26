@@ -203,30 +203,6 @@ const ContentPage: React.FC = () => {
     initializePage();
   }, [location.pathname]);
 
-  // Handle section extraction for section viewing
-  useEffect(() => {
-    if (location.hash && state.pageData?.type === 'content' && state.pageData.content) {
-      const sectionId = location.hash.substring(1);
-      try {
-        const sectionContent = extractSectionFullContent(state.pageData.content, sectionId);
-        
-        if (sectionContent && typeof sectionContent === 'object' && 'content' in sectionContent) {
-          // Update page data to show only the section content
-          dispatch({ 
-            type: 'SET_PAGE_DATA', 
-            payload: {
-              ...state.pageData,
-              content: sectionContent.content,
-              title: `${state.pageData.title} - ${sectionContent.title}`
-            }
-          });
-        }
-      } catch (error) {
-        console.error('Error extracting section content:', error);
-      }
-    }
-  }, [location.hash, state.pageData?.content]);
-
   const renderPageContent = () => {
     if (!state.pageData) {
       return (
