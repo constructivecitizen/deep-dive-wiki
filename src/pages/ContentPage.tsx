@@ -385,6 +385,7 @@ const ContentPage = () => {
             content={HierarchyParser.sectionsToMarkup(pageData.data.content_json || [])}
             onSectionClick={handleContentNodeClick}
             onSectionView={handleSectionView}
+            testProp="test-value"
           />
           {/* DEBUG: Check if handleSectionView exists */}
           <script type="application/json" id="debug-handler">

@@ -17,6 +17,7 @@ interface HierarchicalContentDisplayProps {
   onSectionClick?: (sectionId: string) => void;
   onSectionView?: (sectionData: { content: string; title: string; level: number; parentPath: string }) => void;
   activeNodeId?: string;
+  testProp?: string;
 }
 
 // Helper function to extract full hierarchical content for a section
@@ -232,11 +233,14 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   content, 
   onSectionClick,
   onSectionView,
-  activeNodeId 
+  activeNodeId,
+  testProp
 }) => {
   console.log('HierarchicalContentDisplay props:', { 
     hasOnSectionView: !!onSectionView,
-    hasOnSectionClick: !!onSectionClick 
+    hasOnSectionClick: !!onSectionClick,
+    testProp: testProp,
+    onSectionViewType: typeof onSectionView
   });
   
   // Clean tag syntax from content before parsing
