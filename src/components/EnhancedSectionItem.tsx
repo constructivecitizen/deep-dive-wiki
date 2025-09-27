@@ -38,10 +38,10 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   const hasChildren = section.children && section.children.length > 0;
   const indentationPx = (depth + 2) * 16;
   
-  // Check if this section is currently active
+  // Check if this section is currently active - only highlight on exact hash match
   const currentHash = currentPath?.split('#')[1];
   const sectionId = generateSectionId(section.title);
-  const isActive = currentHash === sectionId || (!currentHash && currentPath?.split('#')[0] === folderPath);
+  const isActive = currentHash === sectionId;
 
   return (
     <div className="text-sm">
