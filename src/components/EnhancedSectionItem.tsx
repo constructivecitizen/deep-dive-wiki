@@ -43,7 +43,10 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
     <div className="text-sm">
       <div 
         className={`flex items-center gap-2 py-0.5 px-3 rounded cursor-pointer transition-colors ${
-          currentPath?.includes(section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')) 
+          currentPath && (
+            currentPath.split('#')[1] === section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') ||
+            (currentPath.split('#')[0] === folderPath && !currentPath.includes('#'))
+          )
             ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
             : 'hover:bg-accent text-muted-foreground hover:text-foreground'
         }`}

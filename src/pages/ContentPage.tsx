@@ -328,11 +328,23 @@ const ContentPage: React.FC = () => {
                 content={state.sectionView.content}
                 currentSectionId={location.hash.substring(1)}
                 documentPath={state.pageData.path}
+                onSectionClick={(sectionId) => {
+                  // Find the section and navigate to it
+                  const sectionHash = generateSectionId(sectionId);
+                  navigate(`${state.pageData.path}#${sectionHash}`);
+                }}
+                activeNodeId={location.hash.substring(1) ? `hash-${location.hash.substring(1)}` : undefined}
               />
             ) : state.pageData.content && (
               <HierarchicalContentDisplay 
                 content={state.pageData.content}
                 documentPath={state.pageData.path}
+                onSectionClick={(sectionId) => {
+                  // Find the section and navigate to it
+                  const sectionHash = generateSectionId(sectionId);
+                  navigate(`${state.pageData.path}#${sectionHash}`);
+                }}
+                activeNodeId={location.hash.substring(1) ? `hash-${location.hash.substring(1)}` : undefined}
               />
             )}
           </div>
