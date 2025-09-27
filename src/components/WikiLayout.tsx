@@ -1,6 +1,6 @@
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
-import BetterProdLogoB from "@/assets/BetterProd-logo-3A.png";
+import BetterProdLogoB from "@/assets/BetterProd-logo-3A-2.png";
 import BetterProdLogoText from "@/assets/BetterProd-logo-3B.png";
 
 interface WikiLayoutProps {
