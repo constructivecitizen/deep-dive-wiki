@@ -30,19 +30,19 @@ export const WikiLayout = ({
     <div className="min-h-screen bg-background flex h-screen">
       <aside className="w-80 flex-shrink-0 border-r border-sidebar-border flex flex-col bg-sidebar">
         <header className="border-b border-sidebar-border section-bg-1">
-          <div className="py-4">
+          <div className="py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center pl-[0.75rem]">
                 <div className="flex items-center">
                   <img 
                     src={BetterProdLogoB} 
                     alt="BetterProd B" 
-                    className="h-12 w-auto"
+                    className="h-16 w-auto"
                   />
                   <img 
                     src={BetterProdLogoText} 
                     alt="etterProd" 
-                    className="h-8 w-auto"
+                    className="h-10 w-auto"
                   />
                 </div>
               </div>
