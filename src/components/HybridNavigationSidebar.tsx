@@ -410,7 +410,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         ) : (
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         )}
-        <span className="text-sm font-medium text-foreground">{title}</span>
+        <span className="text-sm text-foreground">{title}</span>
       </button>
       
       {expandedFilters[sectionKey] && (
@@ -425,7 +425,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               />
               <label 
                 htmlFor={`${sectionKey}-${item.key}`}
-                className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                className="text-sm text-foreground cursor-pointer hover:text-foreground/80 transition-colors"
               >
                 {item.label}
               </label>
