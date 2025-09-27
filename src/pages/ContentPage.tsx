@@ -333,7 +333,7 @@ const ContentPage: React.FC = () => {
                   const sectionHash = generateSectionId(sectionId);
                   navigate(`${state.pageData.path}#${sectionHash}`);
                 }}
-                activeNodeId={location.hash.substring(1) ? `hash-${location.hash.substring(1)}` : undefined}
+                activeNodeId={location.hash.substring(1) || undefined}
               />
             ) : state.pageData.content && (
               <HierarchicalContentDisplay 
@@ -344,7 +344,7 @@ const ContentPage: React.FC = () => {
                   const sectionHash = generateSectionId(sectionId);
                   navigate(`${state.pageData.path}#${sectionHash}`);
                 }}
-                activeNodeId={location.hash.substring(1) ? `hash-${location.hash.substring(1)}` : undefined}
+                activeNodeId={location.hash.substring(1) || undefined}
               />
             )}
           </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 import { useNavigate } from 'react-router-dom';
+import { generateSectionId } from '../lib/sectionUtils';
 
 interface EnhancedSectionItemProps {
   section: HierarchicalDocumentSection;
@@ -27,9 +28,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
     e.stopPropagation();
     
     // Create a URL-safe section ID from the title
-    const sectionId = section.title.toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
+    const sectionId = generateSectionId(section.title);
     
     // Navigate to the document with section hash
     const newPath = `${folderPath}#${sectionId}`;
@@ -38,15 +37,17 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
 
   const hasChildren = section.children && section.children.length > 0;
   const indentationPx = (depth + 2) * 16;
+  
+  // Check if this section is currently active
+  const currentHash = currentPath?.split('#')[1];
+  const sectionId = generateSectionId(section.title);
+  const isActive = currentHash === sectionId || (!currentHash && currentPath?.split('#')[0] === folderPath);
 
   return (
     <div className="text-sm">
       <div 
         className={`flex items-center gap-2 py-0.5 px-3 rounded cursor-pointer transition-colors ${
-          currentPath && (
-            currentPath.split('#')[1] === section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') ||
-            (currentPath.split('#')[0] === folderPath && !currentPath.includes('#'))
-          )
+          isActive
             ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
             : 'hover:bg-accent text-muted-foreground hover:text-foreground'
         }`}

@@ -124,7 +124,7 @@ const ContentSectionComponent: React.FC<{
   const isLeafNode = !hasChildren && !hasContent;
   // Check if this section is active based on the current hash
   const sectionHash = generateSectionId(section.title);
-  const isActive = activeNodeId === section.id || activeNodeId === `hash-${sectionHash}`;
+  const isActive = activeNodeId === sectionHash;
 
   const getHeadingClass = (level: number) => {
     // All text should be medium weight and size
