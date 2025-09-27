@@ -1,6 +1,7 @@
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
-import BetterProdLogo from "@/assets/BetterProd-logo.png";
+import BetterProdLogoB from "@/assets/BetterProd-logo-3A.png";
+import BetterProdLogoText from "@/assets/BetterProd-logo-3B.png";
 
 interface WikiLayoutProps {
   children: React.ReactNode;
@@ -32,11 +33,18 @@ export const WikiLayout = ({
           <div className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center pl-[0.75rem]">
-                <img 
-                  src={BetterProdLogo} 
-                  alt="BetterProd" 
-                  className="h-16 w-auto"
-                />
+                <div className="flex items-center gap-1">
+                  <img 
+                    src={BetterProdLogoB} 
+                    alt="BetterProd B" 
+                    className="h-12 w-auto"
+                  />
+                  <img 
+                    src={BetterProdLogoText} 
+                    alt="etterProd" 
+                    className="h-8 w-auto"
+                  />
+                </div>
               </div>
             </div>
           </div>
