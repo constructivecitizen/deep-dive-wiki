@@ -77,11 +77,11 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Subtle section backgrounds for sidebar */
-    --section-bg-1: 210 65% 97%;  /* Soft blue */
-    --section-bg-2: 265 60% 97%;  /* Gentle purple */
-    --section-bg-3: 25 70% 97%;   /* Warm amber */
-    --section-bg-4: 340 55% 97%;  /* Muted rose */
+    /* Deeper section backgrounds for sidebar */
+    --section-bg-1: 210 65% 94%;  /* Deeper blue */
+    --section-bg-2: 265 60% 94%;  /* Deeper purple */
+    --section-bg-3: 25 70% 94%;   /* Deeper amber */
+    --section-bg-4: 340 55% 94%;  /* Deeper rose */
 
     /* Content hierarchy color sequence */
     --content-level-1: 155 40% 96%;  /* Soft emerald */
@@ -137,11 +137,11 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Dark mode section backgrounds */
-    --section-bg-1: 210 35% 8%;   /* Soft blue */
-    --section-bg-2: 265 30% 8%;   /* Gentle purple */
-    --section-bg-3: 25 40% 8%;    /* Warm amber */
-    --section-bg-4: 340 25% 8%;   /* Muted rose */
+    /* Deeper dark mode section backgrounds */
+    --section-bg-1: 210 35% 12%;  /* Deeper blue */
+    --section-bg-2: 265 30% 12%;  /* Deeper purple */
+    --section-bg-3: 25 40% 12%;   /* Deeper amber */
+    --section-bg-4: 340 25% 12%;  /* Deeper rose */
 
     /* Dark mode content hierarchy */
     --content-level-1: 155 25% 8%;
