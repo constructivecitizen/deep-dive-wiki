@@ -125,8 +125,8 @@ const ContentSectionComponent: React.FC<{
   const isActive = activeNodeId === section.id;
 
   const getHeadingClass = (level: number) => {
-    // All text should be normal weight and size - no bold headers
-    return `text-foreground font-normal text-base ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
+    // All text should be medium weight and size
+    return `text-foreground font-medium text-base ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
   };
 
   // Calculate indentation: children align with parent's text (after the 24px button)
