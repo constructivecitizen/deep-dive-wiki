@@ -129,12 +129,12 @@ const ContentSectionComponent: React.FC<{
   const getHeadingClass = () => {
     // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
     const getFontSizeClass = (currentDepth: number) => {
-      if (currentDepth === 0) return 'text-[3rem] leading-tight';
-      if (currentDepth === 1) return 'text-[2rem] leading-tight';
-      if (currentDepth === 2) return 'text-[1.8rem] leading-snug';
-      if (currentDepth === 3) return 'text-[1.6rem] leading-snug';
-      if (currentDepth === 4) return 'text-[1.4rem] leading-normal';
-      if (currentDepth === 5) return 'text-[1.2rem] leading-normal';
+      if (currentDepth === 0) return 'text-[2rem] leading-tight';
+      if (currentDepth === 1) return 'text-[1.8rem] leading-snug';
+      if (currentDepth === 2) return 'text-[1.6rem] leading-snug';
+      if (currentDepth === 3) return 'text-[1.4rem] leading-normal';
+      if (currentDepth === 4) return 'text-[1.2rem] leading-normal';
+      if (currentDepth === 5) return 'text-base leading-normal';
       return 'text-base leading-normal'; // 1rem minimum for depth 6+
     };
     
