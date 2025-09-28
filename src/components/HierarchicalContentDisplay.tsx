@@ -126,9 +126,19 @@ const ContentSectionComponent: React.FC<{
   const sectionHash = generateSectionId(section.title);
   const isActive = activeNodeId === sectionHash;
 
-  const getHeadingClass = (level: number) => {
-    // All text should be medium weight and size
-    return `text-foreground font-medium text-base ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
+  const getHeadingClass = () => {
+    // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
+    const getFontSizeClass = (currentDepth: number) => {
+      if (currentDepth === 0) return 'text-[3rem] leading-tight';
+      if (currentDepth === 1) return 'text-[2rem] leading-tight';
+      if (currentDepth === 2) return 'text-[1.8rem] leading-snug';
+      if (currentDepth === 3) return 'text-[1.6rem] leading-snug';
+      if (currentDepth === 4) return 'text-[1.4rem] leading-normal';
+      if (currentDepth === 5) return 'text-[1.2rem] leading-normal';
+      return 'text-base leading-normal'; // 1rem minimum for depth 6+
+    };
+    
+    return `text-foreground font-medium ${getFontSizeClass(depth)} ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
   };
 
   // Calculate indentation: children align with parent's text (after the 24px button)
@@ -170,7 +180,7 @@ const ContentSectionComponent: React.FC<{
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className={`${getHeadingClass(section.level)} ${hasChildren ? 'cursor-pointer' : ''} flex-1`}
+            <h1 className={`${getHeadingClass()} ${hasChildren ? 'cursor-pointer' : ''} flex-1`}
                 onClick={() => {
                   if (onSectionClick) onSectionClick(section.id);
                   if (hasChildren) setIsExpanded(!isExpanded);
