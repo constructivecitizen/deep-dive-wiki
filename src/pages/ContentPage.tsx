@@ -318,7 +318,7 @@ const ContentPage: React.FC = () => {
           />
         ) : (
           <div className="prose prose-slate dark:prose-invert max-w-none">
-            <h1 className="text-[3rem] leading-tight font-bold mb-6">
+            <h1 className="text-2xl font-bold mb-6">
               {state.sectionView?.title || state.pageData.title}
             </h1>
             

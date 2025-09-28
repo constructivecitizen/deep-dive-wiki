@@ -129,16 +129,14 @@ const ContentSectionComponent: React.FC<{
   const getHeadingClass = () => {
     // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
     const getFontSizeClass = (currentDepth: number) => {
-      if (currentDepth === 0) return 'text-[2rem] leading-tight';
-      if (currentDepth === 1) return 'text-[1.8rem] leading-snug';
-      if (currentDepth === 2) return 'text-[1.6rem] leading-snug';
-      if (currentDepth === 3) return 'text-[1.4rem] leading-normal';
-      if (currentDepth === 4) return 'text-[1.2rem] leading-normal';
-      if (currentDepth === 5) return 'text-base leading-normal';
-      return 'text-base leading-normal'; // 1rem minimum for depth 6+
+      if (currentDepth === 0) return 'text-xl font-semibold leading-relaxed'; // 1.25rem
+      if (currentDepth === 1) return 'text-lg font-medium leading-relaxed'; // 1.125rem
+      if (currentDepth === 2) return 'text-base font-medium leading-normal'; // 1rem
+      if (currentDepth === 3) return 'text-sm font-medium leading-normal'; // 0.875rem
+      return 'text-sm leading-normal'; // 0.875rem minimum for depth 4+
     };
     
-    return `text-foreground font-medium ${getFontSizeClass(depth)} ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
+    return `text-foreground ${getFontSizeClass(depth)} ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
   };
 
   // Calculate indentation: children align with parent's text (after the 24px button)
