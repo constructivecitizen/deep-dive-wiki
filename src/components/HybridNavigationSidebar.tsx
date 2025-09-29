@@ -169,8 +169,8 @@ interface HybridNavigationSidebarProps {
     
     // Swap order_index values - use a temporary high value to avoid conflicts
     const tempOrder = 999999;
-    const currentOrder = node.order_index || currentIndex;
-    const prevOrder = prevNode.order_index || (currentIndex - 1);
+    const currentOrder = node.order_index ?? currentIndex;
+    const prevOrder = prevNode.order_index ?? (currentIndex - 1);
     
     try {
       // Move current to temp
@@ -203,8 +203,8 @@ interface HybridNavigationSidebarProps {
     
     // Swap order_index values - use a temporary high value to avoid conflicts
     const tempOrder = 999999;
-    const currentOrder = node.order_index || currentIndex;
-    const nextOrder = nextNode.order_index || (currentIndex + 1);
+    const currentOrder = node.order_index ?? currentIndex;
+    const nextOrder = nextNode.order_index ?? (currentIndex + 1);
     
     try {
       // Move current to temp
