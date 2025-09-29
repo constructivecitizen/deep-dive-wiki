@@ -198,10 +198,28 @@ export class ContentService {
     return roots;
   }
 
+  // Helper method to get the next available order_index for a given parent
+  private static async getNextOrderIndex(parentId: string | null): Promise<number> {
+    const { data, error } = await supabase
+      .from('content_items')
+      .select('order_index')
+      .eq('parent_id', parentId)
+      .order('order_index', { ascending: false })
+      .limit(1);
+
+    if (error || !data || data.length === 0) {
+      return 0; // First item at this level
+    }
+
+    return (data[0].order_index ?? -1) + 1;
+  }
+
   // Content management methods
   static async createFolder(title: string, parentId: string | null = null): Promise<ContentItem | null> {
     const parentPath = parentId ? (await this.getContentItemByPath(''))?.path || '' : '';
     const path = parentPath ? `${parentPath}/${title.toLowerCase().replace(/\s+/g, '-')}` : `/${title.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    const nextOrderIndex = await this.getNextOrderIndex(parentId);
     
     const { data, error } = await supabase
       .from('content_items')
@@ -209,7 +227,7 @@ export class ContentService {
         title,
         path,
         parent_id: parentId,
-        order_index: 999,
+        order_index: nextOrderIndex,
         tags: []
       })
       .select()
@@ -230,8 +248,11 @@ export class ContentService {
     title: string, 
     content_json: DocumentSection[], 
     path: string, 
-    tags: string[] = []
+    tags: string[] = [],
+    parentId: string | null = null
   ): Promise<WikiDocument | null> {
+    const nextOrderIndex = await this.getNextOrderIndex(parentId);
+    
     const { data, error } = await supabase
       .from('content_items')
       .insert({
@@ -239,7 +260,8 @@ export class ContentService {
         content_json: content_json as any,
         path,
         tags: tags.length > 0 ? tags : [],
-        order_index: 999
+        order_index: nextOrderIndex,
+        parent_id: parentId
       })
       .select()
       .single();
