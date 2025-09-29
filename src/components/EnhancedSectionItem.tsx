@@ -73,7 +73,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
           )}
         </button>
         
-        <span className="truncate flex-1" title={section.title}>
+        <span className="truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap" title={section.title}>
           {section.title}
         </span>
       </div>

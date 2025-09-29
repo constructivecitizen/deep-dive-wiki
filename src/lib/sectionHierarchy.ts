@@ -39,18 +39,6 @@ export function buildSectionHierarchy(sections: DocumentSection[]): Hierarchical
     stack.push(section);
   }
 
-  // Filter to only return sections that have children
-  return filterSectionsWithChildren(result);
-}
-
-/**
- * Recursively filters sections to only include those with children
- */
-function filterSectionsWithChildren(sections: HierarchicalDocumentSection[]): HierarchicalDocumentSection[] {
-  return sections
-    .filter(section => section.children.length > 0)
-    .map(section => ({
-      ...section,
-      children: filterSectionsWithChildren(section.children)
-    }));
+  // Return all sections, not just those with children
+  return result;
 }
