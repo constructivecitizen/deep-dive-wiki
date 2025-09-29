@@ -73,9 +73,9 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
           )}
         </button>
         
-        <span className="flex-1 min-w-0 truncate block" title={section.title}>
+        <div className="flex-1 min-w-0 truncate" title={section.title}>
           {section.title}
-        </span>
+        </div>
       </div>
 
       {isExpanded && hasChildren && (
