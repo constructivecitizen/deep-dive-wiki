@@ -294,13 +294,11 @@ interface HybridNavigationSidebarProps {
               </Button>
             </div>
           ) : (
-            <div className="truncate">
-              <span className={`text-sm ${
-                isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
-              }`} title={node.title}>
-                {node.title}
-              </span>
-            </div>
+            <span className={`text-sm block truncate ${
+              isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
+            }`} title={node.title}>
+              {node.title}
+            </span>
           )}
         </div>
 
@@ -612,28 +610,30 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
 
       {/* Navigation Tree */}
       <div className="flex-1 overflow-y-auto section-bg-3 p-3">
-        <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
-          Navigation
-        </div>
-        {topLevelNodes.length > 0 ? (
-          topLevelNodes.map((item) => (
-            <FolderNode
-              key={item.id}
-              node={item}
-              contentNodes={contentNodes}
-              onStructureUpdate={onStructureUpdate}
-              onNavigationClick={onNavigationClick}
-              currentNavId={currentNavId}
-              setShowEditor={setShowEditor}
-              currentPath={currentPath}
-              allRootNodes={topLevelNodes}
-            />
-          ))
-        ) : (
-          <div className="p-3 text-center text-muted-foreground">
-            <p className="text-sm">No folders found</p>
+        <div className="w-full">
+          <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
+            Navigation
           </div>
-        )}
+          {topLevelNodes.length > 0 ? (
+            topLevelNodes.map((item) => (
+              <FolderNode
+                key={item.id}
+                node={item}
+                contentNodes={contentNodes}
+                onStructureUpdate={onStructureUpdate}
+                onNavigationClick={onNavigationClick}
+                currentNavId={currentNavId}
+                setShowEditor={setShowEditor}
+                currentPath={currentPath}
+                allRootNodes={topLevelNodes}
+              />
+            ))
+          ) : (
+            <div className="p-3 text-center text-muted-foreground">
+              <p className="text-sm">No folders found</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* New Folder Button */}
