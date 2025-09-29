@@ -57,7 +57,7 @@ export const WikiLayout = ({
       onLayout={handleLayoutChange}
       id={layoutGroupRef.current}
     >
-      <ResizablePanel defaultSize={sidebarSize} minSize={15} maxSize={40}>
+      <ResizablePanel id="sidebar-panel" defaultSize={sidebarSize} minSize={15} maxSize={40}>
         <aside className="h-full border-r border-sidebar-border flex flex-col bg-sidebar">
           <header className="border-b border-sidebar-border section-bg-1">
             <div className="py-3">
@@ -95,7 +95,7 @@ export const WikiLayout = ({
       
       <ResizableHandle withHandle />
       
-      <ResizablePanel defaultSize={80}>
+      <ResizablePanel id="main-panel" defaultSize={80}>
         <main className="h-full overflow-y-auto">
           <div className="container mx-auto px-6 py-8 max-w-4xl">
             {children}
