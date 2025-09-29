@@ -28,36 +28,15 @@ export const WikiLayout = ({
   setShowEditor,
   currentPath
 }: WikiLayoutProps) => {
-  const SIDEBAR_WIDTH_KEY = 'wiki-sidebar-width';
-  const [sidebarSize, setSidebarSize] = useState<number>(() => {
-    const savedSize = localStorage.getItem(SIDEBAR_WIDTH_KEY);
-    if (savedSize) {
-      const parsedSize = parseFloat(savedSize);
-      if (!isNaN(parsedSize) && parsedSize >= 15 && parsedSize <= 40) {
-        return parsedSize;
-      }
-    }
-    return 20;
-  });
-  
   const layoutGroupRef = useRef<string>('wiki-layout-persistent');
-
-  // Save sidebar width when it changes
-  const handleLayoutChange = (sizes: number[]) => {
-    if (sizes[0] && sizes[0] !== sidebarSize) {
-      localStorage.setItem(SIDEBAR_WIDTH_KEY, sizes[0].toString());
-      setSidebarSize(sizes[0]);
-    }
-  };
 
   return (
     <ResizablePanelGroup 
       direction="horizontal" 
       className="min-h-screen bg-background h-screen w-full"
-      onLayout={handleLayoutChange}
       id={layoutGroupRef.current}
     >
-      <ResizablePanel id="sidebar-panel" defaultSize={sidebarSize} minSize={15} maxSize={40}>
+      <ResizablePanel id="sidebar-panel" defaultSize={20} minSize={15} maxSize={40}>
         <aside className="h-full border-r border-sidebar-border flex flex-col bg-sidebar">
           <header className="border-b border-sidebar-border section-bg-1">
             <div className="py-3">
