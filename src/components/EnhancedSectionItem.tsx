@@ -47,7 +47,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   return (
     <div className="text-sm">
       <div 
-        className={`flex items-center gap-2 py-0.5 px-3 rounded cursor-pointer transition-colors overflow-hidden ${
+        className={`flex items-center gap-2 py-0.5 px-3 rounded cursor-pointer transition-colors ${
           isActive
             ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
             : 'hover:bg-accent text-muted-foreground hover:text-foreground'
@@ -73,9 +73,9 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
           )}
         </button>
         
-        <div className="flex-1 min-w-0 truncate" title={section.title}>
+        <span className="truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap" title={section.title}>
           {section.title}
-        </div>
+        </span>
       </div>
 
       {isExpanded && hasChildren && (
