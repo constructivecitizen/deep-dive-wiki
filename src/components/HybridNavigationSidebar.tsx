@@ -258,7 +258,7 @@ interface HybridNavigationSidebarProps {
         </button>
 
         {/* Title - editable */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-hidden">
           {isEditing ? (
             <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
               <Input
@@ -294,9 +294,9 @@ interface HybridNavigationSidebarProps {
               </Button>
             </div>
           ) : (
-            <span className={`text-sm truncate group-hover:text-foreground/80 ${
+            <span className={`text-sm block truncate ${
               isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
-            }`}>
+            }`} title={node.title}>
               {node.title}
             </span>
           )}
