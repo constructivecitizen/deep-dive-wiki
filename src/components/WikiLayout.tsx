@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
 import BetterProdLogoB from "@/assets/BetterProd-logo-3A-3.png";
@@ -28,15 +28,12 @@ export const WikiLayout = ({
   setShowEditor,
   currentPath
 }: WikiLayoutProps) => {
-  const layoutGroupRef = useRef<string>('wiki-layout-persistent');
-
   return (
     <ResizablePanelGroup 
       direction="horizontal" 
       className="min-h-screen bg-background h-screen w-full"
-      id={layoutGroupRef.current}
     >
-      <ResizablePanel id="sidebar-panel" defaultSize={20} minSize={15} maxSize={40}>
+      <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
         <aside className="h-full border-r border-sidebar-border flex flex-col bg-sidebar">
           <header className="border-b border-sidebar-border section-bg-1">
             <div className="py-3">
@@ -74,7 +71,7 @@ export const WikiLayout = ({
       
       <ResizableHandle withHandle />
       
-      <ResizablePanel id="main-panel" defaultSize={80}>
+      <ResizablePanel defaultSize={80}>
         <main className="h-full overflow-y-auto">
           <div className="container mx-auto px-6 py-8 max-w-4xl">
             {children}

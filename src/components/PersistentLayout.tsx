@@ -28,16 +28,14 @@ export const PersistentLayout: React.FC = () => {
   const location = useLocation();
   const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
   const [contentNodes, setContentNodes] = useState<WikiDocument[]>([]);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [hasInitialNavigation, setHasInitialNavigation] = useState(false);
 
-  const loadNavigationData = async (isInitial = false) => {
+  const loadNavigationData = async () => {
     try {
-      if (isInitial) {
-        setIsInitialLoading(true);
-      }
+      setIsLoading(true);
       const [structure, documents] = await Promise.all([
         ContentService.getNavigationStructure(),
         ContentService.getAllDocuments()
@@ -48,14 +46,12 @@ export const PersistentLayout: React.FC = () => {
     } catch (error) {
       console.error('Error loading navigation data:', error);
     } finally {
-      if (isInitial) {
-        setIsInitialLoading(false);
-      }
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadNavigationData(true);
+    loadNavigationData();
   }, []);
 
   // Navigate to first root folder on initial load
@@ -73,7 +69,7 @@ export const PersistentLayout: React.FC = () => {
     loadNavigationData();
   };
 
-  if (isInitialLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>
