@@ -1,3 +1,4 @@
+import React from "react";
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
 import BetterProdLogoB from "@/assets/BetterProd-logo-3A-3.png";
