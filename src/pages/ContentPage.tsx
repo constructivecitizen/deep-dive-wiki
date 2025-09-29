@@ -270,6 +270,40 @@ const ContentPage: React.FC = () => {
     }
   }, [location.hash, location.pathname]);
 
+  const handleCreateDocument = async () => {
+    if (!state.pageData || state.pageData.type !== 'folder') return;
+    
+    try {
+      // Create a unique document name within the folder
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+      const documentPath = state.pageData.path === '/' 
+        ? `/new-document-${timestamp}` 
+        : `${state.pageData.path}/new-document-${timestamp}`;
+      
+      // Create a new document with initial content
+      const initialSections = [{
+        id: '1',
+        title: 'New Document',
+        level: 1,
+        content: 'Start writing your content here...',
+        tags: []
+      }];
+      
+      // Save the new document
+      const success = await ContentService.saveDocumentContent(documentPath, initialSections);
+      
+      if (success) {
+        // Navigate to the new document and open editor
+        navigate(documentPath);
+        setShowEditor(true);
+      } else {
+        console.error('Failed to create new document');
+      }
+    } catch (error) {
+      console.error('Error creating new document:', error);
+    }
+  };
+
   const renderPageContent = () => {
     if (!state.pageData) {
       return (
@@ -285,7 +319,7 @@ const ContentPage: React.FC = () => {
           folder={state.pageData as any}
           children={state.pageData.children || []}
           documents={state.filteredDocuments}
-          onCreateDocument={() => {}}
+          onCreateDocument={handleCreateDocument}
           onToggleDocumentEditor={() => setShowEditor(!showEditor)}
         />
       );
