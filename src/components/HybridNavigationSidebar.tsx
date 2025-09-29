@@ -7,7 +7,9 @@ import {
   Trash2,
   ChevronDown,
   ChevronRight,
-  FileText
+  FileText,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
@@ -36,14 +38,22 @@ interface HybridNavigationSidebarProps {
   currentNavId?: string | null;
   setShowEditor?: (show: boolean) => void;
   currentPath?: string;
-}> = ({ 
+  isFirstRoot?: boolean;
+  isLastRoot?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+}> = ({
   node, 
   contentNodes, 
   onStructureUpdate,
   onNavigationClick,
   currentNavId,
   setShowEditor,
-  currentPath
+  currentPath,
+  isFirstRoot = false,
+  isLastRoot = false,
+  onMoveUp,
+  onMoveDown
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -231,6 +241,36 @@ interface HybridNavigationSidebarProps {
             className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={(e) => e.stopPropagation()}
           >
+            {onMoveUp && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMoveUp();
+                }}
+                disabled={isFirstRoot}
+                title="Move up"
+              >
+                <ArrowUp className={`w-3 h-3 ${isFirstRoot ? 'opacity-30' : ''}`} />
+              </Button>
+            )}
+            {onMoveDown && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onMoveDown();
+                }}
+                disabled={isLastRoot}
+                title="Move down"
+              >
+                <ArrowDown className={`w-3 h-3 ${isLastRoot ? 'opacity-30' : ''}`} />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -371,7 +411,69 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   };
 
   // Only show top-level nodes, no nested structure
-  const topLevelNodes = structure.filter(node => !node.parent_id);
+  const topLevelNodes = structure
+    .filter(node => !node.parent_id)
+    .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+
+  const handleMoveUp = async (nodeIndex: number) => {
+    if (nodeIndex <= 0) return;
+
+    const currentNode = topLevelNodes[nodeIndex];
+    const previousNode = topLevelNodes[nodeIndex - 1];
+
+    // Swap order_index values
+    const currentOrder = currentNode.order_index || 0;
+    const previousOrder = previousNode.order_index || 0;
+
+    const success1 = await ContentService.reorderNavigationNodes(
+      currentNode.id,
+      null,
+      previousOrder
+    );
+
+    const success2 = await ContentService.reorderNavigationNodes(
+      previousNode.id,
+      null,
+      currentOrder
+    );
+
+    if (success1 && success2) {
+      toast.success("Folder moved up");
+      onStructureUpdate();
+    } else {
+      toast.error("Failed to reorder folders");
+    }
+  };
+
+  const handleMoveDown = async (nodeIndex: number) => {
+    if (nodeIndex >= topLevelNodes.length - 1) return;
+
+    const currentNode = topLevelNodes[nodeIndex];
+    const nextNode = topLevelNodes[nodeIndex + 1];
+
+    // Swap order_index values
+    const currentOrder = currentNode.order_index || 0;
+    const nextOrder = nextNode.order_index || 0;
+
+    const success1 = await ContentService.reorderNavigationNodes(
+      currentNode.id,
+      null,
+      nextOrder
+    );
+
+    const success2 = await ContentService.reorderNavigationNodes(
+      nextNode.id,
+      null,
+      currentOrder
+    );
+
+    if (success1 && success2) {
+      toast.success("Folder moved down");
+      onStructureUpdate();
+    } else {
+      toast.error("Failed to reorder folders");
+    }
+  };
 
   const toggleFilterSection = (section: keyof typeof expandedFilters) => {
     setExpandedFilters(prev => ({
@@ -515,7 +617,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           Navigation
         </div>
         {topLevelNodes.length > 0 ? (
-          topLevelNodes.map((item) => (
+          topLevelNodes.map((item, index) => (
             <FolderNode
               key={item.id}
               node={item}
@@ -525,6 +627,10 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               currentNavId={currentNavId}
               setShowEditor={setShowEditor}
               currentPath={currentPath}
+              isFirstRoot={index === 0}
+              isLastRoot={index === topLevelNodes.length - 1}
+              onMoveUp={() => handleMoveUp(index)}
+              onMoveDown={() => handleMoveDown(index)}
             />
           ))
         ) : (
