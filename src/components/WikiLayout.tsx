@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
 import BetterProdLogoB from "@/assets/BetterProd-logo-3A-3.png";
 import BetterProdLogoText from "@/assets/BetterProd-logo-3B.png";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+
+const SIDEBAR_WIDTH_KEY = "wiki-sidebar-width";
 
 interface WikiLayoutProps {
   children: React.ReactNode;
@@ -28,12 +30,25 @@ export const WikiLayout = ({
   setShowEditor,
   currentPath
 }: WikiLayoutProps) => {
+  const [sidebarSize, setSidebarSize] = useState<number>(() => {
+    const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    return saved ? parseFloat(saved) : 20;
+  });
+
+  const handleLayout = (sizes: number[]) => {
+    if (sizes[0] !== undefined) {
+      setSidebarSize(sizes[0]);
+      localStorage.setItem(SIDEBAR_WIDTH_KEY, sizes[0].toString());
+    }
+  };
+
   return (
     <ResizablePanelGroup 
       direction="horizontal" 
       className="min-h-screen bg-background h-screen w-full"
+      onLayout={handleLayout}
     >
-      <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
+      <ResizablePanel defaultSize={sidebarSize} minSize={15} maxSize={40}>
         <aside className="h-full border-r border-sidebar-border flex flex-col bg-sidebar">
           <header className="border-b border-sidebar-border section-bg-1">
             <div className="py-3">
