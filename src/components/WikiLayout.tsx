@@ -4,6 +4,7 @@ import { NavigationNode, WikiDocument } from "@/services/contentService";
 import BetterProdLogoB from "@/assets/BetterProd-logo-3A-3.png";
 import BetterProdLogoText from "@/assets/BetterProd-logo-3B.png";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface WikiLayoutProps {
   children: React.ReactNode;
@@ -32,11 +33,11 @@ export const WikiLayout = ({
     <ResizablePanelGroup 
       id="wiki-layout-persistent"
       direction="horizontal" 
-      className="min-h-screen bg-background h-screen w-full"
+      className="h-screen w-full bg-background"
     >
       <ResizablePanel id="sidebar-panel" defaultSize={20} minSize={15} maxSize={40}>
-        <aside className="h-full border-r border-sidebar-border flex flex-col bg-sidebar">
-          <header className="border-b border-sidebar-border section-bg-1">
+        <aside className="h-screen border-r border-sidebar-border flex flex-col bg-sidebar">
+          <header className="border-b border-sidebar-border section-bg-1 shrink-0">
             <div className="py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center pl-[0.75rem]">
@@ -57,7 +58,7 @@ export const WikiLayout = ({
             </div>
           </header>
           
-          <div className="flex-1 overflow-y-auto">
+          <ScrollArea className="flex-1">
             <HybridNavigationSidebar 
               structure={navigationStructure} 
               contentNodes={contentNodes}
@@ -66,18 +67,18 @@ export const WikiLayout = ({
               setShowEditor={setShowEditor}
               currentPath={currentPath}
             />
-          </div>
+          </ScrollArea>
         </aside>
       </ResizablePanel>
       
       <ResizableHandle withHandle />
       
       <ResizablePanel id="main-panel" defaultSize={80}>
-        <main className="h-full overflow-y-auto">
-          <div className="container mx-auto px-6 py-8 max-w-4xl">
+        <ScrollArea className="h-screen">
+          <main className="container mx-auto px-6 py-8 max-w-4xl">
             {children}
-          </div>
-        </main>
+          </main>
+        </ScrollArea>
       </ResizablePanel>
     </ResizablePanelGroup>
   );
