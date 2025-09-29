@@ -78,30 +78,51 @@ export const FolderLandingPage: React.FC<FolderLandingPageProps> = ({
 
         {/* Documents */}
         {folderDocuments.length > 0 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <FileTextIcon className="h-5 w-5" />
               Documents ({folderDocuments.length})
             </h2>
-            <div className="space-y-2">
+            <div className="space-y-8">
               {folderDocuments.map((doc) => (
-                <Link
-                  key={doc.id}
-                  to={doc.path}
-                  className="block p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
+                <div key={doc.id} className="border border-border rounded-lg p-6 bg-card">
+                  <div className="flex items-center gap-3 mb-4">
                     <FileTextIcon className="h-5 w-5 text-primary" />
                     <div>
-                      <h3 className="font-medium text-foreground">{doc.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {doc.tags && doc.tags.length > 0 && (
-                          <span>{doc.tags.join(', ')}</span>
-                        )}
-                      </p>
+                      <h3 className="text-lg font-semibold text-foreground">{doc.title}</h3>
+                      {doc.tags && doc.tags.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                          {doc.tags.join(', ')}
+                        </p>
+                      )}
                     </div>
                   </div>
-                </Link>
+                  {/* Display document content inline */}
+                  {doc.content_json && doc.content_json.length > 0 && (
+                    <div className="prose prose-slate dark:prose-invert max-w-none">
+                      {doc.content_json.map((section: any, index: number) => (
+                        <div key={section.id || index} className="mb-4">
+                          {section.level === 1 && (
+                            <h1 className="text-xl font-semibold mb-2">{section.title}</h1>
+                          )}
+                          {section.level === 2 && (
+                            <h2 className="text-lg font-medium mb-2">{section.title}</h2>
+                          )}
+                          {section.level === 3 && (
+                            <h3 className="text-base font-medium mb-2">{section.title}</h3>
+                          )}
+                          {section.level >= 4 && (
+                            <h4 className="text-sm font-medium mb-2">{section.title}</h4>
+                          )}
+                          {section.content && (
+                            <div className="text-foreground leading-relaxed"
+                                 dangerouslySetInnerHTML={{ __html: section.content }} />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
