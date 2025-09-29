@@ -7,7 +7,9 @@ import {
   Trash2,
   ChevronDown,
   ChevronRight,
-  FileText
+  FileText,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
@@ -36,6 +38,7 @@ interface HybridNavigationSidebarProps {
   currentNavId?: string | null;
   setShowEditor?: (show: boolean) => void;
   currentPath?: string;
+  allRootNodes: NavigationNode[];
 }> = ({ 
   node, 
   contentNodes, 
@@ -43,7 +46,8 @@ interface HybridNavigationSidebarProps {
   onNavigationClick,
   currentNavId,
   setShowEditor,
-  currentPath
+  currentPath,
+  allRootNodes
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -154,8 +158,61 @@ interface HybridNavigationSidebarProps {
     }
   };
 
+  const handleMoveUp = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const currentIndex = allRootNodes.findIndex(n => n.id === node.id);
+    if (currentIndex <= 0) return; // Already at the top or not found
+    
+    const prevNode = allRootNodes[currentIndex - 1];
+    
+    // Swap order_index values
+    const currentOrder = node.order_index;
+    const prevOrder = prevNode.order_index;
+    
+    const success1 = await ContentService.reorderNavigationNodes(node.id, null, prevOrder);
+    const success2 = await ContentService.reorderNavigationNodes(prevNode.id, null, currentOrder);
+    
+    if (success1 && success2) {
+      toast.success("Folder moved up");
+      onStructureUpdate();
+    } else {
+      toast.error("Failed to move folder");
+    }
+  };
+
+  const handleMoveDown = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const currentIndex = allRootNodes.findIndex(n => n.id === node.id);
+    if (currentIndex < 0 || currentIndex >= allRootNodes.length - 1) return; // Already at bottom or not found
+    
+    const nextNode = allRootNodes[currentIndex + 1];
+    
+    // Swap order_index values
+    const currentOrder = node.order_index;
+    const nextOrder = nextNode.order_index;
+    
+    const success1 = await ContentService.reorderNavigationNodes(node.id, null, nextOrder);
+    const success2 = await ContentService.reorderNavigationNodes(nextNode.id, null, currentOrder);
+    
+    if (success1 && success2) {
+      toast.success("Folder moved down");
+      onStructureUpdate();
+    } else {
+      toast.error("Failed to move folder");
+    }
+  };
+
   // Check if this node is the currently active one
   const isActiveNode = currentPath === node.path;
+  
+  // Determine position for button states
+  const currentIndex = allRootNodes.findIndex(n => n.id === node.id);
+  const isFirst = currentIndex === 0;
+  const isLast = currentIndex === allRootNodes.length - 1;
 
   return (
     <>
@@ -231,6 +288,26 @@ interface HybridNavigationSidebarProps {
             className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={(e) => e.stopPropagation()}
           >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={handleMoveUp}
+              disabled={isFirst}
+              title="Move folder up"
+            >
+              <ArrowUp className={`w-3 h-3 ${isFirst ? 'opacity-30' : ''}`} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={handleMoveDown}
+              disabled={isLast}
+              title="Move folder down"
+            >
+              <ArrowDown className={`w-3 h-3 ${isLast ? 'opacity-30' : ''}`} />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -370,8 +447,10 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  // Only show top-level nodes, no nested structure
-  const topLevelNodes = structure.filter(node => !node.parent_id);
+  // Only show top-level nodes, no nested structure, sorted by order_index
+  const topLevelNodes = structure
+    .filter(node => !node.parent_id)
+    .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
 
   const toggleFilterSection = (section: keyof typeof expandedFilters) => {
     setExpandedFilters(prev => ({
@@ -525,6 +604,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               currentNavId={currentNavId}
               setShowEditor={setShowEditor}
               currentPath={currentPath}
+              allRootNodes={topLevelNodes}
             />
           ))
         ) : (
