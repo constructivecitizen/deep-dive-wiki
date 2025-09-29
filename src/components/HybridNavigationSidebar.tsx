@@ -167,17 +167,27 @@ interface HybridNavigationSidebarProps {
     
     const prevNode = allRootNodes[currentIndex - 1];
     
-    // Swap order_index values
-    const currentOrder = node.order_index;
-    const prevOrder = prevNode.order_index;
+    // Swap order_index values - use a temporary high value to avoid conflicts
+    const tempOrder = 999999;
+    const currentOrder = node.order_index || currentIndex;
+    const prevOrder = prevNode.order_index || (currentIndex - 1);
     
-    const success1 = await ContentService.reorderNavigationNodes(node.id, null, prevOrder);
-    const success2 = await ContentService.reorderNavigationNodes(prevNode.id, null, currentOrder);
-    
-    if (success1 && success2) {
-      toast.success("Folder moved up");
-      onStructureUpdate();
-    } else {
+    try {
+      // Move current to temp
+      await ContentService.reorderNavigationNodes(node.id, null, tempOrder);
+      // Move prev to current's position
+      await ContentService.reorderNavigationNodes(prevNode.id, null, currentOrder);
+      // Move current to prev's position
+      const success = await ContentService.reorderNavigationNodes(node.id, null, prevOrder);
+      
+      if (success) {
+        toast.success("Folder moved up");
+        onStructureUpdate();
+      } else {
+        toast.error("Failed to move folder");
+      }
+    } catch (error) {
+      console.error("Error moving folder up:", error);
       toast.error("Failed to move folder");
     }
   };
@@ -191,17 +201,27 @@ interface HybridNavigationSidebarProps {
     
     const nextNode = allRootNodes[currentIndex + 1];
     
-    // Swap order_index values
-    const currentOrder = node.order_index;
-    const nextOrder = nextNode.order_index;
+    // Swap order_index values - use a temporary high value to avoid conflicts
+    const tempOrder = 999999;
+    const currentOrder = node.order_index || currentIndex;
+    const nextOrder = nextNode.order_index || (currentIndex + 1);
     
-    const success1 = await ContentService.reorderNavigationNodes(node.id, null, nextOrder);
-    const success2 = await ContentService.reorderNavigationNodes(nextNode.id, null, currentOrder);
-    
-    if (success1 && success2) {
-      toast.success("Folder moved down");
-      onStructureUpdate();
-    } else {
+    try {
+      // Move current to temp
+      await ContentService.reorderNavigationNodes(node.id, null, tempOrder);
+      // Move next to current's position
+      await ContentService.reorderNavigationNodes(nextNode.id, null, currentOrder);
+      // Move current to next's position
+      const success = await ContentService.reorderNavigationNodes(node.id, null, nextOrder);
+      
+      if (success) {
+        toast.success("Folder moved down");
+        onStructureUpdate();
+      } else {
+        toast.error("Failed to move folder");
+      }
+    } catch (error) {
+      console.error("Error moving folder down:", error);
       toast.error("Failed to move folder");
     }
   };
