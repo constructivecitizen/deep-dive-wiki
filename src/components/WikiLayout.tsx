@@ -58,7 +58,7 @@ export const WikiLayout = ({
             </div>
           </header>
           
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 h-0">
             <HybridNavigationSidebar 
               structure={navigationStructure} 
               contentNodes={contentNodes}
@@ -74,7 +74,7 @@ export const WikiLayout = ({
       <ResizableHandle withHandle />
       
       <ResizablePanel id="main-panel" defaultSize={80}>
-        <ScrollArea className="h-screen">
+        <ScrollArea className="h-full">
           <main className="container mx-auto px-6 py-8 max-w-4xl">
             {children}
           </main>
