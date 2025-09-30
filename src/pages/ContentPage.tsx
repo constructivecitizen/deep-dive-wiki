@@ -344,6 +344,10 @@ const ContentPage: React.FC = () => {
           }}
         />
         
+        {state.sectionView && (
+          <h1 className="text-3xl font-bold mb-6 text-foreground">{state.sectionView.title}</h1>
+        )}
+        
         {showEditor ? (
           <UnifiedEditor
             editorData={{ 
