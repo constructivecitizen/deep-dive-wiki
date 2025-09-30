@@ -12,7 +12,7 @@ export interface ParsedContent {
 }
 
 export class HierarchyParser {
-  static parseMarkup(text: string): ParsedContent {
+  static parseMarkup(text: string, folderName?: string): ParsedContent {
     const lines = text.split('\n');
     const sections: Array<{
       id: string;
@@ -24,6 +24,8 @@ export class HierarchyParser {
 
     let currentSection: any = null;
     let sectionCounter = 0;
+    let preHeaderContent: string[] = [];
+    let foundFirstHeader = false;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -32,6 +34,20 @@ export class HierarchyParser {
       const headerMatch = line.match(/^(#{1,6})\s+(.+?)(?:\s+\[([^\]]+)\])?$/);
       
       if (headerMatch) {
+        foundFirstHeader = true;
+        
+        // If we have pre-header content, create a section for it
+        if (preHeaderContent.length > 0 && folderName) {
+          sections.push({
+            id: `section-${++sectionCounter}`,
+            title: folderName,
+            content: preHeaderContent.join('\n'),
+            level: 1,
+            tags: []
+          });
+          preHeaderContent = [];
+        }
+        
         // Save previous section if exists
         if (currentSection) {
           sections.push(currentSection);
@@ -48,10 +64,26 @@ export class HierarchyParser {
           level,
           tags
         };
-      } else if (line && currentSection) {
-        // Add content to current section
-        currentSection.content += (currentSection.content ? '\n' : '') + line;
+      } else if (line) {
+        if (!foundFirstHeader) {
+          // Collect pre-header content
+          preHeaderContent.push(line);
+        } else if (currentSection) {
+          // Add content to current section
+          currentSection.content += (currentSection.content ? '\n' : '') + line;
+        }
       }
+    }
+
+    // Handle remaining pre-header content if no headers were found
+    if (preHeaderContent.length > 0 && folderName && !foundFirstHeader) {
+      sections.push({
+        id: `section-${++sectionCounter}`,
+        title: folderName,
+        content: preHeaderContent.join('\n'),
+        level: 1,
+        tags: []
+      });
     }
 
     // Add final section
@@ -67,8 +99,14 @@ export class HierarchyParser {
     content: string;
     level: number;
     tags: string[];
-  }>): string {
-    return sections.map(section => {
+  }>, folderName?: string): string {
+    return sections.map((section, index) => {
+      // If this is the first section and its title matches the folder name, 
+      // output only content (it's the pre-header content)
+      if (index === 0 && folderName && section.title === folderName && section.level === 1) {
+        return section.content || '';
+      }
+      
       const indent = '#'.repeat(section.level);
       const tags = section.tags && section.tags.length > 0 ? ` [${section.tags.join(', ')}]` : '';
       const header = `${indent} ${section.title}${tags}`;

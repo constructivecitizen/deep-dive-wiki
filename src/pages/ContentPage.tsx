@@ -192,9 +192,13 @@ const ContentPage: React.FC = () => {
     if (!state.pageData) return;
     
     try {
+      // Extract root folder name from path
+      const pathSegments = state.pageData.path.split('/').filter(Boolean);
+      const folderName = pathSegments.length > 0 ? pathSegments[0] : undefined;
+      
       // Parse the markdown content into sections
       const { HierarchyParser } = await import('@/lib/hierarchyParser');
-      const sections = HierarchyParser.parseMarkup(content).sections;
+      const sections = HierarchyParser.parseMarkup(content, folderName).sections;
       
       // Save the document content
       await ContentService.saveDocumentContent(state.pageData.path, sections);
@@ -352,10 +356,6 @@ const ContentPage: React.FC = () => {
           />
         ) : (
           <div className="prose prose-slate dark:prose-invert max-w-none">
-            <h1 className="text-2xl font-bold mb-6">
-              {state.sectionView?.title || state.pageData.title}
-            </h1>
-            
             {/* Show section content if viewing a section, otherwise show full content */}
             {state.sectionView ? (
               <HierarchicalContentDisplay 
