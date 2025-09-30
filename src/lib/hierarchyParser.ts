@@ -12,7 +12,7 @@ export interface ParsedContent {
 }
 
 export class HierarchyParser {
-  static parseMarkup(text: string, folderName?: string): ParsedContent {
+  static parseMarkup(text: string, documentTitle?: string): ParsedContent {
     const lines = text.split('\n');
     const sections: Array<{
       id: string;
@@ -37,10 +37,10 @@ export class HierarchyParser {
         foundFirstHeader = true;
         
         // If we have pre-header content, create a section for it
-        if (preHeaderContent.length > 0 && folderName) {
+        if (preHeaderContent.length > 0 && documentTitle) {
           sections.push({
             id: `section-${++sectionCounter}`,
-            title: folderName,
+            title: documentTitle,
             content: preHeaderContent.join('\n'),
             level: 1,
             tags: []
@@ -76,10 +76,10 @@ export class HierarchyParser {
     }
 
     // Handle remaining pre-header content if no headers were found
-    if (preHeaderContent.length > 0 && folderName && !foundFirstHeader) {
+    if (preHeaderContent.length > 0 && documentTitle && !foundFirstHeader) {
       sections.push({
         id: `section-${++sectionCounter}`,
-        title: folderName,
+        title: documentTitle,
         content: preHeaderContent.join('\n'),
         level: 1,
         tags: []
@@ -99,11 +99,11 @@ export class HierarchyParser {
     content: string;
     level: number;
     tags: string[];
-  }>, folderName?: string): string {
+  }>, documentTitle?: string): string {
     return sections.map((section, index) => {
-      // If this is the first section and its title matches the folder name, 
+      // If this is the first section and its title matches the document title, 
       // output only content (it's the pre-header content)
-      if (index === 0 && folderName && section.title === folderName && section.level === 1) {
+      if (index === 0 && documentTitle && section.title === documentTitle && section.level === 1) {
         return section.content || '';
       }
       

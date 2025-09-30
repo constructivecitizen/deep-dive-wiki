@@ -19,6 +19,7 @@ interface HierarchicalContentDisplayProps {
   activeNodeId?: string;
   currentSectionId?: string;
   documentPath?: string;
+  documentTitle?: string;
 }
 
 // Helper function to extract full hierarchical content for a section
@@ -115,7 +116,8 @@ const ContentSectionComponent: React.FC<{
   activeNodeId?: string;
   documentPath?: string;
   siblingIndex?: number;
-}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0 }) => {
+  documentTitle?: string;
+}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Always expanded by default
   const navigate = useNavigate();
   const location = useLocation();
@@ -125,6 +127,9 @@ const ContentSectionComponent: React.FC<{
   // Check if this section is active based on the current hash
   const sectionHash = generateSectionId(section.title);
   const isActive = activeNodeId === sectionHash;
+  
+  // Check if this is the document title section (first section at depth 0)
+  const isDocumentTitle = depth === 0 && siblingIndex === 0 && documentTitle && section.title === documentTitle;
 
   const getHeadingClass = () => {
     // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
@@ -151,6 +156,43 @@ const ContentSectionComponent: React.FC<{
   
   const contentColorClass = getContentColorClass(depth);
 
+  // If this is the document title section, render as page title
+  if (isDocumentTitle) {
+    return (
+      <div id={section.id}>
+        <h1 className="text-3xl font-bold text-foreground mb-6">
+          {section.title}
+        </h1>
+        
+        {hasContent && (
+          <div 
+            className="prose prose-slate dark:prose-invert max-w-none mb-6"
+            dangerouslySetInnerHTML={{ 
+              __html: renderMarkdown(section.content.trim()) 
+            }}
+          />
+        )}
+        
+        {hasChildren && (
+          <div className="space-y-2">
+            {section.children.map((child, index) => (
+              <ContentSectionComponent
+                key={child.id}
+                section={child}
+                depth={depth + 1}
+                onSectionClick={onSectionClick}
+                activeNodeId={activeNodeId}
+                documentPath={documentPath}
+                documentTitle={documentTitle}
+                siblingIndex={index}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+  
   return (
     <div id={section.id}>
       <div 
@@ -228,6 +270,7 @@ const ContentSectionComponent: React.FC<{
                   onSectionClick={onSectionClick}
                   activeNodeId={activeNodeId}
                   documentPath={documentPath}
+                  documentTitle={documentTitle}
                   siblingIndex={index}
                 />
               ))}
@@ -244,7 +287,8 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   onSectionClick,
   activeNodeId,
   currentSectionId,
-  documentPath
+  documentPath,
+  documentTitle
 }) => {
   
   // Clean tag syntax from content before parsing
@@ -270,6 +314,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
             onSectionClick={onSectionClick}
             activeNodeId={activeNodeId}
             documentPath={documentPath}
+            documentTitle={documentTitle}
             siblingIndex={index}
           />
         ))}

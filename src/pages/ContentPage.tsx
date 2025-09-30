@@ -192,13 +192,12 @@ const ContentPage: React.FC = () => {
     if (!state.pageData) return;
     
     try {
-      // Extract root folder name from path
-      const pathSegments = state.pageData.path.split('/').filter(Boolean);
-      const folderName = pathSegments.length > 0 ? pathSegments[0] : undefined;
+      // Use the document title for pre-header content
+      const documentTitle = state.pageData.title;
       
       // Parse the markdown content into sections
       const { HierarchyParser } = await import('@/lib/hierarchyParser');
-      const sections = HierarchyParser.parseMarkup(content, folderName).sections;
+      const sections = HierarchyParser.parseMarkup(content, documentTitle).sections;
       
       // Save the document content
       await ContentService.saveDocumentContent(state.pageData.path, sections);
@@ -362,6 +361,7 @@ const ContentPage: React.FC = () => {
                 content={state.sectionView.content}
                 currentSectionId={location.hash.substring(1)}
                 documentPath={state.pageData.path}
+                documentTitle={state.pageData.title}
                 onSectionClick={(sectionId) => {
                   // Find the section and navigate to it
                   const sectionHash = generateSectionId(sectionId);
@@ -373,6 +373,7 @@ const ContentPage: React.FC = () => {
               <HierarchicalContentDisplay 
                 content={state.pageData.content}
                 documentPath={state.pageData.path}
+                documentTitle={state.pageData.title}
                 onSectionClick={(sectionId) => {
                   // Find the section and navigate to it
                   const sectionHash = generateSectionId(sectionId);
