@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, ChevronDown, ChevronRight } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { renderMarkdown } from '@/lib/markdownRenderer';
-import { generateSectionId } from '@/lib/sectionUtils';
 
 interface ContentSection {
   level: number;
@@ -15,7 +13,7 @@ interface ContentSection {
 
 interface HierarchicalContentDisplayProps {
   content: string;
-  onSectionClick?: (sectionId: string) => void;
+  onSectionClick?: (sectionTitle: string) => void;
   activeNodeId?: string;
   currentSectionId?: string;
   documentPath?: string;
@@ -112,21 +110,18 @@ const parseHierarchicalContent = (content: string): ContentSection[] => {
 const ContentSectionComponent: React.FC<{
   section: ContentSection;
   depth: number;
-  onSectionClick?: (sectionId: string) => void;
+  onSectionClick?: (sectionTitle: string) => void;
   activeNodeId?: string;
   documentPath?: string;
   siblingIndex?: number;
   documentTitle?: string;
 }> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Always expanded by default
-  const navigate = useNavigate();
-  const location = useLocation();
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
-  // Check if this section is active based on the current hash
-  const sectionHash = generateSectionId(section.title);
-  const isActive = activeNodeId === sectionHash;
+  // Check if this section is active based on activeNodeId
+  const isActive = activeNodeId === section.id;
   
   // Check if this is the document title section (first section at depth 0)
   const isDocumentTitle = depth === 0 && siblingIndex === 0 && documentTitle && section.title === documentTitle;
@@ -222,7 +217,6 @@ const ContentSectionComponent: React.FC<{
           <div className="flex items-center gap-2">
             <h1 className={`${getHeadingClass()} ${hasChildren ? 'cursor-pointer' : ''} flex-1`}
                 onClick={() => {
-                  if (onSectionClick) onSectionClick(section.id);
                   if (hasChildren) setIsExpanded(!isExpanded);
                 }}>
               {section.title}
@@ -230,13 +224,10 @@ const ContentSectionComponent: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Generate URL-safe section ID using the new utility
-                const sectionId = generateSectionId(section.title);
-                
-                // Navigate to the section using the document path if provided
-                const basePath = documentPath || location.pathname;
-                const newPath = `${basePath}#${sectionId}`;
-                navigate(newPath);
+                // Call the section click callback with the section title
+                if (onSectionClick) {
+                  onSectionClick(section.title);
+                }
               }}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
               aria-label={`Navigate to ${section.title} section`}

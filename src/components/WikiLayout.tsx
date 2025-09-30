@@ -16,6 +16,8 @@ interface WikiLayoutProps {
   onNavigationClick?: (navId: string, path: string) => void;
   setShowEditor?: (show: boolean) => void;
   currentPath?: string;
+  onSectionNavigate?: (sectionTitle: string) => void;
+  activeSectionId?: string | null;
 }
 
 export const WikiLayout = ({ 
@@ -27,7 +29,9 @@ export const WikiLayout = ({
   onStructureUpdate,
   onNavigationClick,
   setShowEditor,
-  currentPath
+  currentPath,
+  onSectionNavigate,
+  activeSectionId
 }: WikiLayoutProps) => {
   return (
     <ResizablePanelGroup 
@@ -66,6 +70,8 @@ export const WikiLayout = ({
               onNavigationClick={onNavigationClick}
               setShowEditor={setShowEditor}
               currentPath={currentPath}
+              onSectionNavigate={onSectionNavigate}
+              activeSectionId={activeSectionId}
             />
           </ScrollArea>
         </aside>

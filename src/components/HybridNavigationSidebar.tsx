@@ -28,6 +28,8 @@ interface HybridNavigationSidebarProps {
   currentNavId?: string | null;
   setShowEditor?: (show: boolean) => void;
   currentPath?: string;
+  onSectionNavigate?: (sectionTitle: string) => void;
+  activeSectionId?: string | null;
 }
 
   const FolderNode: React.FC<{
@@ -39,6 +41,8 @@ interface HybridNavigationSidebarProps {
   setShowEditor?: (show: boolean) => void;
   currentPath?: string;
   allRootNodes: NavigationNode[];
+  onSectionNavigate?: (sectionTitle: string) => void;
+  activeSectionId?: string | null;
 }> = ({ 
   node, 
   contentNodes, 
@@ -47,7 +51,9 @@ interface HybridNavigationSidebarProps {
   currentNavId,
   setShowEditor,
   currentPath,
-  allRootNodes
+  allRootNodes,
+  onSectionNavigate,
+  activeSectionId
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -377,6 +383,8 @@ interface HybridNavigationSidebarProps {
               sectionPosition={index}
               flatSections={flatSections}
               currentPath={currentPath}
+              onSectionNavigate={onSectionNavigate}
+              activeSectionId={activeSectionId}
             />
           ))}
         </div>
@@ -392,7 +400,9 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   onNavigationClick,
   currentNavId,
   setShowEditor,
-  currentPath
+  currentPath,
+  onSectionNavigate,
+  activeSectionId
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -631,6 +641,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               setShowEditor={setShowEditor}
               currentPath={currentPath}
               allRootNodes={topLevelNodes}
+              onSectionNavigate={onSectionNavigate}
+              activeSectionId={activeSectionId}
             />
           ))
         ) : (

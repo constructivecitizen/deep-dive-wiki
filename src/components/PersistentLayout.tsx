@@ -11,6 +11,8 @@ interface LayoutContextType {
   setShowEditor: (show: boolean) => void;
   setShowFilters: (show: boolean) => void;
   navigationStructure: NavigationNode[];
+  onSectionNavigate?: (sectionTitle: string) => void;
+  activeSectionId?: string | null;
 }
 
 const LayoutContext = createContext<LayoutContextType | null>(null);
@@ -32,6 +34,10 @@ export const PersistentLayout: React.FC = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [hasInitialNavigation, setHasInitialNavigation] = useState(false);
+  
+  // Use refs for callback functions to avoid re-renders
+  const onSectionNavigateRef = React.useRef<((sectionTitle: string) => void) | undefined>();
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 
   const loadNavigationData = async (isInitial = false) => {
     try {
@@ -87,7 +93,9 @@ export const PersistentLayout: React.FC = () => {
       showFilters, 
       setShowEditor, 
       setShowFilters,
-      navigationStructure
+      navigationStructure,
+      onSectionNavigate: onSectionNavigateRef.current,
+      activeSectionId
     }}>
       <WikiLayout
         navigationStructure={navigationStructure}
@@ -95,8 +103,10 @@ export const PersistentLayout: React.FC = () => {
         onStructureUpdate={handleStructureUpdate}
         setShowEditor={setShowEditor}
         currentPath={location.pathname + location.hash}
+        onSectionNavigate={onSectionNavigateRef.current}
+        activeSectionId={activeSectionId}
       >
-        <Outlet />
+        <Outlet context={{ setActiveSectionId, onSectionNavigateRef }} />
       </WikiLayout>
     </LayoutContext.Provider>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useReducer } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { PageBreadcrumb } from "@/components/PageBreadcrumb";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { UnifiedEditor } from "@/components/UnifiedEditor";
@@ -8,7 +8,6 @@ import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { useLayoutContext } from "@/components/PersistentLayout";
 import { NavigationNode, WikiDocument, ContentService, DocumentSection } from "@/services/contentService";
 import { extractSectionFullContent } from '@/lib/sectionContentExtractor';
-import { findSectionByHash, generateSectionId } from '@/lib/sectionUtils';
 
 // Constants
 const PAGE_TYPES = {
@@ -41,6 +40,9 @@ interface ContentPageState {
     sectionHierarchy: Array<{ title: string; level: number }>;
   } | null;
   
+  // Current section ID for navigation
+  currentSectionId: string | null;
+  
   // UI states
   isLoading: boolean;
 }
@@ -51,6 +53,7 @@ type ContentPageAction =
   | { type: 'SET_PAGE_DATA'; payload: PageData | null }
   | { type: 'SET_FILTERED_DOCUMENTS'; payload: WikiDocument[] }
   | { type: 'SET_SECTION_VIEW'; payload: ContentPageState['sectionView'] }
+  | { type: 'SET_CURRENT_SECTION'; payload: string | null }
   // UI actions
   | { type: 'SET_LOADING'; payload: boolean };
 
@@ -59,6 +62,7 @@ const initialState: ContentPageState = {
   pageData: null,
   filteredDocuments: [],
   sectionView: null,
+  currentSectionId: null,
   isLoading: true,
 };
 
@@ -66,11 +70,13 @@ const initialState: ContentPageState = {
 const contentPageReducer = (state: ContentPageState, action: ContentPageAction): ContentPageState => {
   switch (action.type) {
     case 'SET_PAGE_DATA':
-      return { ...state, pageData: action.payload, sectionView: null }; // Clear section view when loading new page
+      return { ...state, pageData: action.payload, sectionView: null, currentSectionId: null }; // Clear section view when loading new page
     case 'SET_FILTERED_DOCUMENTS':
       return { ...state, filteredDocuments: action.payload };
     case 'SET_SECTION_VIEW':
       return { ...state, sectionView: action.payload };
+    case 'SET_CURRENT_SECTION':
+      return { ...state, currentSectionId: action.payload };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     default:
@@ -80,9 +86,17 @@ const contentPageReducer = (state: ContentPageState, action: ContentPageAction):
 
 const ContentPage: React.FC = () => {
   const [state, dispatch] = useReducer(contentPageReducer, initialState);
-  const { showEditor, showFilters, setShowEditor, setShowFilters, navigationStructure } = useLayoutContext();
+  const layoutContext = useLayoutContext();
+  const { showEditor, showFilters, setShowEditor, setShowFilters, navigationStructure } = layoutContext;
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Get outlet context for setting section navigation
+  const outletCtx = useOutletContext<{
+    setActiveSectionId: (id: string | null) => void;
+    onSectionNavigateRef: React.MutableRefObject<((sectionTitle: string) => void) | undefined>;
+  }>();
+  const { setActiveSectionId, onSectionNavigateRef } = outletCtx || {};
 
   // Helper function to convert DocumentSection[] to markdown string
   const convertSectionsToMarkdown = (sections: DocumentSection[]): string => {
@@ -237,41 +251,49 @@ const ContentPage: React.FC = () => {
     initializePage();
   }, [location.pathname]);
 
-  // Handle section extraction for hash navigation
-  useEffect(() => {
-    if (location.hash && state.pageData?.type === 'content') {
-      const sectionId = location.hash.substring(1); // Remove # from hash
-      
-      try {
-        // Get the document to extract sections from
-        const getDocument = async () => {
-          const document = await ContentService.getDocumentByPath(location.pathname);
-          if (document && document.content_json) {
-            const section = findSectionByHash(document.content_json, sectionId);
-            
-            if (section) {
-              const sectionContent = extractSectionFullContent(section, document.content_json);
-              dispatch({ 
-                type: 'SET_SECTION_VIEW', 
-                payload: sectionContent
-              });
-            } else {
-              // Section not found, clear section view
-              dispatch({ type: 'SET_SECTION_VIEW', payload: null });
-            }
-          }
-        };
+  // Handle section navigation
+  const handleSectionNavigate = async (sectionTitle: string) => {
+    if (!state.pageData?.path) return;
+    
+    try {
+      const document = await ContentService.getDocumentByPath(state.pageData.path);
+      if (document && document.content_json) {
+        const section = document.content_json.find(s => s.title === sectionTitle);
         
-        getDocument();
-      } catch (error) {
-        console.error('Error extracting section content:', error);
-        dispatch({ type: 'SET_SECTION_VIEW', payload: null });
+        if (section) {
+          const sectionContent = extractSectionFullContent(section, document.content_json);
+          dispatch({ 
+            type: 'SET_SECTION_VIEW', 
+            payload: sectionContent
+          });
+          dispatch({
+            type: 'SET_CURRENT_SECTION',
+            payload: section.id
+          });
+        }
       }
-    } else {
-      // No hash, clear section view
-      dispatch({ type: 'SET_SECTION_VIEW', payload: null });
+    } catch (error) {
+      console.error('Error navigating to section:', error);
     }
-  }, [location.hash, location.pathname]);
+  };
+
+  const handleClearSection = () => {
+    dispatch({ type: 'SET_SECTION_VIEW', payload: null });
+    dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
+    if (setActiveSectionId) {
+      setActiveSectionId(null);
+    }
+  };
+
+  // Provide section navigation to layout context for sidebar
+  useEffect(() => {
+    if (onSectionNavigateRef) {
+      onSectionNavigateRef.current = handleSectionNavigate;
+    }
+    if (setActiveSectionId) {
+      setActiveSectionId(state.currentSectionId);
+    }
+  }, [state.currentSectionId, onSectionNavigateRef, setActiveSectionId]);
 
   const handleCreateDocument = async () => {
     if (!state.pageData || state.pageData.type !== 'folder') return;
@@ -336,12 +358,8 @@ const ContentPage: React.FC = () => {
           navigationStructure={navigationStructure} 
           sectionTitle={state.sectionView?.title}
           sectionHierarchy={state.sectionView?.sectionHierarchy}
-          onSectionBack={() => navigate(state.pageData?.path || location.pathname)}
-          onSectionNavigate={(sectionTitle) => {
-            // Navigate to section using proper generateSectionId utility
-            const sectionId = generateSectionId(sectionTitle);
-            navigate(`${state.pageData?.path || location.pathname}#${sectionId}`);
-          }}
+          onSectionBack={handleClearSection}
+          onSectionNavigate={handleSectionNavigate}
         />
         
         {state.sectionView && (
@@ -363,27 +381,19 @@ const ContentPage: React.FC = () => {
             {state.sectionView ? (
               <HierarchicalContentDisplay 
                 content={state.sectionView.content}
-                currentSectionId={location.hash.substring(1)}
+                currentSectionId={state.currentSectionId || undefined}
                 documentPath={state.pageData.path}
                 documentTitle={state.pageData.title}
-                onSectionClick={(sectionId) => {
-                  // Find the section and navigate to it
-                  const sectionHash = generateSectionId(sectionId);
-                  navigate(`${state.pageData.path}#${sectionHash}`);
-                }}
-                activeNodeId={location.hash.substring(1) || undefined}
+                onSectionClick={handleSectionNavigate}
+                activeNodeId={state.currentSectionId || undefined}
               />
             ) : state.pageData.content && (
               <HierarchicalContentDisplay 
                 content={state.pageData.content}
                 documentPath={state.pageData.path}
                 documentTitle={state.pageData.title}
-                onSectionClick={(sectionId) => {
-                  // Find the section and navigate to it
-                  const sectionHash = generateSectionId(sectionId);
-                  navigate(`${state.pageData.path}#${sectionHash}`);
-                }}
-                activeNodeId={location.hash.substring(1) || undefined}
+                onSectionClick={handleSectionNavigate}
+                activeNodeId={state.currentSectionId || undefined}
               />
             )}
           </div>

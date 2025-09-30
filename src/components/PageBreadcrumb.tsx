@@ -61,12 +61,11 @@ export const PageBreadcrumb = ({
   }
 
   const handleNavigationClick = (item: ContentItem) => {
-    if (onSectionBack && sectionTitle) {
-      // If we're viewing a section, first go back to the document
+    // Navigate to the clicked item
+    navigate(item.path);
+    // Clear section view
+    if (onSectionBack) {
       onSectionBack();
-    } else {
-      // Navigate to the clicked item
-      navigate(item.path);
     }
   };
 

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 import { useNavigate } from 'react-router-dom';
-import { generateSectionId } from '../lib/sectionUtils';
 
 interface EnhancedSectionItemProps {
   section: HierarchicalDocumentSection;
@@ -11,6 +10,8 @@ interface EnhancedSectionItemProps {
   sectionPosition: number;
   flatSections: any[];
   currentPath?: string;
+  onSectionNavigate?: (sectionTitle: string) => void;
+  activeSectionId?: string | null;
 }
 
 export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
@@ -19,7 +20,9 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   folderPath,
   sectionPosition,
   flatSections,
-  currentPath
+  currentPath,
+  onSectionNavigate,
+  activeSectionId
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
@@ -27,22 +30,23 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   const handleSectionClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Create a URL-safe section ID from the title
-    const sectionId = generateSectionId(section.title);
+    // Navigate to the document first if not already there
+    const currentPathOnly = currentPath?.split('#')[0];
+    if (currentPathOnly !== folderPath) {
+      navigate(folderPath);
+    }
     
-    // Navigate to the document with section hash
-    const newPath = `${folderPath}#${sectionId}`;
-    navigate(newPath);
+    // Call the section navigate callback with the section title
+    if (onSectionNavigate) {
+      onSectionNavigate(section.title);
+    }
   };
 
   const hasChildren = section.children && section.children.length > 0;
   const indentationPx = (depth + 2) * 16;
   
-  // Check if this section is currently active - must match both path and hash
-  const currentPathOnly = currentPath?.split('#')[0];
-  const currentHash = currentPath?.split('#')[1];
-  const sectionId = generateSectionId(section.title);
-  const isActive = currentPathOnly === folderPath && currentHash === sectionId;
+  // Check if this section is currently active using the section ID
+  const isActive = activeSectionId === section.id;
 
   return (
     <div className="text-sm">
@@ -89,6 +93,8 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
               sectionPosition={sectionPosition + index + 1}
               flatSections={flatSections}
               currentPath={currentPath}
+              onSectionNavigate={onSectionNavigate}
+              activeSectionId={activeSectionId}
             />
           ))}
         </div>
