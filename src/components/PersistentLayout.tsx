@@ -11,8 +11,9 @@ interface LayoutContextType {
   setShowEditor: (show: boolean) => void;
   setShowFilters: (show: boolean) => void;
   navigationStructure: NavigationNode[];
-  onSectionNavigate?: (sectionTitle: string) => void;
-  activeSectionId?: string | null;
+  sectionNavigateRef: React.MutableRefObject<((sectionTitle: string) => void) | null>;
+  activeSectionId: string | null;
+  setActiveSectionId: (id: string | null) => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | null>(null);
@@ -34,10 +35,10 @@ export const PersistentLayout: React.FC = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [hasInitialNavigation, setHasInitialNavigation] = useState(false);
-  
-  // Use refs for callback functions to avoid re-renders
-  const onSectionNavigateRef = React.useRef<((sectionTitle: string) => void) | undefined>();
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  
+  // Ref for section navigation function - will be set by ContentPage
+  const sectionNavigateRef = React.useRef<((sectionTitle: string) => void) | null>(null);
 
   const loadNavigationData = async (isInitial = false) => {
     try {
@@ -94,8 +95,9 @@ export const PersistentLayout: React.FC = () => {
       setShowEditor, 
       setShowFilters,
       navigationStructure,
-      onSectionNavigate: onSectionNavigateRef.current,
-      activeSectionId
+      sectionNavigateRef,
+      activeSectionId,
+      setActiveSectionId
     }}>
       <WikiLayout
         navigationStructure={navigationStructure}
@@ -103,10 +105,10 @@ export const PersistentLayout: React.FC = () => {
         onStructureUpdate={handleStructureUpdate}
         setShowEditor={setShowEditor}
         currentPath={location.pathname + location.hash}
-        onSectionNavigate={onSectionNavigateRef.current}
+        onSectionNavigate={(title) => sectionNavigateRef.current?.(title)}
         activeSectionId={activeSectionId}
       >
-        <Outlet context={{ setActiveSectionId, onSectionNavigateRef }} />
+        <Outlet />
       </WikiLayout>
     </LayoutContext.Provider>
   );

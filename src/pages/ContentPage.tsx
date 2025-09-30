@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useReducer } from "react";
-import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { PageBreadcrumb } from "@/components/PageBreadcrumb";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
 import { UnifiedEditor } from "@/components/UnifiedEditor";
@@ -86,17 +86,17 @@ const contentPageReducer = (state: ContentPageState, action: ContentPageAction):
 
 const ContentPage: React.FC = () => {
   const [state, dispatch] = useReducer(contentPageReducer, initialState);
-  const layoutContext = useLayoutContext();
-  const { showEditor, showFilters, setShowEditor, setShowFilters, navigationStructure } = layoutContext;
+  const { 
+    showEditor, 
+    showFilters, 
+    setShowEditor, 
+    setShowFilters, 
+    navigationStructure,
+    setActiveSectionId,
+    sectionNavigateRef
+  } = useLayoutContext();
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Get outlet context for setting section navigation
-  const outletCtx = useOutletContext<{
-    setActiveSectionId: (id: string | null) => void;
-    onSectionNavigateRef: React.MutableRefObject<((sectionTitle: string) => void) | undefined>;
-  }>();
-  const { setActiveSectionId, onSectionNavigateRef } = outletCtx || {};
 
   // Helper function to convert DocumentSection[] to markdown string
   const convertSectionsToMarkdown = (sections: DocumentSection[]): string => {
@@ -280,20 +280,18 @@ const ContentPage: React.FC = () => {
   const handleClearSection = () => {
     dispatch({ type: 'SET_SECTION_VIEW', payload: null });
     dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
-    if (setActiveSectionId) {
-      setActiveSectionId(null);
-    }
+    setActiveSectionId(null);
   };
 
-  // Provide section navigation to layout context for sidebar
+  // Provide section navigation function to layout context
   useEffect(() => {
-    if (onSectionNavigateRef) {
-      onSectionNavigateRef.current = handleSectionNavigate;
-    }
-    if (setActiveSectionId) {
-      setActiveSectionId(state.currentSectionId);
-    }
-  }, [state.currentSectionId, onSectionNavigateRef, setActiveSectionId]);
+    sectionNavigateRef.current = handleSectionNavigate;
+  }, [sectionNavigateRef]);
+
+  // Update active section ID in layout context
+  useEffect(() => {
+    setActiveSectionId(state.currentSectionId);
+  }, [state.currentSectionId, setActiveSectionId]);
 
   const handleCreateDocument = async () => {
     if (!state.pageData || state.pageData.type !== 'folder') return;
