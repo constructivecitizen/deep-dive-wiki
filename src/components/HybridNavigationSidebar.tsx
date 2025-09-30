@@ -69,11 +69,17 @@ interface HybridNavigationSidebarProps {
       tags: section.tags || []
     }));
     
-    // Build hierarchical structure (only sections with children will be returned)
-    const hierarchicalSections = buildSectionHierarchy(flatSections);
+    // Build hierarchical structure
+    const allHierarchicalSections = buildSectionHierarchy(flatSections);
+    
+    // Filter out the first section if it matches the document title (to avoid redundancy)
+    // This removes the pre-header content section that's displayed as a page title
+    const hierarchicalSections = allHierarchicalSections.filter((section, index) => 
+      !(index === 0 && section.level === 1 && section.title === associatedContent.title)
+    );
     
     return { hierarchicalSections, flatSections };
-  }, [associatedContent?.content_json]);
+  }, [associatedContent?.content_json, associatedContent?.title]);
 
   const toggleExpanded = (e: React.MouseEvent) => {
     e.preventDefault();
