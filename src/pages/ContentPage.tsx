@@ -17,13 +17,19 @@ const PAGE_TYPES = {
 } as const;
 
 // Interfaces
-interface PageData {
-  type: 'content' | 'folder';
-  title: string;
-  content?: string;
-  path: string;
-  children?: NavigationNode[];
+interface PageDataDocument {
+  type: 'document';
+  document: WikiDocument;
+  sections: DocumentSection[];
 }
+
+interface PageDataFolder {
+  type: 'folder';
+  folder: NavigationNode;
+  documents: WikiDocument[];
+}
+
+type PageData = PageDataDocument | PageDataFolder;
 
 // State for managing content and UI
 interface ContentPageState {
@@ -43,6 +49,12 @@ interface ContentPageState {
   // Current section ID for navigation
   currentSectionId: string | null;
   
+  // Filter state
+  filters: {
+    searchTerm: string;
+    selectedTags: string[];
+  };
+  
   // UI states
   isLoading: boolean;
 }
@@ -54,6 +66,7 @@ type ContentPageAction =
   | { type: 'SET_FILTERED_DOCUMENTS'; payload: WikiDocument[] }
   | { type: 'SET_SECTION_VIEW'; payload: ContentPageState['sectionView'] }
   | { type: 'SET_CURRENT_SECTION'; payload: string | null }
+  | { type: 'SET_FILTERS'; payload: Partial<ContentPageState['filters']> }
   // UI actions
   | { type: 'SET_LOADING'; payload: boolean };
 
@@ -63,6 +76,10 @@ const initialState: ContentPageState = {
   filteredDocuments: [],
   sectionView: null,
   currentSectionId: null,
+  filters: {
+    searchTerm: '',
+    selectedTags: []
+  },
   isLoading: true,
 };
 
@@ -77,6 +94,8 @@ const contentPageReducer = (state: ContentPageState, action: ContentPageAction):
       return { ...state, sectionView: action.payload };
     case 'SET_CURRENT_SECTION':
       return { ...state, currentSectionId: action.payload };
+    case 'SET_FILTERS':
+      return { ...state, filters: { ...state.filters, ...action.payload } };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     default:
@@ -109,38 +128,35 @@ const ContentPage: React.FC = () => {
     }).join('').trim();
   };
 
-  const loadPageData = async (currentPath: string): Promise<PageData> => {
+  const loadPageData = async (currentPath: string): Promise<PageData | null> => {
     try {
       // Try to get document first
       const document = await ContentService.getDocumentByPath(currentPath);
       if (document) {
         return {
-          type: 'content',
-          title: document.title,
-          content: convertSectionsToMarkdown(document.content_json || []),
-          path: document.path
+          type: 'document',
+          document,
+          sections: document.content_json || []
         };
       }
 
       // Try to get folder
       const folder = await ContentService.getNavigationNodeByPath(currentPath);
       if (folder) {
-        const children = await ContentService.getNavigationNodeChildren(currentPath);
+        const allDocuments = await ContentService.getAllDocuments();
+        // Get documents in this folder
+        const folderDocuments = allDocuments.filter(doc => 
+          doc.path.startsWith(folder.path + '/') || doc.path === folder.path
+        );
+        
         return {
           type: 'folder',
-          title: folder.title,
-          path: folder.path,
-          children
+          folder,
+          documents: folderDocuments
         };
       }
 
-      // Default case - create a new document structure
-      return {
-        type: 'content',
-        title: 'New Document',
-        content: '',
-        path: currentPath
-      };
+      return null;
     } catch (error) {
       console.error('Error loading page data:', error);
       throw error;
@@ -203,21 +219,21 @@ const ContentPage: React.FC = () => {
   };
 
   const handleEditorSave = async (content: string) => {
-    if (!state.pageData) return;
+    if (!state.pageData || state.pageData.type !== 'document') return;
     
     try {
       // Use the document title for pre-header content
-      const documentTitle = state.pageData.title;
+      const documentTitle = state.pageData.document.title;
       
       // Parse the markdown content into sections
       const { HierarchyParser } = await import('@/lib/hierarchyParser');
       const sections = HierarchyParser.parseMarkup(content, documentTitle).sections;
       
       // Save the document content
-      await ContentService.saveDocumentContent(state.pageData.path, sections);
+      await ContentService.saveDocumentContent(state.pageData.document.path, sections);
       
       // Reload the page data to reflect changes
-      await loadCurrentPageData(state.pageData.path);
+      await loadCurrentPageData(state.pageData.document.path);
       
       // Close the editor
       setShowEditor(false);
@@ -251,29 +267,56 @@ const ContentPage: React.FC = () => {
     initializePage();
   }, [location.pathname]);
 
-  // Handle section navigation
-  const handleSectionNavigate = async (sectionTitle: string) => {
-    if (!state.pageData?.path) return;
+  // Handle URL hash for section navigation on initial load
+  useEffect(() => {
+    if (!state.pageData || state.pageData.type !== 'document' || !location.hash) return;
     
-    try {
-      const document = await ContentService.getDocumentByPath(state.pageData.path);
-      if (document && document.content_json) {
-        const section = document.content_json.find(s => s.title === sectionTitle);
-        
-        if (section) {
-          const sectionContent = extractSectionFullContent(section, document.content_json);
-          dispatch({ 
-            type: 'SET_SECTION_VIEW', 
-            payload: sectionContent
-          });
-          dispatch({
-            type: 'SET_CURRENT_SECTION',
-            payload: section.id
-          });
+    const hash = location.hash.slice(1); // Remove the # symbol
+    if (!hash) return;
+
+    // Find section by hash (could be section ID or generated from title)
+    const targetSection = state.pageData.sections.find(s => {
+      const generatedId = s.title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-')
+        .trim();
+      return s.id === hash || generatedId === hash;
+    });
+
+    if (targetSection) {
+      // Navigate to the section
+      handleSectionNavigate(targetSection.title);
+      // Clear the hash from URL since we're using state-based navigation now
+      window.history.replaceState(null, '', location.pathname);
+    }
+  }, [state.pageData, location.hash]);
+
+  // Handle section navigation
+  const handleSectionNavigate = (sectionTitle: string) => {
+    if (!state.pageData || state.pageData.type !== 'document') return;
+    
+    const targetSection = state.pageData.sections.find(
+      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
+    );
+    
+    if (targetSection) {
+      const { content, title, level, parentPath, sectionHierarchy } = 
+        extractSectionFullContent(targetSection, state.pageData.sections);
+      
+      dispatch({
+        type: 'SET_SECTION_VIEW',
+        payload: {
+          content,
+          title,
+          level,
+          parentPath,
+          sectionHierarchy
         }
-      }
-    } catch (error) {
-      console.error('Error navigating to section:', error);
+      });
+      dispatch({ type: 'SET_CURRENT_SECTION', payload: targetSection.id });
+      setActiveSectionId(targetSection.id);
     }
   };
 
@@ -296,12 +339,14 @@ const ContentPage: React.FC = () => {
   const handleCreateDocument = async () => {
     if (!state.pageData || state.pageData.type !== 'folder') return;
     
+    const folderData = state.pageData; // Type narrowed to PageDataFolder
+    
     try {
       // Create a unique document name within the folder
       const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-      const documentPath = state.pageData.path === '/' 
+      const documentPath = folderData.folder.path === '/' 
         ? `/new-document-${timestamp}` 
-        : `${state.pageData.path}/new-document-${timestamp}`;
+        : `${folderData.folder.path}/new-document-${timestamp}`;
       
       // Create a new document with initial content
       const initialSections = [{
@@ -337,63 +382,88 @@ const ContentPage: React.FC = () => {
     }
 
     if (state.pageData.type === 'folder') {
+      const folderData = state.pageData; // Type narrowed to PageDataFolder
+      
+      // Get child folders for this folder
+      const childFolders = navigationStructure.filter(node => 
+        node.parent_id === folderData.folder.id
+      );
+      
       return (
         <FolderLandingPage
-          folder={state.pageData as any}
-          children={state.pageData.children || []}
-          documents={state.filteredDocuments}
+          folder={folderData.folder}
+          children={childFolders}
+          documents={folderData.documents}
           onCreateDocument={handleCreateDocument}
           onToggleDocumentEditor={() => setShowEditor(!showEditor)}
         />
       );
     }
 
-    // Content page
+    // Document page
+    const { document, sections } = state.pageData;
+    
+    // Check if first section is pre-header content (matches document title)
+    const firstSection = sections[0];
+    const hasPreHeaderContent = firstSection && 
+      firstSection.title === document.title && 
+      firstSection.level === 1;
+
     return (
       <div className="space-y-6">
+        {/* Breadcrumb */}
         <PageBreadcrumb 
-          currentPath={state.pageData.path} 
-          navigationStructure={navigationStructure} 
+          currentPath={location.pathname} 
+          navigationStructure={navigationStructure}
+          pageTitle={document.title}
           sectionTitle={state.sectionView?.title}
           sectionHierarchy={state.sectionView?.sectionHierarchy}
           onSectionBack={handleClearSection}
           onSectionNavigate={handleSectionNavigate}
         />
         
-        {state.sectionView && (
-          <h1 className="text-3xl font-bold mb-6 text-foreground">{state.sectionView.title}</h1>
-        )}
-        
         {showEditor ? (
           <UnifiedEditor
-            editorData={{ 
-              type: 'document', 
-              content: state.sectionView?.content || state.pageData.content || '' 
+            editorData={{
+              type: 'document',
+              content: convertSectionsToMarkdown(sections)
             }}
             onSave={handleEditorSave}
             onClose={() => setShowEditor(false)}
           />
+        ) : state.sectionView ? (
+          // Showing a specific section
+          <div className="space-y-6">
+            <div className="border-b pb-4">
+              <h1 className="text-3xl font-bold">{state.sectionView.title}</h1>
+              {state.sectionView.sectionHierarchy && state.sectionView.sectionHierarchy.length > 0 && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  {state.sectionView.sectionHierarchy.map(s => s.title).join(' > ')}
+                </p>
+              )}
+            </div>
+            <HierarchicalContentDisplay 
+              content={state.sectionView.content}
+              onSectionClick={handleSectionNavigate}
+              activeNodeId={state.currentSectionId || undefined}
+              documentTitle={state.sectionView.title}
+            />
+          </div>
         ) : (
-          <div className="prose prose-slate dark:prose-invert max-w-none">
-            {/* Show section content if viewing a section, otherwise show full content */}
-            {state.sectionView ? (
-              <HierarchicalContentDisplay 
-                content={state.sectionView.content}
-                currentSectionId={state.currentSectionId || undefined}
-                documentPath={state.pageData.path}
-                documentTitle={state.pageData.title}
-                onSectionClick={handleSectionNavigate}
-                activeNodeId={state.currentSectionId || undefined}
-              />
-            ) : state.pageData.content && (
-              <HierarchicalContentDisplay 
-                content={state.pageData.content}
-                documentPath={state.pageData.path}
-                documentTitle={state.pageData.title}
-                onSectionClick={handleSectionNavigate}
-                activeNodeId={state.currentSectionId || undefined}
-              />
+          // Showing full document
+          <div className="space-y-6">
+            {/* Show document title if there's pre-header content */}
+            {hasPreHeaderContent && (
+              <div className="border-b pb-4">
+                <h1 className="text-3xl font-bold">{document.title}</h1>
+              </div>
             )}
+            <HierarchicalContentDisplay 
+              content={convertSectionsToMarkdown(sections)}
+              onSectionClick={handleSectionNavigate}
+              activeNodeId={state.currentSectionId || undefined}
+              documentTitle={document.title}
+            />
           </div>
         )}
       </div>
