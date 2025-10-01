@@ -112,6 +112,7 @@ const ContentPage: React.FC = () => {
     setShowFilters, 
     navigationStructure,
     setActiveSectionId,
+    setActiveDocumentPath,
     sectionNavigateRef
   } = useLayoutContext();
   const location = useLocation();
@@ -295,15 +296,20 @@ const ContentPage: React.FC = () => {
 
   // Handle section navigation
   const handleSectionNavigate = (sectionTitle: string) => {
+    console.log('handleSectionNavigate called with:', sectionTitle);
     if (!state.pageData || state.pageData.type !== 'document') return;
     
     const targetSection = state.pageData.sections.find(
       s => s.title.toLowerCase() === sectionTitle.toLowerCase()
     );
     
+    console.log('Found section:', targetSection);
+    
     if (targetSection) {
       const { content, title, level, parentPath, sectionHierarchy } = 
         extractSectionFullContent(targetSection, state.pageData.sections);
+      
+      console.log('Setting section view and active section:', targetSection.id);
       
       dispatch({
         type: 'SET_SECTION_VIEW',
@@ -317,6 +323,7 @@ const ContentPage: React.FC = () => {
       });
       dispatch({ type: 'SET_CURRENT_SECTION', payload: targetSection.id });
       setActiveSectionId(targetSection.id);
+      setActiveDocumentPath(state.pageData.document.path);
     }
   };
 
@@ -324,12 +331,19 @@ const ContentPage: React.FC = () => {
     dispatch({ type: 'SET_SECTION_VIEW', payload: null });
     dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
     setActiveSectionId(null);
+    setActiveDocumentPath(null);
   };
 
   // Provide section navigation function to layout context
   useEffect(() => {
+    console.log('Setting up sectionNavigateRef');
     sectionNavigateRef.current = handleSectionNavigate;
-  }, [sectionNavigateRef]);
+    
+    // Return cleanup
+    return () => {
+      sectionNavigateRef.current = null;
+    };
+  }, [sectionNavigateRef, state.pageData]);
 
   // Update active section ID in layout context
   useEffect(() => {

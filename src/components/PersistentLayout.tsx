@@ -13,7 +13,9 @@ interface LayoutContextType {
   navigationStructure: NavigationNode[];
   sectionNavigateRef: React.MutableRefObject<((sectionTitle: string) => void) | null>;
   activeSectionId: string | null;
+  activeDocumentPath: string | null; // Track which document the active section belongs to
   setActiveSectionId: (id: string | null) => void;
+  setActiveDocumentPath: (path: string | null) => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | null>(null);
@@ -36,6 +38,7 @@ export const PersistentLayout: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [hasInitialNavigation, setHasInitialNavigation] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const [activeDocumentPath, setActiveDocumentPath] = useState<string | null>(null);
   
   // Ref for section navigation function - will be set by ContentPage
   const sectionNavigateRef = React.useRef<((sectionTitle: string) => void) | null>(null);
@@ -97,7 +100,9 @@ export const PersistentLayout: React.FC = () => {
       navigationStructure,
       sectionNavigateRef,
       activeSectionId,
-      setActiveSectionId
+      activeDocumentPath,
+      setActiveSectionId,
+      setActiveDocumentPath
     }}>
       <WikiLayout
         navigationStructure={navigationStructure}
@@ -105,8 +110,12 @@ export const PersistentLayout: React.FC = () => {
         onStructureUpdate={handleStructureUpdate}
         setShowEditor={setShowEditor}
         currentPath={location.pathname + location.hash}
-        onSectionNavigate={(title) => sectionNavigateRef.current?.(title)}
+        onSectionNavigate={(title) => {
+          console.log('WikiLayout calling sectionNavigateRef with:', title);
+          sectionNavigateRef.current?.(title);
+        }}
         activeSectionId={activeSectionId}
+        activeDocumentPath={activeDocumentPath}
       >
         <Outlet />
       </WikiLayout>

@@ -12,6 +12,7 @@ interface EnhancedSectionItemProps {
   currentPath?: string;
   onSectionNavigate?: (sectionTitle: string) => void;
   activeSectionId?: string | null;
+  activeDocumentPath?: string | null;
 }
 
 export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
@@ -22,7 +23,8 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   flatSections,
   currentPath,
   onSectionNavigate,
-  activeSectionId
+  activeSectionId,
+  activeDocumentPath
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
@@ -54,8 +56,8 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   const hasChildren = section.children && section.children.length > 0;
   const indentationPx = (depth + 2) * 16;
   
-  // Check if this section is currently active using the section ID
-  const isActive = activeSectionId === section.id;
+  // Check if this section is currently active - must match BOTH section ID AND document path
+  const isActive = activeSectionId === section.id && activeDocumentPath === folderPath;
 
   return (
     <div className="text-sm">
@@ -104,6 +106,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
               currentPath={currentPath}
               onSectionNavigate={onSectionNavigate}
               activeSectionId={activeSectionId}
+              activeDocumentPath={activeDocumentPath}
             />
           ))}
         </div>
