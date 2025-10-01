@@ -450,13 +450,8 @@ const ContentPage: React.FC = () => {
           <div className="space-y-6">
             <div className="border-b pb-4">
               <h1 className="text-3xl font-bold">{state.sectionView.title}</h1>
-              {state.sectionView.sectionHierarchy && state.sectionView.sectionHierarchy.length > 0 && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  {state.sectionView.sectionHierarchy.map(s => s.title).join(' > ')}
-                </p>
-              )}
             </div>
-            <HierarchicalContentDisplay 
+            <HierarchicalContentDisplay
               content={state.sectionView.content}
               onSectionClick={handleSectionNavigate}
               activeNodeId={state.currentSectionId || undefined}
@@ -466,13 +461,7 @@ const ContentPage: React.FC = () => {
         ) : (
           // Showing full document
           <div className="space-y-6">
-            {/* Show document title if there's pre-header content */}
-            {hasPreHeaderContent && (
-              <div className="border-b pb-4">
-                <h1 className="text-3xl font-bold">{document.title}</h1>
-              </div>
-            )}
-            <HierarchicalContentDisplay 
+            <HierarchicalContentDisplay
               content={convertSectionsToMarkdown(sections)}
               onSectionClick={handleSectionNavigate}
               activeNodeId={state.currentSectionId || undefined}

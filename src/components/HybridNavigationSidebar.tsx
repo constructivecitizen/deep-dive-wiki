@@ -79,13 +79,7 @@ interface HybridNavigationSidebarProps {
     }));
     
     // Build hierarchical structure
-    const allHierarchicalSections = buildSectionHierarchy(flatSections);
-    
-    // Filter out the first section if it matches the document title (to avoid redundancy)
-    // This removes the pre-header content section that's displayed as a page title
-    const hierarchicalSections = allHierarchicalSections.filter((section, index) => 
-      !(index === 0 && section.level === 1 && section.title === associatedContent.title)
-    );
+    const hierarchicalSections = buildSectionHierarchy(flatSections);
     
     return { hierarchicalSections, flatSections };
   }, [associatedContent?.content_json, associatedContent?.title]);
@@ -241,8 +235,8 @@ interface HybridNavigationSidebarProps {
     }
   };
 
-  // Check if this node is the currently active one
-  const isActiveNode = currentPath === node.path;
+  // Check if this node is the currently active one (but not when a section is active)
+  const isActiveNode = currentPath === node.path && !activeSectionId;
   
   // Determine position for button states
   const currentIndex = allRootNodes.findIndex(n => n.id === node.id);
