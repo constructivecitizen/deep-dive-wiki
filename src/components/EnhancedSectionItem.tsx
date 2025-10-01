@@ -30,15 +30,19 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   const handleSectionClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Navigate to the document first if not already there
+    // Check if we're already on the correct document
     const currentPathOnly = currentPath?.split('#')[0];
-    if (currentPathOnly !== folderPath) {
-      navigate(folderPath);
-    }
+    const isOnSameDocument = currentPathOnly === folderPath;
     
-    // Call the section navigate callback with the section title
-    if (onSectionNavigate) {
-      onSectionNavigate(section.title);
+    if (isOnSameDocument) {
+      // Already on the document, just navigate to the section
+      if (onSectionNavigate) {
+        onSectionNavigate(section.title);
+      }
+    } else {
+      // Navigate to the document first, then the section will be handled by URL hash
+      // We'll need to use the hash to trigger section navigation after page load
+      navigate(`${folderPath}#${section.id}`);
     }
   };
 
