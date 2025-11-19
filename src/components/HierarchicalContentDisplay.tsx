@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 
 interface ContentSection {
@@ -263,34 +263,14 @@ const ContentSectionComponent: React.FC<{
         )}
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className={`${getHeadingClass()} ${hasChildren ? 'cursor-pointer' : ''} flex-1`}
-                onClick={() => {
-                  if (hasChildren) {
-                    if (onToggleSection) {
-                      onToggleSection(section.id, isExpanded);
-                    } else {
-                      setIsExpanded(!isExpanded);
-                    }
-                  }
-                }}>
-              {section.title}
-            </h1>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // Call the section click callback with the section title
+          <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
+              onClick={() => {
                 if (onSectionClick) {
                   onSectionClick(section.title);
                 }
-              }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground"
-              aria-label={`Navigate to ${section.title} section`}
-            >
-              <FileText size={16} />
-            </button>
-          </div>
-          
+              }}>
+            {section.title}
+          </h1>
         </div>
       </div>
 
