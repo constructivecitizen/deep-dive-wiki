@@ -29,6 +29,7 @@ interface HybridNavigationSidebarProps {
   onSectionNavigate?: (sectionTitle: string) => void;
   activeSectionId?: string | null;
   activeDocumentPath?: string | null;
+  setActiveSectionId?: (id: string | null) => void;
 }
 
   const FolderNode: React.FC<{
@@ -43,6 +44,7 @@ interface HybridNavigationSidebarProps {
   onSectionNavigate?: (sectionTitle: string) => void;
   activeSectionId?: string | null;
   activeDocumentPath?: string | null;
+  setActiveSectionId?: (id: string | null) => void;
 }> = ({
   node, 
   contentNodes, 
@@ -54,7 +56,8 @@ interface HybridNavigationSidebarProps {
   allRootNodes,
   onSectionNavigate,
   activeSectionId,
-  activeDocumentPath
+  activeDocumentPath,
+  setActiveSectionId
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -96,6 +99,8 @@ interface HybridNavigationSidebarProps {
     const isSameDocumentActiveSection = activeDocumentPath === node.path && !!activeSectionId;
     
     if (isSameDocumentActiveSection) {
+      // Immediately clear the active section to update the sidebar highlight
+      setActiveSectionId?.(null);
       navigate(`${node.path}#root`);
       return;
     }
@@ -322,7 +327,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   currentPath,
   onSectionNavigate,
   activeSectionId,
-  activeDocumentPath
+  activeDocumentPath,
+  setActiveSectionId
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -566,6 +572,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               onSectionNavigate={onSectionNavigate}
               activeSectionId={activeSectionId}
               activeDocumentPath={activeDocumentPath}
+              setActiveSectionId={setActiveSectionId}
             />
           ))
         ) : (
