@@ -118,6 +118,7 @@ export const PersistentLayout: React.FC = () => {
         }}
         activeSectionId={activeSectionId}
         activeDocumentPath={activeDocumentPath}
+        setActiveSectionId={setActiveSectionId}
       >
         <Outlet />
       </WikiLayout>

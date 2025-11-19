@@ -19,6 +19,7 @@ interface WikiLayoutProps {
   onSectionNavigate?: (sectionTitle: string) => void;
   activeSectionId?: string | null;
   activeDocumentPath?: string | null;
+  setActiveSectionId?: (id: string | null) => void;
 }
 
 export const WikiLayout = ({ 
@@ -33,7 +34,8 @@ export const WikiLayout = ({
   currentPath,
   onSectionNavigate,
   activeSectionId,
-  activeDocumentPath
+  activeDocumentPath,
+  setActiveSectionId
 }: WikiLayoutProps) => {
   return (
     <ResizablePanelGroup 
@@ -75,6 +77,7 @@ export const WikiLayout = ({
               onSectionNavigate={onSectionNavigate}
               activeSectionId={activeSectionId}
               activeDocumentPath={activeDocumentPath}
+              setActiveSectionId={setActiveSectionId}
             />
           </div>
         </aside>
