@@ -54,7 +54,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   };
 
   const hasChildren = section.children && section.children.length > 0;
-  const indentationPx = (depth + 2) * 16;
+  const indentationPx = depth * 16 + 20;
   
   // Check if this section is currently active - must match BOTH section ID AND document path
   const isActive = activeSectionId === section.id && activeDocumentPath === folderPath;
