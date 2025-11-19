@@ -609,7 +609,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   ];
 
     return (
-    <div className="h-full flex flex-col bg-sidebar">
+    <div className="h-full w-full flex flex-col bg-sidebar">
       {/* Filters Section */}
       <div className="border-b border-sidebar-border section-bg-2 p-3">
         <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">

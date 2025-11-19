@@ -64,7 +64,7 @@ export const WikiLayout = ({
             </div>
           </header>
           
-          <ScrollArea className="flex-1 h-0">
+          <ScrollArea className="flex-1 h-0 overflow-x-hidden">
             <HybridNavigationSidebar 
               structure={navigationStructure} 
               contentNodes={contentNodes}
