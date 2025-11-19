@@ -191,7 +191,7 @@ const ContentSectionComponent: React.FC<{
   return (
     <div id={section.id}>
       <div 
-        className="flex items-start gap-2 group"
+        className="flex items-center gap-2 group"
         style={{ marginLeft: `${indentationPx}px` }}
       >
         {hasChildren ? (
