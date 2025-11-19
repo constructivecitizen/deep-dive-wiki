@@ -259,6 +259,14 @@ const ContentPage: React.FC = () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       
       try {
+        // If there's no hash, clear section view first
+        if (!location.hash && state.sectionView) {
+          dispatch({ type: 'SET_SECTION_VIEW', payload: null });
+          dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
+          setActiveSectionId(null);
+          setActiveDocumentPath(null);
+        }
+        
         // Load current page data
         await loadCurrentPageData(location.pathname);
         
@@ -273,7 +281,7 @@ const ContentPage: React.FC = () => {
     };
 
     initializePage();
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
 
   // Handle URL hash for section navigation on initial load
   useEffect(() => {
