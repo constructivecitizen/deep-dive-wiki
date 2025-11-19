@@ -642,7 +642,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       </div>
 
       {/* Depth Control */}
-      <div className="p-2 border-t border-border bg-muted/20">
+      <div className="p-2 border-t border-border bg-muted/50">
         <div className="flex items-center justify-center gap-2">
           <label className="text-xs text-muted-foreground text-center">
             Depth:
@@ -655,7 +655,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               }
             }}
           >
-            <SelectTrigger className="h-7 text-sm w-12 text-center">
+            <SelectTrigger className="h-7 text-sm w-12 text-center px-2 [&>svg]:hidden justify-center">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-popover z-50">
