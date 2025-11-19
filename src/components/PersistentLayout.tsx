@@ -16,6 +16,7 @@ interface LayoutContextType {
   activeDocumentPath: string | null; // Track which document the active section belongs to
   setActiveSectionId: (id: string | null) => void;
   setActiveDocumentPath: (path: string | null) => void;
+  onStructureUpdate: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | null>(null);
@@ -102,7 +103,8 @@ export const PersistentLayout: React.FC = () => {
       activeSectionId,
       activeDocumentPath,
       setActiveSectionId,
-      setActiveDocumentPath
+      setActiveDocumentPath,
+      onStructureUpdate: handleStructureUpdate
     }}>
       <WikiLayout
         navigationStructure={navigationStructure}

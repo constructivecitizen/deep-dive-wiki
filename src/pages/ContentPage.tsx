@@ -113,7 +113,8 @@ const ContentPage: React.FC = () => {
     navigationStructure,
     setActiveSectionId,
     setActiveDocumentPath,
-    sectionNavigateRef
+    sectionNavigateRef,
+    onStructureUpdate
   } = useLayoutContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -235,6 +236,9 @@ const ContentPage: React.FC = () => {
       
       // Reload the page data to reflect changes
       await loadCurrentPageData(state.pageData.document.path);
+      
+      // Refresh the sidebar to reflect changes
+      onStructureUpdate();
       
       // Close the editor
       setShowEditor(false);
