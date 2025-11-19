@@ -303,14 +303,11 @@ interface HybridNavigationSidebarProps {
               </Button>
             </div>
           ) : (
-            <div 
-              className={`truncate text-sm group-hover:text-foreground/80 ${
-                isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
-              }`}
-              title={node.title}
-            >
+            <span className={`text-sm truncate group-hover:text-foreground/80 ${
+              isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
+            }`}>
               {node.title}
-            </div>
+            </span>
           )}
         </div>
 
@@ -533,7 +530,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       {expandedFilters[sectionKey] && (
         <div className="ml-6 space-y-1 mt-1">
           {items.map(item => (
-            <div key={item.key} className="flex items-center space-x-2 py-0.5 min-w-0">
+            <div key={item.key} className="flex items-center space-x-2 py-0.5">
               <Checkbox
                 id={`${sectionKey}-${item.key}`}
                 checked={filters[sectionKey][item.key as keyof typeof filters[typeof sectionKey]]}
@@ -542,8 +539,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               />
               <label 
                 htmlFor={`${sectionKey}-${item.key}`}
-                className="flex-1 min-w-0 truncate block text-sm text-foreground cursor-pointer hover:text-foreground/80 transition-colors"
-                title={item.label}
+                className="text-sm text-foreground cursor-pointer hover:text-foreground/80 transition-colors"
               >
                 {item.label}
               </label>
