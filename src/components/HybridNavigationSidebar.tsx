@@ -645,7 +645,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       <div className="p-2 border-t border-border bg-muted/50">
         <div className="flex items-center justify-center gap-2">
           <label className="text-xs text-muted-foreground text-center">
-            Depth:
+            Content Depth:
           </label>
           <Select
             value={expandMode === 'mixed' ? 'mixed' : expandDepth.toString()}
@@ -655,10 +655,10 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               }
             }}
           >
-            <SelectTrigger className="h-7 text-sm w-12 text-center px-2 [&>svg]:hidden justify-center">
+            <SelectTrigger className="h-7 text-sm w-7 text-center px-0 [&>svg]:hidden justify-center">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
+            <SelectContent className="bg-popover z-50 w-7 min-w-0">
               {expandMode === 'mixed' && (
                 <SelectItem value="mixed" disabled>-</SelectItem>
               )}
