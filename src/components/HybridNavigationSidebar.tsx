@@ -280,20 +280,22 @@ interface HybridNavigationSidebarProps {
       {/* Document sections - Show hierarchical sections */}
       {expanded && hierarchicalSections.length > 0 && (
         <div className="mt-1">
-          {hierarchicalSections.map((section, index) => (
-            <EnhancedSectionItem
-              key={section.id}
-              section={section}
-              depth={0}
-              folderPath={node.path}
-              sectionPosition={index}
-              flatSections={flatSections}
-              currentPath={currentPath}
-              onSectionNavigate={onSectionNavigate}
-              activeSectionId={activeSectionId}
-              activeDocumentPath={activeDocumentPath}
-            />
-          ))}
+          {hierarchicalSections
+            .filter(section => section.title.toLowerCase().trim() !== node.title.toLowerCase().trim())
+            .map((section, index) => (
+              <EnhancedSectionItem
+                key={section.id}
+                section={section}
+                depth={0}
+                folderPath={node.path}
+                sectionPosition={index}
+                flatSections={flatSections}
+                currentPath={currentPath}
+                onSectionNavigate={onSectionNavigate}
+                activeSectionId={activeSectionId}
+                activeDocumentPath={activeDocumentPath}
+              />
+            ))}
         </div>
       )}
     </>
