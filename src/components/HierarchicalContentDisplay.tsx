@@ -165,9 +165,10 @@ const ContentSectionComponent: React.FC<{
     return `text-foreground ${getFontSizeClass(depth)} ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
   };
 
-  // Calculate indentation: children align with parent's text (after the 24px button)
-  const indentationPx = depth === 0 ? 0 : depth * 24; // 24px per level for child alignment
-  const contentIndentationPx = indentationPx + 32; // 24px for button + 8px for gap to align with parent label text
+  // Calculate indentation: children align with parent's text (after the chevron button + gap)
+  const chevronAndGapWidth = 30; // 24px chevron + 6px gap
+  const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
+  const contentIndentationPx = indentationPx + chevronAndGapWidth;
   
   // Calculate color based on depth level (cycling through 6 colors)
   const getContentColorClass = (depth: number) => {
@@ -220,7 +221,7 @@ const ContentSectionComponent: React.FC<{
   return (
     <div id={section.id}>
       <div 
-        className="flex items-center gap-2 group"
+        className="flex items-center gap-1.5 group"
         style={{ marginLeft: `${indentationPx}px` }}
       >
         {hasChildren ? (
