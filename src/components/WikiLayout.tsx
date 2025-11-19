@@ -64,19 +64,19 @@ export const WikiLayout = ({
             </div>
           </header>
           
-          <ScrollArea className="flex-1 h-0 overflow-x-hidden">
+          <div className="flex-1 h-0 overflow-y-auto overflow-x-hidden">
             <HybridNavigationSidebar 
               structure={navigationStructure} 
               contentNodes={contentNodes}
               onStructureUpdate={onStructureUpdate || (() => {})}
               onNavigationClick={onNavigationClick}
               setShowEditor={setShowEditor}
-                    currentPath={currentPath}
-                    onSectionNavigate={onSectionNavigate}
-                    activeSectionId={activeSectionId}
-                    activeDocumentPath={activeDocumentPath}
+              currentPath={currentPath}
+              onSectionNavigate={onSectionNavigate}
+              activeSectionId={activeSectionId}
+              activeDocumentPath={activeDocumentPath}
             />
-          </ScrollArea>
+          </div>
         </aside>
       </ResizablePanel>
       
