@@ -520,7 +520,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       <div className="mb-1 min-w-0">
         <button
           onClick={() => toggleFilterSection(sectionKey)}
-          className="flex items-center gap-2 w-full py-0.5 px-2 hover:bg-accent/50 rounded-md transition-colors min-w-0"
+          className="flex items-center justify-start gap-2 w-full py-0.5 px-2 hover:bg-accent/50 rounded-md transition-colors min-w-0"
         >
         {expandedFilters[sectionKey] ? (
           <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -533,7 +533,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       {expandedFilters[sectionKey] && (
         <div className="ml-6 space-y-1 mt-1">
           {items.map(item => (
-            <div key={item.key} className="flex items-center space-x-2 py-0.5 min-w-0">
+            <div key={item.key} className="flex items-center justify-start space-x-2 py-0.5 min-w-0">
               <Checkbox
                 id={`${sectionKey}-${item.key}`}
                 checked={filters[sectionKey][item.key as keyof typeof filters[typeof sectionKey]]}
@@ -542,7 +542,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               />
               <label 
                 htmlFor={`${sectionKey}-${item.key}`}
-                className="text-sm text-foreground cursor-pointer hover:text-foreground/80 transition-colors truncate whitespace-nowrap flex-1 min-w-0"
+                className="text-sm text-left text-foreground cursor-pointer hover:text-foreground/80 transition-colors truncate whitespace-nowrap flex-1 min-w-0"
                 title={item.label}
               >
                 {item.label}
