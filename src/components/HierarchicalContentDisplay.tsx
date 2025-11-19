@@ -166,7 +166,7 @@ const ContentSectionComponent: React.FC<{
   };
 
   // Calculate indentation: children align with parent's text (after the chevron + gap)
-  const chevronAndGapWidth = 22; // 16px chevron + 6px gap
+  const chevronAndGapWidth = 24; // 16px chevron + 8px gap
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   const contentIndentationPx = indentationPx + chevronAndGapWidth;
   
@@ -221,7 +221,7 @@ const ContentSectionComponent: React.FC<{
   return (
     <div id={section.id}>
       <div 
-        className="flex items-center gap-1.5 group"
+        className="flex items-center gap-2 group"
         style={{ marginLeft: `${indentationPx}px` }}
       >
         {hasChildren ? (
