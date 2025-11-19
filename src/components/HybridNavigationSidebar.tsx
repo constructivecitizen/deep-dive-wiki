@@ -658,7 +658,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             <SelectTrigger className="h-7 text-sm w-7 text-center px-0 [&>svg]:hidden justify-center">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-popover z-50">
+            <SelectContent className="bg-popover z-50 w-7 min-w-0">
               {expandMode === 'mixed' && (
                 <SelectItem value="mixed" disabled>-</SelectItem>
               )}
