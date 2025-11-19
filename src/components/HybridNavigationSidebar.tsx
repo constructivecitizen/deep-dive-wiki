@@ -93,7 +93,8 @@ interface HybridNavigationSidebarProps {
     if (onNavigationClick) {
       onNavigationClick(node.id, node.path);
     } else {
-      navigate(node.path);
+      // Navigate to folder view by adding ?view=folder query param
+      navigate(`${node.path}?view=folder`);
     }
   };
 
