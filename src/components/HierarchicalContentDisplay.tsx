@@ -146,9 +146,6 @@ const ContentSectionComponent: React.FC<{
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
-  // Check if this section is active based on activeNodeId
-  const isActive = activeNodeId === section.id;
-  
   // Check if this is the document title section (first section at depth 0)
   const isDocumentTitle = depth === 0 && siblingIndex === 0 && documentTitle && section.title === documentTitle;
 
@@ -162,7 +159,7 @@ const ContentSectionComponent: React.FC<{
       return 'text-sm leading-normal'; // 0.875rem minimum for depth 4+
     };
     
-    return `text-foreground ${getFontSizeClass(depth)} ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
+    return `text-foreground ${getFontSizeClass(depth)}`;
   };
 
   // Calculate indentation: children align with parent's text (after the chevron + gap)
