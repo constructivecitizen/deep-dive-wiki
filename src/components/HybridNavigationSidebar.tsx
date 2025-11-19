@@ -304,7 +304,7 @@ interface HybridNavigationSidebarProps {
             </div>
           ) : (
             <div 
-              className={`text-sm truncate group-hover:text-foreground/80 ${
+              className={`block w-full text-sm truncate group-hover:text-foreground/80 ${
                 isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
               }`}
               title={node.title}
@@ -527,7 +527,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         ) : (
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         )}
-        <span className="text-sm text-foreground truncate">{title}</span>
+        <span className="text-sm text-foreground truncate flex-1 min-w-0">{title}</span>
       </button>
       
       {expandedFilters[sectionKey] && (
