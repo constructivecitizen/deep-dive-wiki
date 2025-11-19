@@ -265,7 +265,7 @@
   }
   
   .editor-content h1 {
-    @apply text-3xl font-bold mb-6 text-foreground border-b border-border pb-2;
+    @apply text-3xl font-bold mb-4 text-foreground;
   }
   
   .editor-content h2 {
