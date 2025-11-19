@@ -18,6 +18,9 @@ interface HierarchicalContentDisplayProps {
   currentSectionId?: string;
   documentPath?: string;
   documentTitle?: string;
+  expandedSections?: Record<string, boolean>;
+  defaultExpandDepth?: number;
+  onToggleSection?: (sectionId: string, currentlyExpanded: boolean) => void;
 }
 
 // Helper function to extract full hierarchical content for a section
@@ -115,8 +118,31 @@ const ContentSectionComponent: React.FC<{
   documentPath?: string;
   siblingIndex?: number;
   documentTitle?: string;
-}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle }) => {
-  const [isExpanded, setIsExpanded] = useState(true); // Always expanded by default
+  expandedSections?: Record<string, boolean>;
+  defaultExpandDepth?: number;
+  onToggleSection?: (sectionId: string, currentlyExpanded: boolean) => void;
+}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection }) => {
+  // Determine initial expanded state
+  const getInitialExpandedState = () => {
+    if (expandedSections && section.id in expandedSections) {
+      return expandedSections[section.id];
+    }
+    if (defaultExpandDepth !== undefined) {
+      return depth < defaultExpandDepth;
+    }
+    return true; // Default to expanded
+  };
+  
+  const [isExpanded, setIsExpanded] = useState(getInitialExpandedState);
+  
+  // Update when external control changes
+  React.useEffect(() => {
+    if (expandedSections && section.id in expandedSections) {
+      setIsExpanded(expandedSections[section.id]);
+    } else if (defaultExpandDepth !== undefined) {
+      setIsExpanded(depth < defaultExpandDepth);
+    }
+  }, [expandedSections, defaultExpandDepth, section.id, depth]);
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
@@ -180,6 +206,9 @@ const ContentSectionComponent: React.FC<{
                 documentPath={documentPath}
                 documentTitle={documentTitle}
                 siblingIndex={index}
+                expandedSections={expandedSections}
+                defaultExpandDepth={defaultExpandDepth}
+                onToggleSection={onToggleSection}
               />
             ))}
           </div>
@@ -263,6 +292,9 @@ const ContentSectionComponent: React.FC<{
                   documentPath={documentPath}
                   documentTitle={documentTitle}
                   siblingIndex={index}
+                  expandedSections={expandedSections}
+                  defaultExpandDepth={defaultExpandDepth}
+                  onToggleSection={onToggleSection}
                 />
               ))}
             </div>
@@ -273,13 +305,16 @@ const ContentSectionComponent: React.FC<{
   );
 };
 
-export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({
-  content,
-  onSectionClick,
-  activeNodeId,
-  currentSectionId,
+export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
+  content, 
+  onSectionClick, 
+  activeNodeId, 
+  currentSectionId, 
   documentPath,
-  documentTitle
+  documentTitle,
+  expandedSections,
+  defaultExpandDepth,
+  onToggleSection
 }) => {
   
   // Clean tag syntax from content before parsing
@@ -307,6 +342,9 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
             documentPath={documentPath}
             documentTitle={documentTitle}
             siblingIndex={index}
+            expandedSections={expandedSections}
+            defaultExpandDepth={defaultExpandDepth}
+            onToggleSection={onToggleSection}
           />
         ))}
       </div>

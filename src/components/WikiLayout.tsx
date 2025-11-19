@@ -20,6 +20,9 @@ interface WikiLayoutProps {
   activeSectionId?: string | null;
   activeDocumentPath?: string | null;
   setActiveSectionId?: (id: string | null) => void;
+  expandDepth?: number;
+  expandMode?: 'depth' | 'mixed';
+  onExpandDepthChange?: (depth: number) => void;
 }
 
 export const WikiLayout = ({ 
@@ -35,7 +38,10 @@ export const WikiLayout = ({
   onSectionNavigate,
   activeSectionId,
   activeDocumentPath,
-  setActiveSectionId
+  setActiveSectionId,
+  expandDepth,
+  expandMode,
+  onExpandDepthChange
 }: WikiLayoutProps) => {
   return (
     <ResizablePanelGroup 
@@ -78,6 +84,9 @@ export const WikiLayout = ({
               activeSectionId={activeSectionId}
               activeDocumentPath={activeDocumentPath}
               setActiveSectionId={setActiveSectionId}
+              expandDepth={expandDepth}
+              expandMode={expandMode}
+              onExpandDepthChange={onExpandDepthChange}
             />
           </div>
         </aside>

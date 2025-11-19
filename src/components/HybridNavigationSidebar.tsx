@@ -7,13 +7,18 @@ import {
   Trash2,
   ChevronDown,
   ChevronRight,
-  FileText
+  FileText,
+  Pencil,
+  ChevronUp,
+  Search,
+  Filter
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
+import { NavigationNode, WikiDocument, ContentService } from '../services/contentService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { buildSectionHierarchy, HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 import { EnhancedSectionItem } from './EnhancedSectionItem';
@@ -30,6 +35,9 @@ interface HybridNavigationSidebarProps {
   activeSectionId?: string | null;
   activeDocumentPath?: string | null;
   setActiveSectionId?: (id: string | null) => void;
+  expandDepth?: number;
+  expandMode?: 'depth' | 'mixed';
+  onExpandDepthChange?: (depth: number) => void;
 }
 
   const FolderNode: React.FC<{
@@ -330,7 +338,10 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   onSectionNavigate,
   activeSectionId,
   activeDocumentPath,
-  setActiveSectionId
+  setActiveSectionId,
+  expandDepth = 1,
+  expandMode = 'depth',
+  onExpandDepthChange
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -628,6 +639,35 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Depth Control */}
+      <div className="p-2 border-t border-border">
+        <label className="text-xs text-muted-foreground mb-1 block" style={{ textAlign: 'left' }}>
+          Expand Depth
+        </label>
+        <Select
+          value={expandMode === 'mixed' ? 'mixed' : expandDepth.toString()}
+          onValueChange={(value) => {
+            if (value !== 'mixed' && onExpandDepthChange) {
+              onExpandDepthChange(parseInt(value));
+            }
+          }}
+        >
+          <SelectTrigger className="w-full h-8 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-popover z-50">
+            {expandMode === 'mixed' && (
+              <SelectItem value="mixed" disabled>Mixed</SelectItem>
+            )}
+            {Array.from({ length: 21 }, (_, i) => (
+              <SelectItem key={i} value={i.toString()}>
+                Level {i}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
