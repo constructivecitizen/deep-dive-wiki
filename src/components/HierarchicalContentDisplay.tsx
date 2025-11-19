@@ -168,7 +168,7 @@ const ContentSectionComponent: React.FC<{
   // Calculate indentation: children align with parent's text (after the chevron + gap)
   const chevronAndGapWidth = 25; // 16px chevron + 9px gap
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  const contentIndentationPx = indentationPx + chevronAndGapWidth;
+  const contentIndentationPx = indentationPx + chevronAndGapWidth + 3; // +3px for better alignment
   
   // Calculate color based on depth level (cycling through 6 colors)
   const getContentColorClass = (depth: number) => {
