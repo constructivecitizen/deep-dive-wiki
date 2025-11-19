@@ -242,10 +242,24 @@ const ContentSectionComponent: React.FC<{
             )}
           </button>
         ) : (
-          // Diamond bullet for leaf nodes with titles
-          <div className="flex-shrink-0 w-6 h-6 flex items-center justify-start">
-            <div className="w-2 h-2 border border-muted-foreground transform rotate-45"></div>
-          </div>
+          // Chevron toggle for leaf nodes
+          <button
+            onClick={() => {
+              if (onToggleSection) {
+                onToggleSection(section.id, isExpanded);
+              } else {
+                setIsExpanded(!isExpanded);
+              }
+            }}
+            className="flex-shrink-0 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-start"
+            aria-label={isExpanded ? "Collapse section" : "Expand section"}
+          >
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
         )}
         
         <div className="flex-1 min-w-0">
