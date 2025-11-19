@@ -182,7 +182,9 @@ interface HybridNavigationSidebarProps {
 
 
   // Check if this node is the currently active one (but not when a section is active)
-  const isActiveNode = currentPath === node.path && !activeSectionId;
+  // Strip hash from current path for accurate comparison
+  const currentPathBase = currentPath?.split('#')[0] ?? currentPath;
+  const isActiveNode = currentPathBase === node.path && !activeSectionId;
 
   return (
     <>
