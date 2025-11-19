@@ -75,7 +75,7 @@ export const PageBreadcrumb = ({
         {hierarchicalTrail.map((item, index) => (
           <div key={item.id} className="flex items-center gap-2">
             <span 
-              className={`text-sm font-medium cursor-pointer hover:text-foreground transition-colors underline decoration-1 underline-offset-2 ${
+              className={`text-sm font-medium cursor-pointer hover:text-foreground transition-colors ${
                 index === hierarchicalTrail.length - 1 && !sectionTitle ? 'text-primary' : ''
               }`}
               onClick={() => handleNavigationClick(item)}
@@ -93,7 +93,7 @@ export const PageBreadcrumb = ({
           <div key={`section-${index}`} className="flex items-center gap-2">
             <ChevronRight className="h-3 w-3" />
             <span 
-              className="text-sm font-medium cursor-pointer hover:text-foreground transition-colors underline decoration-1 underline-offset-2"
+              className="text-sm font-medium cursor-pointer hover:text-foreground transition-colors"
               onClick={() => onSectionNavigate?.(section.title)}
             >
               {section.title}
