@@ -215,20 +215,19 @@ export class ContentService {
   }
 
   // Content management methods
-  static async createFolder(title: string, parentId: string | null = null): Promise<ContentItem | null> {
-    const parentPath = parentId ? (await this.getContentItemByPath(''))?.path || '' : '';
-    const path = parentPath ? `${parentPath}/${title.toLowerCase().replace(/\s+/g, '-')}` : `/${title.toLowerCase().replace(/\s+/g, '-')}`;
-    
-    const nextOrderIndex = await this.getNextOrderIndex(parentId);
+  static async createFolder(title: string): Promise<ContentItem | null> {
+    const path = `/${title.toLowerCase().replace(/\s+/g, '-')}`;
+    const nextOrderIndex = await this.getNextOrderIndex(null);
     
     const { data, error } = await supabase
       .from('content_items')
       .insert({
         title,
         path,
-        parent_id: parentId,
+        parent_id: null,
         order_index: nextOrderIndex,
-        tags: []
+        tags: [],
+        content_json: []
       })
       .select()
       .single();
@@ -240,7 +239,7 @@ export class ContentService {
 
     return data ? {
       ...data,
-      content_json: null
+      content_json: []
     } : null;
   }
 
@@ -395,8 +394,8 @@ export class ContentService {
   }
 
   // Navigation management methods (backwards compatibility)
-  static async createNavigationFolder(title: string, parentId: string | null = null): Promise<NavigationNode | null> {
-    return this.createFolder(title, parentId);
+  static async createNavigationFolder(title: string): Promise<NavigationNode | null> {
+    return this.createFolder(title);
   }
 
   static async updateNavigationNode(id: string, updates: Partial<NavigationNode>): Promise<boolean> {
