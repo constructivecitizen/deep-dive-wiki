@@ -90,6 +90,16 @@ interface HybridNavigationSidebarProps {
 
   const handleNodeClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    
+    // Special case: If clicking the same folder while a section of that document is active,
+    // force a hash change to trigger ContentPage's useEffect and clear the section view
+    const isSameDocumentActiveSection = activeDocumentPath === node.path && !!activeSectionId;
+    
+    if (isSameDocumentActiveSection) {
+      navigate(`${node.path}#root`);
+      return;
+    }
+    
     if (onNavigationClick) {
       onNavigationClick(node.id, node.path);
     } else {
