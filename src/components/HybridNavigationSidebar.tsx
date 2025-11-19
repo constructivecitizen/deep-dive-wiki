@@ -644,7 +644,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       </div>
 
       {/* Depth Control */}
-      <div className="p-2 border-t border-border bg-muted/50">
+      <div className="p-2 border-t border-border section-bg-2">
         <div className="flex items-center justify-center gap-2">
           <label className="text-xs text-muted-foreground text-center">
             Content Depth:
