@@ -165,8 +165,8 @@ const ContentSectionComponent: React.FC<{
     return `text-foreground ${getFontSizeClass(depth)} ${isActive ? 'bg-accent/20 rounded px-2 py-1' : ''}`;
   };
 
-  // Calculate indentation: children align with parent's text (after the chevron button + gap)
-  const chevronAndGapWidth = 30; // 24px chevron + 6px gap
+  // Calculate indentation: children align with parent's text (after the chevron + gap)
+  const chevronAndGapWidth = 22; // 16px chevron + 6px gap
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   const contentIndentationPx = indentationPx + chevronAndGapWidth;
   
@@ -233,7 +233,7 @@ const ContentSectionComponent: React.FC<{
                 setIsExpanded(!isExpanded);
               }
             }}
-            className="flex-shrink-0 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-start"
+            className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
             aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
             {isExpanded ? (
@@ -252,7 +252,7 @@ const ContentSectionComponent: React.FC<{
                 setIsExpanded(!isExpanded);
               }
             }}
-            className="flex-shrink-0 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-start"
+            className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
             aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
             {isExpanded ? (
