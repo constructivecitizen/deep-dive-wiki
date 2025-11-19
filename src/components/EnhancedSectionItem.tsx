@@ -84,7 +84,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             )
           ) : (
-            <div className="w-2 h-2 border border-muted-foreground transform rotate-45"></div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
           )}
         </button>
         
