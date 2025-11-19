@@ -132,27 +132,6 @@ const ContentPage: React.FC = () => {
 
   const loadPageData = async (currentPath: string): Promise<PageData | null> => {
     try {
-      // Check if we should show folder view (via query param)
-      const urlParams = new URLSearchParams(location.search);
-      const viewMode = urlParams.get('view');
-      
-      if (viewMode === 'folder') {
-        // Force folder view
-        const folder = await ContentService.getNavigationNodeByPath(currentPath);
-        if (folder) {
-          const allDocuments = await ContentService.getAllDocuments();
-          const folderDocuments = allDocuments.filter(doc => 
-            doc.path.startsWith(folder.path + '/') || doc.path === folder.path
-          );
-          
-          return {
-            type: 'folder',
-            folder,
-            documents: folderDocuments
-          };
-        }
-      }
-      
       // Try to get document first
       const document = await ContentService.getDocumentByPath(currentPath);
       if (document) {
