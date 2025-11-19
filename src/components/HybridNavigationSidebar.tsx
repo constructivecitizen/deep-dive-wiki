@@ -304,7 +304,7 @@ interface HybridNavigationSidebarProps {
             </div>
           ) : (
             <div 
-              className={`block w-full text-sm truncate whitespace-nowrap group-hover:text-foreground/80 ${
+              className={`text-sm truncate whitespace-nowrap group-hover:text-foreground/80 ${
                 isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
               }`}
               title={node.title}
