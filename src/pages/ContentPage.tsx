@@ -468,10 +468,8 @@ const ContentPage: React.FC = () => {
           />
         ) : state.sectionView ? (
           // Showing a specific section
-          <div className="space-y-6">
-            <div className="border-b pb-4">
-              <h1 className="text-3xl font-bold">{state.sectionView.title}</h1>
-            </div>
+          <div className="space-y-4">
+            <h1 className="text-3xl font-bold mb-1">{state.sectionView.title}</h1>
             <HierarchicalContentDisplay
               content={state.sectionView.content}
               onSectionClick={handleSectionNavigate}
