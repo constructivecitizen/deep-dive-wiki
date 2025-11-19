@@ -288,6 +288,12 @@
     @apply border-l-4 border-border pl-4 italic text-muted-foreground mb-4;
   }
 
+  /* Override Tailwind Prose plugin defaults to remove heading borders */
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    border: none !important;
+    padding-bottom: 0 !important;
+  }
+
   /* Inline markdown styles for rendered content */
   .inline-code {
     @apply bg-muted text-muted-foreground px-1 py-0.5 rounded text-sm font-mono;
