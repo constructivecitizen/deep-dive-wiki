@@ -223,9 +223,12 @@ const ContentPage: React.FC = () => {
     if (!state.pageData || state.pageData.type !== 'document') return;
     
     try {
+      // Use the document title for pre-header content
+      const documentTitle = state.pageData.document.title;
+      
       // Parse the markdown content into sections
       const { HierarchyParser } = await import('@/lib/hierarchyParser');
-      const sections = HierarchyParser.parseMarkup(content).sections;
+      const sections = HierarchyParser.parseMarkup(content, documentTitle).sections;
       
       // Save the document content
       await ContentService.saveDocumentContent(state.pageData.document.path, sections);
