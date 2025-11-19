@@ -527,7 +527,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         ) : (
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         )}
-        <span className="text-sm text-foreground truncate whitespace-nowrap flex-1 min-w-0">{title}</span>
+        <span className="text-sm text-foreground truncate whitespace-nowrap flex-1 min-w-0" style={{ textAlign: 'left' }}>{title}</span>
       </button>
       
       {expandedFilters[sectionKey] && (
@@ -543,6 +543,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               <label 
                 htmlFor={`${sectionKey}-${item.key}`}
                 className="text-sm text-left text-foreground cursor-pointer hover:text-foreground/80 transition-colors truncate whitespace-nowrap flex-1 min-w-0"
+                style={{ textAlign: 'left' }}
                 title={item.label}
               >
                 {item.label}
