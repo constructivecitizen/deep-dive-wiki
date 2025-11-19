@@ -642,32 +642,34 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       </div>
 
       {/* Depth Control */}
-      <div className="p-2 border-t border-border">
-        <label className="text-xs text-muted-foreground mb-1 block" style={{ textAlign: 'left' }}>
-          Expand Depth
-        </label>
-        <Select
-          value={expandMode === 'mixed' ? 'mixed' : expandDepth.toString()}
-          onValueChange={(value) => {
-            if (value !== 'mixed' && onExpandDepthChange) {
-              onExpandDepthChange(parseInt(value));
-            }
-          }}
-        >
-          <SelectTrigger className="w-full h-8 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
-            {expandMode === 'mixed' && (
-              <SelectItem value="mixed" disabled>Mixed</SelectItem>
-            )}
-            {Array.from({ length: 21 }, (_, i) => (
-              <SelectItem key={i} value={i.toString()}>
-                Level {i}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="p-2 border-t border-border bg-muted/20">
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground" style={{ textAlign: 'left' }}>
+            Depth:
+          </label>
+          <Select
+            value={expandMode === 'mixed' ? 'mixed' : expandDepth.toString()}
+            onValueChange={(value) => {
+              if (value !== 'mixed' && onExpandDepthChange) {
+                onExpandDepthChange(parseInt(value));
+              }
+            }}
+          >
+            <SelectTrigger className="h-7 text-sm flex-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              {expandMode === 'mixed' && (
+                <SelectItem value="mixed" disabled>mixed</SelectItem>
+              )}
+              {Array.from({ length: 21 }, (_, i) => (
+                <SelectItem key={i} value={i.toString()}>
+                  {i}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );
