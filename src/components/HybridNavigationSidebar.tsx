@@ -304,7 +304,7 @@ interface HybridNavigationSidebarProps {
             </div>
           ) : (
             <div 
-              className={`block w-full text-sm truncate group-hover:text-foreground/80 ${
+              className={`block w-full text-sm truncate whitespace-nowrap group-hover:text-foreground/80 ${
                 isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
               }`}
               title={node.title}
@@ -527,7 +527,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         ) : (
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         )}
-        <span className="text-sm text-foreground truncate flex-1 min-w-0">{title}</span>
+        <span className="text-sm text-foreground truncate whitespace-nowrap flex-1 min-w-0">{title}</span>
       </button>
       
       {expandedFilters[sectionKey] && (
@@ -542,7 +542,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               />
               <label 
                 htmlFor={`${sectionKey}-${item.key}`}
-                className="text-sm text-foreground cursor-pointer hover:text-foreground/80 transition-colors truncate flex-1 min-w-0"
+                className="text-sm text-foreground cursor-pointer hover:text-foreground/80 transition-colors truncate whitespace-nowrap flex-1 min-w-0"
                 title={item.label}
               >
                 {item.label}
