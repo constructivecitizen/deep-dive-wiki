@@ -303,7 +303,7 @@ interface HybridNavigationSidebarProps {
               </Button>
             </div>
           ) : (
-            <span className={`text-sm truncate group-hover:text-foreground/80 ${
+            <span className={`text-sm truncate block group-hover:text-foreground/80 ${
               isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'
             }`}>
               {node.title}
