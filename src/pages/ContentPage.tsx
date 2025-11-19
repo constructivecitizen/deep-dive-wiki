@@ -253,21 +253,13 @@ const ContentPage: React.FC = () => {
     }
   };
 
-  // Load current page on mount and path change
+  // Load current page on mount and path change - always refresh to ensure clean state
   useEffect(() => {
     const initializePage = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       
       try {
-        // If there's no hash, clear section view first
-        if (!location.hash && state.sectionView) {
-          dispatch({ type: 'SET_SECTION_VIEW', payload: null });
-          dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
-          setActiveSectionId(null);
-          setActiveDocumentPath(null);
-        }
-        
-        // Load current page data
+        // Always reload page data - this naturally clears section views and ensures fresh state
         await loadCurrentPageData(location.pathname);
         
         // Load documents for filtering
@@ -309,9 +301,13 @@ const ContentPage: React.FC = () => {
     }
   }, [state.pageData, location.hash]);
 
-  // Handle section navigation
-  const handleSectionNavigate = (sectionTitle: string) => {
+  // Handle section navigation - always refresh data first to ensure clean state
+  const handleSectionNavigate = async (sectionTitle: string) => {
     console.log('handleSectionNavigate called with:', sectionTitle);
+    
+    // Always reload page data first for fresh state
+    await loadCurrentPageData(location.pathname);
+    
     if (!state.pageData || state.pageData.type !== 'document') return;
     
     const targetSection = state.pageData.sections.find(
