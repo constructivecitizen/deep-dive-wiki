@@ -7,9 +7,7 @@ import {
   Trash2,
   ChevronDown,
   ChevronRight,
-  FileText,
-  ArrowUp,
-  ArrowDown
+  FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
@@ -167,81 +165,9 @@ interface HybridNavigationSidebarProps {
     }
   };
 
-  const handleMoveUp = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const currentIndex = allRootNodes.findIndex(n => n.id === node.id);
-    if (currentIndex <= 0) return; // Already at the top or not found
-    
-    const prevNode = allRootNodes[currentIndex - 1];
-    
-    // Swap order_index values - use a temporary high value to avoid conflicts
-    const tempOrder = 999999;
-    const currentOrder = node.order_index ?? currentIndex;
-    const prevOrder = prevNode.order_index ?? (currentIndex - 1);
-    
-    try {
-      // Move current to temp
-      await ContentService.reorderNavigationNodes(node.id, null, tempOrder);
-      // Move prev to current's position
-      await ContentService.reorderNavigationNodes(prevNode.id, null, currentOrder);
-      // Move current to prev's position
-      const success = await ContentService.reorderNavigationNodes(node.id, null, prevOrder);
-      
-      if (success) {
-        toast.success("Folder moved up");
-        onStructureUpdate();
-      } else {
-        toast.error("Failed to move folder");
-      }
-    } catch (error) {
-      console.error("Error moving folder up:", error);
-      toast.error("Failed to move folder");
-    }
-  };
-
-  const handleMoveDown = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const currentIndex = allRootNodes.findIndex(n => n.id === node.id);
-    if (currentIndex < 0 || currentIndex >= allRootNodes.length - 1) return; // Already at bottom or not found
-    
-    const nextNode = allRootNodes[currentIndex + 1];
-    
-    // Swap order_index values - use a temporary high value to avoid conflicts
-    const tempOrder = 999999;
-    const currentOrder = node.order_index ?? currentIndex;
-    const nextOrder = nextNode.order_index ?? (currentIndex + 1);
-    
-    try {
-      // Move current to temp
-      await ContentService.reorderNavigationNodes(node.id, null, tempOrder);
-      // Move next to current's position
-      await ContentService.reorderNavigationNodes(nextNode.id, null, currentOrder);
-      // Move current to next's position
-      const success = await ContentService.reorderNavigationNodes(node.id, null, nextOrder);
-      
-      if (success) {
-        toast.success("Folder moved down");
-        onStructureUpdate();
-      } else {
-        toast.error("Failed to move folder");
-      }
-    } catch (error) {
-      console.error("Error moving folder down:", error);
-      toast.error("Failed to move folder");
-    }
-  };
 
   // Check if this node is the currently active one (but not when a section is active)
   const isActiveNode = currentPath === node.path && !activeSectionId;
-  
-  // Determine position for button states
-  const currentIndex = allRootNodes.findIndex(n => n.id === node.id);
-  const isFirst = currentIndex === 0;
-  const isLast = currentIndex === allRootNodes.length - 1;
 
   return (
     <>
@@ -320,26 +246,6 @@ interface HybridNavigationSidebarProps {
             className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={handleMoveUp}
-              disabled={isFirst}
-              title="Move folder up"
-            >
-              <ArrowUp className={`w-3 h-3 ${isFirst ? 'opacity-30' : ''}`} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={handleMoveDown}
-              disabled={isLast}
-              title="Move folder down"
-            >
-              <ArrowDown className={`w-3 h-3 ${isLast ? 'opacity-30' : ''}`} />
-            </Button>
             <Button
               variant="ghost"
               size="sm"
