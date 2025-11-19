@@ -593,52 +593,52 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             <p className="text-sm">No folders found</p>
           </div>
         )}
-      </div>
 
-      {/* New Folder Button */}
-      <div className="p-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={startCreating}
-          className="w-8 h-8 p-0 mx-auto block"
-          title="Add new folder"
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
+        {/* New Folder Button */}
+        <div className="mt-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={startCreating}
+            className="w-8 h-8 p-0 mx-auto block"
+            title="Add new folder"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
 
-        {isCreating && (
-          <div className="mt-2 flex items-center gap-2">
-            <Input
-              ref={inputRef}
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Folder name..."
-              className="text-sm"
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCreateFolder}
-              disabled={!newFolderName.trim()}
-              className="h-6 w-6 p-0"
-            >
-              <Check className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsCreating(false);
-                setNewFolderName("");
-              }}
-              className="h-6 w-6 p-0"
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          </div>
-        )}
+          {isCreating && (
+            <div className="mt-2 flex items-center gap-2">
+              <Input
+                ref={inputRef}
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Folder name..."
+                className="text-sm"
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCreateFolder}
+                disabled={!newFolderName.trim()}
+                className="h-6 w-6 p-0"
+              >
+                <Check className="w-3 h-3" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsCreating(false);
+                  setNewFolderName("");
+                }}
+                className="h-6 w-6 p-0"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Depth Control */}
