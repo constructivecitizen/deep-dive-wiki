@@ -596,7 +596,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       </div>
 
       {/* New Folder Button */}
-      <div className="p-2 border-t border-border">
+      <div className="p-2">
         <Button
           variant="ghost"
           size="sm"
