@@ -132,33 +132,36 @@ const ContentPage: React.FC = () => {
 
   const loadPageData = async (currentPath: string): Promise<PageData | null> => {
     try {
-      // Try to get document first
-      const document = await ContentService.getDocumentByPath(currentPath);
-      if (document) {
+      // Get the content item (works for both documents and folders)
+      const contentItem = await ContentService.getContentItemByPath(currentPath);
+      
+      if (!contentItem) {
+        return null;
+      }
+      
+      // If it has content_json (even if empty array), treat it as a document
+      // This includes folders that have been initialized with empty content
+      if (contentItem.content_json !== null && contentItem.content_json !== undefined) {
         return {
           type: 'document',
-          document,
-          sections: document.content_json || []
+          document: {
+            ...contentItem,
+            content_json: contentItem.content_json || []
+          },
+          sections: contentItem.content_json || []
         };
       }
-
-      // Try to get folder
-      const folder = await ContentService.getNavigationNodeByPath(currentPath);
-      if (folder) {
-        const allDocuments = await ContentService.getAllDocuments();
-        // Get documents in this folder
-        const folderDocuments = allDocuments.filter(doc => 
-          doc.path.startsWith(folder.path + '/') || doc.path === folder.path
-        );
-        
-        return {
-          type: 'folder',
-          folder,
-          documents: folderDocuments
-        };
-      }
-
-      return null;
+      
+      // If no content_json at all, also treat as document with empty sections
+      // This ensures clicking a folder always shows document view
+      return {
+        type: 'document',
+        document: {
+          ...contentItem,
+          content_json: []
+        },
+        sections: []
+      };
     } catch (error) {
       console.error('Error loading page data:', error);
       throw error;
