@@ -566,36 +566,38 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       </div>
 
       {/* Navigation Tree */}
-      <div className="flex-1 overflow-y-auto section-bg-3 p-3">
-        <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
-          Navigation
-        </div>
-        {topLevelNodes.length > 0 ? (
-          topLevelNodes.map((item) => (
-            <FolderNode
-              key={item.id}
-              node={item}
-              contentNodes={contentNodes}
-              onStructureUpdate={onStructureUpdate}
-              onNavigationClick={onNavigationClick}
-              currentNavId={currentNavId}
-              setShowEditor={setShowEditor}
-              currentPath={currentPath}
-              allRootNodes={topLevelNodes}
-              onSectionNavigate={onSectionNavigate}
-              activeSectionId={activeSectionId}
-              activeDocumentPath={activeDocumentPath}
-              setActiveSectionId={setActiveSectionId}
-            />
-          ))
-        ) : (
-          <div className="p-3 text-center text-muted-foreground">
-            <p className="text-sm">No folders found</p>
+      <div className="flex-1 flex flex-col section-bg-3 overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-3">
+          <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
+            Navigation
           </div>
-        )}
+          {topLevelNodes.length > 0 ? (
+            topLevelNodes.map((item) => (
+              <FolderNode
+                key={item.id}
+                node={item}
+                contentNodes={contentNodes}
+                onStructureUpdate={onStructureUpdate}
+                onNavigationClick={onNavigationClick}
+                currentNavId={currentNavId}
+                setShowEditor={setShowEditor}
+                currentPath={currentPath}
+                allRootNodes={topLevelNodes}
+                onSectionNavigate={onSectionNavigate}
+                activeSectionId={activeSectionId}
+                activeDocumentPath={activeDocumentPath}
+                setActiveSectionId={setActiveSectionId}
+              />
+            ))
+          ) : (
+            <div className="p-3 text-center text-muted-foreground">
+              <p className="text-sm">No folders found</p>
+            </div>
+          )}
+        </div>
 
         {/* New Folder Button */}
-        <div className="mt-3">
+        <div className="p-3 border-t border-sidebar-border">
           <Button
             variant="ghost"
             size="sm"
