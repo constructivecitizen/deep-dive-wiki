@@ -247,7 +247,7 @@ interface HybridNavigationSidebarProps {
     <>
       {/* Folder Header - Clickable to navigate */}
       <div
-        className={`flex items-center gap-2 py-1 px-2 rounded-md group transition-colors cursor-pointer ${
+        className={`flex items-center gap-2 py-1 px-2 rounded-md group transition-colors cursor-pointer min-w-0 ${
           isActiveNode 
             ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
             : 'hover:bg-accent/50'
@@ -517,17 +517,17 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
     items: { key: string; label: string }[];
   }) => {
     return (
-      <div className="mb-1">
+      <div className="mb-1 min-w-0">
         <button
           onClick={() => toggleFilterSection(sectionKey)}
-          className="flex items-center gap-2 w-full py-0.5 px-2 hover:bg-accent/50 rounded-md transition-colors"
+          className="flex items-center gap-2 w-full py-0.5 px-2 hover:bg-accent/50 rounded-md transition-colors min-w-0"
         >
         {expandedFilters[sectionKey] ? (
           <ChevronDown className="w-4 h-4 text-muted-foreground" />
         ) : (
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         )}
-        <span className="text-sm text-foreground">{title}</span>
+        <span className="text-sm text-foreground truncate">{title}</span>
       </button>
       
       {expandedFilters[sectionKey] && (
