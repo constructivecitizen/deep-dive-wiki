@@ -17,6 +17,11 @@ interface LayoutContextType {
   setActiveSectionId: (id: string | null) => void;
   setActiveDocumentPath: (path: string | null) => void;
   onStructureUpdate: () => void;
+  expandDepth: number;
+  expandMode: 'depth' | 'mixed';
+  manualOverrides: Record<string, boolean>;
+  setExpandDepth: (depth: number) => void;
+  setManualOverride: (sectionId: string, isExpanded: boolean) => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | null>(null);
@@ -40,6 +45,9 @@ export const PersistentLayout: React.FC = () => {
   const [hasInitialNavigation, setHasInitialNavigation] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [activeDocumentPath, setActiveDocumentPath] = useState<string | null>(null);
+  const [expandDepth, setExpandDepth] = useState(1);
+  const [expandMode, setExpandMode] = useState<'depth' | 'mixed'>('depth');
+  const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>({});
   
   // Ref for section navigation function - will be set by ContentPage
   const sectionNavigateRef = React.useRef<((sectionTitle: string) => void) | null>(null);
@@ -84,6 +92,17 @@ export const PersistentLayout: React.FC = () => {
     loadNavigationData();
   };
 
+  const handleSetManualOverride = (sectionId: string, isExpanded: boolean) => {
+    setManualOverrides(prev => ({ ...prev, [sectionId]: isExpanded }));
+    setExpandMode('mixed');
+  };
+
+  const handleExpandDepthChange = (depth: number) => {
+    setExpandDepth(depth);
+    setExpandMode('depth');
+    setManualOverrides({});
+  };
+
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -104,7 +123,12 @@ export const PersistentLayout: React.FC = () => {
       activeDocumentPath,
       setActiveSectionId,
       setActiveDocumentPath,
-      onStructureUpdate: handleStructureUpdate
+      onStructureUpdate: handleStructureUpdate,
+      expandDepth,
+      expandMode,
+      manualOverrides,
+      setExpandDepth: handleExpandDepthChange,
+      setManualOverride: handleSetManualOverride
     }}>
       <WikiLayout
         navigationStructure={navigationStructure}
@@ -119,6 +143,9 @@ export const PersistentLayout: React.FC = () => {
         activeSectionId={activeSectionId}
         activeDocumentPath={activeDocumentPath}
         setActiveSectionId={setActiveSectionId}
+        expandDepth={expandDepth}
+        expandMode={expandMode}
+        onExpandDepthChange={handleExpandDepthChange}
       >
         <Outlet />
       </WikiLayout>

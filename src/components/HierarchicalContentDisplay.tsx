@@ -225,7 +225,13 @@ const ContentSectionComponent: React.FC<{
       >
         {hasChildren ? (
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={() => {
+              if (onToggleSection) {
+                onToggleSection(section.id, isExpanded);
+              } else {
+                setIsExpanded(!isExpanded);
+              }
+            }}
             className="flex-shrink-0 hover:bg-accent rounded transition-colors w-6 h-6 flex items-center justify-start"
             aria-label={isExpanded ? "Collapse section" : "Expand section"}
           >
@@ -246,7 +252,13 @@ const ContentSectionComponent: React.FC<{
           <div className="flex items-center gap-2">
             <h1 className={`${getHeadingClass()} ${hasChildren ? 'cursor-pointer' : ''} flex-1`}
                 onClick={() => {
-                  if (hasChildren) setIsExpanded(!isExpanded);
+                  if (hasChildren) {
+                    if (onToggleSection) {
+                      onToggleSection(section.id, isExpanded);
+                    } else {
+                      setIsExpanded(!isExpanded);
+                    }
+                  }
                 }}>
               {section.title}
             </h1>

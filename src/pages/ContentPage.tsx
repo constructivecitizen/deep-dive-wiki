@@ -55,13 +55,6 @@ interface ContentPageState {
     selectedTags: string[];
   };
   
-  // Expand control for hierarchical content
-  expandControl: {
-    mode: 'depth' | 'mixed';
-    depth: number;
-    manualOverrides: Record<string, boolean>;
-  };
-  
   // UI states
   isLoading: boolean;
 }
@@ -74,10 +67,6 @@ type ContentPageAction =
   | { type: 'SET_SECTION_VIEW'; payload: ContentPageState['sectionView'] }
   | { type: 'SET_CURRENT_SECTION'; payload: string | null }
   | { type: 'SET_FILTERS'; payload: Partial<ContentPageState['filters']> }
-  // Expand control actions
-  | { type: 'SET_EXPAND_DEPTH'; payload: number }
-  | { type: 'SET_MANUAL_OVERRIDE'; payload: { sectionId: string; isExpanded: boolean } }
-  | { type: 'RESET_EXPAND_CONTROL' }
   // UI actions
   | { type: 'SET_LOADING'; payload: boolean };
 
@@ -90,11 +79,6 @@ const initialState: ContentPageState = {
   filters: {
     searchTerm: '',
     selectedTags: []
-  },
-  expandControl: {
-    mode: 'depth',
-    depth: 1,
-    manualOverrides: {}
   },
   isLoading: true,
 };
@@ -112,36 +96,6 @@ const contentPageReducer = (state: ContentPageState, action: ContentPageAction):
       return { ...state, currentSectionId: action.payload };
     case 'SET_FILTERS':
       return { ...state, filters: { ...state.filters, ...action.payload } };
-    case 'SET_EXPAND_DEPTH':
-      return { 
-        ...state, 
-        expandControl: { 
-          mode: 'depth', 
-          depth: action.payload, 
-          manualOverrides: {} 
-        } 
-      };
-    case 'SET_MANUAL_OVERRIDE':
-      return {
-        ...state,
-        expandControl: {
-          mode: 'mixed',
-          depth: state.expandControl.depth,
-          manualOverrides: {
-            ...state.expandControl.manualOverrides,
-            [action.payload.sectionId]: action.payload.isExpanded
-          }
-        }
-      };
-    case 'RESET_EXPAND_CONTROL':
-      return {
-        ...state,
-        expandControl: {
-          mode: 'depth',
-          depth: 1,
-          manualOverrides: {}
-        }
-      };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     default:
@@ -160,7 +114,11 @@ const ContentPage: React.FC = () => {
     setActiveSectionId,
     setActiveDocumentPath,
     sectionNavigateRef,
-    onStructureUpdate
+    onStructureUpdate,
+    expandDepth,
+    expandMode,
+    manualOverrides,
+    setManualOverride
   } = useLayoutContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -393,15 +351,8 @@ const ContentPage: React.FC = () => {
 
   // Handle manual section toggle
   const handleSectionToggle = (sectionId: string, currentlyExpanded: boolean) => {
-    dispatch({ 
-      type: 'SET_MANUAL_OVERRIDE', 
-      payload: { sectionId, isExpanded: !currentlyExpanded }
-    });
-  };
-
-  // Handle expand depth change
-  const handleExpandDepthChange = (depth: number) => {
-    dispatch({ type: 'SET_EXPAND_DEPTH', payload: depth });
+    const newExpanded = !currentlyExpanded;
+    setManualOverride(sectionId, newExpanded);
   };
 
   // Provide section navigation function to layout context
@@ -536,8 +487,8 @@ const ContentPage: React.FC = () => {
               onSectionClick={handleSectionNavigate}
               activeNodeId={state.currentSectionId || undefined}
               documentTitle={document.title}
-              expandedSections={state.expandControl.mode === 'mixed' ? state.expandControl.manualOverrides : undefined}
-              defaultExpandDepth={state.expandControl.mode === 'depth' ? state.expandControl.depth : undefined}
+              expandedSections={expandMode === 'mixed' ? manualOverrides : undefined}
+              defaultExpandDepth={expandMode === 'depth' ? expandDepth : undefined}
               onToggleSection={handleSectionToggle}
             />
           </div>
