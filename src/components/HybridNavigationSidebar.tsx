@@ -643,8 +643,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
 
       {/* Depth Control */}
       <div className="p-2 border-t border-border bg-muted/20">
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground" style={{ textAlign: 'left' }}>
+        <div className="flex items-center justify-center gap-2">
+          <label className="text-xs text-muted-foreground text-center">
             Depth:
           </label>
           <Select
@@ -655,12 +655,12 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               }
             }}
           >
-            <SelectTrigger className="h-7 text-sm flex-1">
+            <SelectTrigger className="h-7 text-sm w-12 text-center">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-popover z-50">
               {expandMode === 'mixed' && (
-                <SelectItem value="mixed" disabled>mixed</SelectItem>
+                <SelectItem value="mixed" disabled>-</SelectItem>
               )}
               {Array.from({ length: 21 }, (_, i) => (
                 <SelectItem key={i} value={i.toString()}>
