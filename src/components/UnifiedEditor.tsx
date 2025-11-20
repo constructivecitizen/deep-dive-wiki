@@ -55,7 +55,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
         });
       }
     }
-  }, [editorData]);
+  }, [editorData, editor, editorMode]);
 
   // Sync content between modes
   useEffect(() => {
