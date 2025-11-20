@@ -63,11 +63,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   return (
     <div className="text-sm">
       <div 
-        className={`flex items-center gap-1 py-0.5 px-3 rounded cursor-pointer transition-colors ${
-          isActive
-            ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
-            : 'hover:bg-accent text-muted-foreground hover:text-foreground'
-        }`}
+        className="flex items-center gap-1 cursor-pointer"
         style={{ marginLeft: `${indentationPx}px` }}
         onClick={handleSectionClick}
       >
@@ -76,20 +72,27 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
             e.stopPropagation();
             if (hasChildren) setIsExpanded(!isExpanded);
           }}
-          className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded transition-colors"
+          className="flex-shrink-0 w-4 h-4 flex items-center justify-center transition-colors text-muted-foreground"
         >
           {hasChildren ? (
             isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              <ChevronDown className="w-4 h-4" />
             ) : (
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              <ChevronRight className="w-4 h-4" />
             )
           ) : (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <ChevronRight className="w-4 h-4" />
           )}
         </button>
         
-        <span className="truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap" title={section.title}>
+        <span 
+          className={`truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap py-0.5 px-3 rounded transition-colors ${
+            isActive
+              ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
+              : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+          }`}
+          title={section.title}
+        >
           {section.title}
         </span>
       </div>
