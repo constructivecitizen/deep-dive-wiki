@@ -597,7 +597,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         </div>
 
         {/* Bottom Controls - Plus Button (left) and Depth Control (right) */}
-        <div className="p-3 flex items-center justify-between">
+        <div className="py-2 px-3 border-t border-sidebar-border flex items-center justify-between">
           {/* Plus Button on the left */}
           <div>
             <Button
@@ -657,7 +657,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
                 }
               }}
             >
-            <SelectTrigger className="h-7 text-sm w-7 text-center px-0 [&>svg]:hidden justify-center">
+            <SelectTrigger className="h-7 text-sm w-7 text-center px-0 [&>svg]:hidden justify-center focus:ring-0 focus:ring-offset-0">
               <span className="w-full text-center">
                 {expandMode === 'mixed' ? '-' : expandDepth + 1}
               </span>
