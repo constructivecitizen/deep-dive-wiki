@@ -53,13 +53,11 @@ const extractSectionFullContent = (targetSection: ContentSection): string => {
   return fullContent.trim();
 };
 
-const parseHierarchicalContent = (content: string): { sections: ContentSection[]; preContent: string } => {
+const parseHierarchicalContent = (content: string): ContentSection[] => {
   const lines = content.split('\n');
   const sections: ContentSection[] = [];
   const stack: ContentSection[] = [];
   let currentContent = '';
-  let preContent = '';
-  let foundFirstHeading = false;
   let sectionId = 0;
 
   for (let i = 0; i < lines.length; i++) {
@@ -68,13 +66,6 @@ const parseHierarchicalContent = (content: string): { sections: ContentSection[]
     const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
     
     if (headingMatch) {
-      // If this is the first heading, save any accumulated content as preContent
-      if (!foundFirstHeading && currentContent.trim()) {
-        preContent = currentContent.trim();
-        currentContent = '';
-      }
-      foundFirstHeading = true;
-      
       // Process any accumulated content for the previous section
       if (currentContent.trim() && stack.length > 0) {
         stack[stack.length - 1].content += currentContent;
@@ -111,16 +102,12 @@ const parseHierarchicalContent = (content: string): { sections: ContentSection[]
     }
   }
 
-  // Add any remaining content to the last section or to preContent if no headings found
-  if (currentContent.trim()) {
-    if (stack.length > 0) {
-      stack[stack.length - 1].content += currentContent;
-    } else if (!foundFirstHeading) {
-      preContent = currentContent.trim();
-    }
+  // Add any remaining content to the last section
+  if (currentContent.trim() && stack.length > 0) {
+    stack[stack.length - 1].content += currentContent;
   }
 
-  return { sections, preContent };
+  return sections;
 };
 
 const ContentSectionComponent: React.FC<{
@@ -336,7 +323,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
-  const { sections, preContent } = parseHierarchicalContent(content); // Use original content with tags for parsing
+  const sections = parseHierarchicalContent(content); // Use original content with tags for parsing
 
   if (sections.length === 0) {
     return (
@@ -349,12 +336,6 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
 
     return (
       <div className="space-y-4">
-        {preContent && (
-          <div
-            className="prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] px-[9px] rounded-md content-level-1"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
-          />
-        )}
         {sections.map((section, index) => (
           <ContentSectionComponent
             key={section.id}
