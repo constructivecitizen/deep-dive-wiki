@@ -351,7 +351,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
       <div className="space-y-4">
         {preContent && (
           <div
-            className="rounded-lg px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 text-foreground prose prose-slate dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+            className="prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] px-[9px] rounded-md content-level-1"
             dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
           />
         )}
