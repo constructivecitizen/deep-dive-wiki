@@ -51,16 +51,35 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
     }
 
     const initialContent = editorData.content || '';
+    console.log('Initializing editor with content:', initialContent.substring(0, 100));
     setContent(initialContent);
     
-    // Convert markdown to HTML for TipTap (default mode is WYSIWYG)
-    import('@/lib/markdownRenderer').then(({ renderMarkdown }) => {
-      const html = renderMarkdown(initialContent);
-      editor.commands.setContent(html);
-    });
+    // Wait for next tick to ensure editor is fully ready
+    setTimeout(() => {
+      if (editorMode === 'wysiwyg') {
+        // Convert markdown to HTML for TipTap (default mode is WYSIWYG)
+        import('@/lib/markdownRenderer').then(({ renderMarkdown }) => {
+          const html = renderMarkdown(initialContent);
+          console.log('Converted HTML:', html.substring(0, 100));
+          
+          if (html && html.trim()) {
+            editor.commands.setContent(html);
+            console.log('Content set in TipTap editor');
+          } else {
+            console.error('renderMarkdown returned empty HTML');
+            // Fallback: show raw content as preformatted text
+            editor.commands.setContent(`<pre>${initialContent}</pre>`);
+          }
+        }).catch(error => {
+          console.error('Error loading markdown renderer:', error);
+          // Fallback: show raw content as preformatted text
+          editor.commands.setContent(`<pre>${initialContent}</pre>`);
+        });
+      }
+    }, 0);
     
     hasInitializedRef.current = true;
-  }, [editorData, editor]);
+  }, [editorData, editor, editorMode]);
 
 
   const handleSave = () => {
