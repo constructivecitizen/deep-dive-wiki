@@ -53,12 +53,14 @@ const extractSectionFullContent = (targetSection: ContentSection): string => {
   return fullContent.trim();
 };
 
-const parseHierarchicalContent = (content: string): ContentSection[] => {
+const parseHierarchicalContent = (content: string): { preContent: string; sections: ContentSection[] } => {
   const lines = content.split('\n');
   const sections: ContentSection[] = [];
   const stack: ContentSection[] = [];
   let currentContent = '';
+  let preContent = '';
   let sectionId = 0;
+  let hasSeenHeader = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -66,11 +68,18 @@ const parseHierarchicalContent = (content: string): ContentSection[] => {
     const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
     
     if (headingMatch) {
-      // Process any accumulated content for the previous section
-      if (currentContent.trim() && stack.length > 0) {
-        stack[stack.length - 1].content += currentContent;
+      // Process any accumulated content
+      if (currentContent.trim()) {
+        if (!hasSeenHeader) {
+          // This is content before the first header
+          preContent = currentContent.trim();
+        } else if (stack.length > 0) {
+          // This is content for the previous section
+          stack[stack.length - 1].content += currentContent;
+        }
       }
       currentContent = '';
+      hasSeenHeader = true;
 
       const level = headingMatch[1].length;
       const title = headingMatch[2].trim();
@@ -102,12 +111,16 @@ const parseHierarchicalContent = (content: string): ContentSection[] => {
     }
   }
 
-  // Add any remaining content to the last section
-  if (currentContent.trim() && stack.length > 0) {
-    stack[stack.length - 1].content += currentContent;
+  // Add any remaining content
+  if (currentContent.trim()) {
+    if (!hasSeenHeader) {
+      preContent = currentContent.trim();
+    } else if (stack.length > 0) {
+      stack[stack.length - 1].content += currentContent;
+    }
   }
 
-  return sections;
+  return { preContent, sections };
 };
 
 const ContentSectionComponent: React.FC<{
@@ -323,7 +336,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
-  const sections = parseHierarchicalContent(content); // Use original content with tags for parsing
+  const { preContent, sections } = parseHierarchicalContent(content); // Use original content with tags for parsing
 
   if (sections.length === 0) {
     return (
@@ -336,6 +349,12 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
 
     return (
       <div className="space-y-4">
+        {preContent && (
+          <div 
+            className="prose prose-slate dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
+          />
+        )}
         {sections.map((section, index) => (
           <ContentSectionComponent
             key={section.id}
