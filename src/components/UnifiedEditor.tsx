@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +23,7 @@ interface UnifiedEditorProps {
 export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProps) => {
   const [content, setContent] = useState('');
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
+  const hasInitializedRef = useRef(false);
 
   const editor = useEditor({
     extensions: [
@@ -43,39 +44,24 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
     },
   });
 
+  // Initialize content only once when editor is ready
   useEffect(() => {
-    if (editorData) {
-      const initialContent = editorData.content || '';
-      setContent(initialContent);
-      if (editor && editorMode === 'wysiwyg') {
-        // Convert markdown to HTML for TipTap
-        import('@/lib/markdownRenderer').then(({ renderMarkdown }) => {
-          const html = renderMarkdown(initialContent);
-          editor.commands.setContent(html);
-        });
-      }
+    if (!editorData || !editor || hasInitializedRef.current) {
+      return;
     }
-  }, [editorData, editor, editorMode]);
 
-  // Sync content between modes
-  useEffect(() => {
-    if (editor) {
-      if (editorMode === 'wysiwyg') {
-        // Convert markdown to HTML when switching to WYSIWYG
-        import('@/lib/markdownRenderer').then(({ renderMarkdown }) => {
-          const html = renderMarkdown(content);
-          editor.commands.setContent(html);
-        });
-      } else {
-        // Get HTML from editor and convert to markdown when switching to markdown mode
-        const html = editor.getHTML();
-        // For now, store the HTML as content - we'll need proper HTML to markdown conversion
-        // This is a simplified approach
-        const markdown = htmlToMarkdown(html);
-        setContent(markdown);
-      }
-    }
-  }, [editorMode]);
+    const initialContent = editorData.content || '';
+    setContent(initialContent);
+    
+    // Convert markdown to HTML for TipTap (default mode is WYSIWYG)
+    import('@/lib/markdownRenderer').then(({ renderMarkdown }) => {
+      const html = renderMarkdown(initialContent);
+      editor.commands.setContent(html);
+    });
+    
+    hasInitializedRef.current = true;
+  }, [editorData, editor]);
+
 
   const handleSave = () => {
     let finalContent = content;
@@ -89,13 +75,22 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
   };
 
   const toggleEditorMode = () => {
-    if (editorMode === 'wysiwyg' && editor) {
-      // Save current WYSIWYG content to markdown before switching
+    if (!editor) return;
+
+    if (editorMode === 'wysiwyg') {
+      // Going from WYSIWYG → markdown: pull HTML from TipTap, convert to markdown
       const html = editor.getHTML();
       const markdown = htmlToMarkdown(html);
       setContent(markdown);
+      setEditorMode('markdown');
+    } else {
+      // Going from markdown → WYSIWYG: push markdown into TipTap as HTML
+      import('@/lib/markdownRenderer').then(({ renderMarkdown }) => {
+        const html = renderMarkdown(content);
+        editor.commands.setContent(html);
+        setEditorMode('wysiwyg');
+      });
     }
-    setEditorMode(editorMode === 'wysiwyg' ? 'markdown' : 'wysiwyg');
   };
 
   // Simple HTML to Markdown converter
