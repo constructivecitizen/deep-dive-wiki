@@ -649,30 +649,30 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             <label className="text-xs text-muted-foreground">
               Content Depth:
             </label>
-            <Select
-              value={expandMode === 'mixed' ? 'mixed' : expandDepth.toString()}
-              onValueChange={(value) => {
-                if (value !== 'mixed' && onExpandDepthChange) {
-                  onExpandDepthChange(parseInt(value));
+            <Input
+              type="text"
+              value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()}
+              onChange={(e) => {
+                const value = e.target.value.trim();
+                if (value === '-' || value === '') return;
+                const num = parseInt(value);
+                if (!isNaN(num) && num >= 1 && num <= 21) {
+                  onExpandDepthChange?.(num - 1);
                 }
               }}
-            >
-            <SelectTrigger className="h-7 text-sm w-7 text-center px-0 [&>svg]:hidden justify-center focus:ring-0 focus:ring-offset-0">
-              <span className="w-full text-center">
-                {expandMode === 'mixed' ? '-' : expandDepth + 1}
-              </span>
-            </SelectTrigger>
-            <SelectContent className="bg-popover z-50 w-7 min-w-0">
-              {expandMode === 'mixed' && (
-                <SelectItem value="mixed" disabled className="px-0 justify-center text-center">-</SelectItem>
-              )}
-              {Array.from({ length: 21 }, (_, i) => (
-                <SelectItem key={i} value={i.toString()} className="px-0 justify-center text-center">
-                  {i + 1}
-                </SelectItem>
-              ))}
-            </SelectContent>
-            </Select>
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const value = e.currentTarget.value.trim();
+                  if (value === '-' || value === '') return;
+                  const num = parseInt(value);
+                  if (!isNaN(num) && num >= 1 && num <= 21) {
+                    onExpandDepthChange?.(num - 1);
+                  }
+                }
+              }}
+              disabled={expandMode === 'mixed'}
+              className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
           </div>
         </div>
       </div>
