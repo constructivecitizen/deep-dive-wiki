@@ -347,6 +347,96 @@
       opacity: 1;
     }
   }
+
+  /* TipTap Editor Styles */
+  .tiptap-editor .ProseMirror {
+    @apply outline-none min-h-[400px];
+  }
+
+  .tiptap-editor .ProseMirror > * + * {
+    @apply mt-3;
+  }
+
+  .tiptap-editor h1 {
+    @apply text-3xl font-bold text-foreground;
+  }
+
+  .tiptap-editor h2 {
+    @apply text-2xl font-bold text-foreground;
+  }
+
+  .tiptap-editor h3 {
+    @apply text-xl font-semibold text-foreground;
+  }
+
+  .tiptap-editor h4 {
+    @apply text-lg font-semibold text-foreground;
+  }
+
+  .tiptap-editor h5 {
+    @apply text-base font-semibold text-foreground;
+  }
+
+  .tiptap-editor h6 {
+    @apply text-sm font-semibold text-foreground;
+  }
+
+  .tiptap-editor p {
+    @apply text-foreground leading-relaxed;
+  }
+
+  .tiptap-editor ul,
+  .tiptap-editor ol {
+    @apply pl-6 text-foreground;
+  }
+
+  .tiptap-editor ul {
+    @apply list-disc;
+  }
+
+  .tiptap-editor ol {
+    @apply list-decimal;
+  }
+
+  .tiptap-editor li {
+    @apply text-foreground;
+  }
+
+  .tiptap-editor strong {
+    @apply font-bold;
+  }
+
+  .tiptap-editor em {
+    @apply italic;
+  }
+
+  .tiptap-editor a {
+    @apply text-primary hover:text-primary/80 underline;
+  }
+
+  .tiptap-editor code {
+    @apply bg-muted text-foreground px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+
+  .tiptap-editor pre {
+    @apply bg-muted text-foreground p-4 rounded-md overflow-x-auto;
+  }
+
+  .tiptap-editor pre code {
+    @apply bg-transparent p-0;
+  }
+
+  .tiptap-editor blockquote {
+    @apply border-l-4 border-border pl-4 text-muted-foreground italic;
+  }
+
+  .tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground;
+    content: attr(data-placeholder);
+    float: left;
+    pointer-events: none;
+    height: 0;
+  }
 }
 
 @layer base {

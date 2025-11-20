@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Eye, FileText, Save, Bold, Italic, List, Link2 } from 'lucide-react';
+import { Eye, FileText, Save, Bold, Italic, List, Link2, Edit3, Code } from 'lucide-react';
 import { ContentNode } from '@/components/HierarchicalContent';
 import { HierarchyParser } from '@/lib/hierarchyParser';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
 
 export interface EditorData {
   type: 'document';
@@ -19,16 +22,129 @@ interface UnifiedEditorProps {
 
 export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProps) => {
   const [content, setContent] = useState('');
+  const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
+        },
+      }),
+      Placeholder.configure({
+        placeholder: 'Start typing your content...',
+      }),
+    ],
+    content: '',
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[400px] p-4',
+      },
+    },
+  });
 
   useEffect(() => {
     if (editorData) {
-      setContent(editorData.content || '');
+      const initialContent = editorData.content || '';
+      setContent(initialContent);
+      if (editor && editorMode === 'wysiwyg') {
+        // Convert markdown to HTML for TipTap
+        import('@/lib/markdownRenderer').then(({ renderMarkdown }) => {
+          const html = renderMarkdown(initialContent);
+          editor.commands.setContent(html);
+        });
+      }
     }
   }, [editorData]);
 
+  // Sync content between modes
+  useEffect(() => {
+    if (editor) {
+      if (editorMode === 'wysiwyg') {
+        // Convert markdown to HTML when switching to WYSIWYG
+        import('@/lib/markdownRenderer').then(({ renderMarkdown }) => {
+          const html = renderMarkdown(content);
+          editor.commands.setContent(html);
+        });
+      } else {
+        // Get HTML from editor and convert to markdown when switching to markdown mode
+        const html = editor.getHTML();
+        // For now, store the HTML as content - we'll need proper HTML to markdown conversion
+        // This is a simplified approach
+        const markdown = htmlToMarkdown(html);
+        setContent(markdown);
+      }
+    }
+  }, [editorMode]);
+
   const handleSave = () => {
-    onSave(content);
+    let finalContent = content;
+    if (editorMode === 'wysiwyg' && editor) {
+      // Convert editor HTML to markdown before saving
+      const html = editor.getHTML();
+      finalContent = htmlToMarkdown(html);
+    }
+    onSave(finalContent);
     onClose();
+  };
+
+  const toggleEditorMode = () => {
+    if (editorMode === 'wysiwyg' && editor) {
+      // Save current WYSIWYG content to markdown before switching
+      const html = editor.getHTML();
+      const markdown = htmlToMarkdown(html);
+      setContent(markdown);
+    }
+    setEditorMode(editorMode === 'wysiwyg' ? 'markdown' : 'wysiwyg');
+  };
+
+  // Simple HTML to Markdown converter
+  const htmlToMarkdown = (html: string): string => {
+    let markdown = html;
+    
+    // Remove TipTap wrapper and empty paragraphs
+    markdown = markdown.replace(/<p><\/p>/g, '\n');
+    
+    // Headers
+    markdown = markdown.replace(/<h1>(.*?)<\/h1>/g, '# $1\n');
+    markdown = markdown.replace(/<h2>(.*?)<\/h2>/g, '## $1\n');
+    markdown = markdown.replace(/<h3>(.*?)<\/h3>/g, '### $1\n');
+    markdown = markdown.replace(/<h4>(.*?)<\/h4>/g, '#### $1\n');
+    markdown = markdown.replace(/<h5>(.*?)<\/h5>/g, '##### $1\n');
+    markdown = markdown.replace(/<h6>(.*?)<\/h6>/g, '###### $1\n');
+    
+    // Bold and italic
+    markdown = markdown.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
+    markdown = markdown.replace(/<b>(.*?)<\/b>/g, '**$1**');
+    markdown = markdown.replace(/<em>(.*?)<\/em>/g, '*$1*');
+    markdown = markdown.replace(/<i>(.*?)<\/i>/g, '*$1*');
+    
+    // Links
+    markdown = markdown.replace(/<a href="(.*?)">(.*?)<\/a>/g, '[$2]($1)');
+    
+    // Lists
+    markdown = markdown.replace(/<ul>(.*?)<\/ul>/gs, (match, content) => {
+      return content.replace(/<li>(.*?)<\/li>/g, '- $1\n');
+    });
+    markdown = markdown.replace(/<ol>(.*?)<\/ol>/gs, (match, content) => {
+      let counter = 1;
+      return content.replace(/<li>(.*?)<\/li>/g, () => `${counter++}. $1\n`);
+    });
+    
+    // Code
+    markdown = markdown.replace(/<code>(.*?)<\/code>/g, '`$1`');
+    markdown = markdown.replace(/<pre><code>(.*?)<\/code><\/pre>/gs, '```\n$1\n```\n');
+    
+    // Paragraphs
+    markdown = markdown.replace(/<p>(.*?)<\/p>/g, '$1\n\n');
+    
+    // Line breaks
+    markdown = markdown.replace(/<br\s*\/?>/g, '\n');
+    
+    // Clean up extra newlines
+    markdown = markdown.replace(/\n{3,}/g, '\n\n').trim();
+    
+    return markdown;
   };
 
   const insertMarkdown = (type: string) => {
@@ -89,40 +205,61 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
                 <span id="editor-description" className="sr-only">Full-screen document editor with markdown support</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 mr-4 border-r border-border pr-4">
-                  <Button 
-                    onClick={() => insertMarkdown('bold')} 
-                    variant="outline" 
-                    size="sm"
-                    title="Bold"
-                  >
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    onClick={() => insertMarkdown('italic')} 
-                    variant="outline" 
-                    size="sm"
-                    title="Italic"
-                  >
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    onClick={() => insertMarkdown('list')} 
-                    variant="outline" 
-                    size="sm"
-                    title="List"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    onClick={() => insertMarkdown('link')} 
-                    variant="outline" 
-                    size="sm"
-                    title="Link"
-                  >
-                    <Link2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  onClick={toggleEditorMode}
+                  variant="outline"
+                  size="sm"
+                  className="mr-4"
+                  title={editorMode === 'wysiwyg' ? 'Switch to Markdown' : 'Switch to Visual Editor'}
+                >
+                  {editorMode === 'wysiwyg' ? (
+                    <>
+                      <Code className="h-4 w-4 mr-2" />
+                      Markdown
+                    </>
+                  ) : (
+                    <>
+                      <Edit3 className="h-4 w-4 mr-2" />
+                      Visual
+                    </>
+                  )}
+                </Button>
+                {editorMode === 'markdown' && (
+                  <div className="flex items-center gap-1 mr-4 border-r border-border pr-4">
+                    <Button 
+                      onClick={() => insertMarkdown('bold')} 
+                      variant="outline" 
+                      size="sm"
+                      title="Bold"
+                    >
+                      <Bold className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      onClick={() => insertMarkdown('italic')} 
+                      variant="outline" 
+                      size="sm"
+                      title="Italic"
+                    >
+                      <Italic className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      onClick={() => insertMarkdown('list')} 
+                      variant="outline" 
+                      size="sm"
+                      title="List"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      onClick={() => insertMarkdown('link')} 
+                      variant="outline" 
+                      size="sm"
+                      title="Link"
+                    >
+                      <Link2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
                 <Button 
                   onClick={handleSave} 
                   size="sm"
@@ -143,11 +280,19 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
           </header>
 
           <div className="flex-1 flex overflow-hidden">
-            <div className="flex-1 p-4">
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={`Start typing or paste your content...
+            <div className="flex-1 p-4 overflow-y-auto">
+              {editorMode === 'wysiwyg' ? (
+                <div className="h-full bg-background border border-border rounded-md">
+                  <EditorContent 
+                    editor={editor} 
+                    className="h-full overflow-y-auto tiptap-editor"
+                  />
+                </div>
+              ) : (
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder={`Start typing or paste your content...
 
 Use markup like:
 # Main Topic [tag1, tag2]
@@ -159,8 +304,9 @@ Content with **bold**, *italic*, and [links](url).
 
 ### Detail [tag5]
 More detailed content with \`code\`.`}
-                className="h-full min-h-[400px] w-full font-mono text-sm resize-none bg-background border border-border rounded-md p-4 cursor-text focus:ring-2 focus:ring-ring focus:ring-offset-2"
-              />
+                  className="h-full min-h-[400px] w-full font-mono text-sm resize-none bg-background border border-border rounded-md p-4 cursor-text focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                />
+              )}
             </div>
 
             <div className="w-80 border-l border-border bg-muted/50 p-4 overflow-y-auto">
