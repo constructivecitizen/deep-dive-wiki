@@ -475,6 +475,9 @@ const ContentPage: React.FC = () => {
               onSectionClick={handleSectionNavigate}
               activeNodeId={state.currentSectionId || undefined}
               documentTitle={state.sectionView.title}
+              expandedSections={expandMode === 'mixed' ? manualOverrides : undefined}
+              defaultExpandDepth={expandMode === 'depth' ? expandDepth : undefined}
+              onToggleSection={handleSectionToggle}
             />
           </div>
         ) : (
