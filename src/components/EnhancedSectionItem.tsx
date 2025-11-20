@@ -63,10 +63,10 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   return (
     <div className="text-sm">
       <div 
-        className={`flex items-center gap-1 py-0.5 pr-3 rounded cursor-pointer transition-colors ${
+        className={`flex items-center gap-1 py-0.5 pr-3 rounded cursor-pointer transition-colors border-l-2 ${
           isActive
-            ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
-            : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+            ? 'bg-primary/10 border-l-primary text-primary' 
+            : 'hover:bg-accent text-muted-foreground hover:text-foreground border-l-transparent'
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
         onClick={handleSectionClick}
