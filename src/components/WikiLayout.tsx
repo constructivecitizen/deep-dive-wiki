@@ -97,7 +97,7 @@ export const WikiLayout = ({
       <ResizablePanel id="main-panel" defaultSize={80}>
         <div className="h-screen">
           <ScrollArea className="h-full">
-            <main className="container mx-auto px-6 py-8 max-w-4xl">
+            <main className="pl-20 pr-6 py-8 max-w-4xl">
               {children}
             </main>
           </ScrollArea>
