@@ -63,9 +63,9 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   return (
     <div className="text-sm">
       <div 
-        className={`flex items-center gap-1 py-0.5 px-3 rounded cursor-pointer transition-colors ${
+        className={`flex items-center gap-1 py-0.5 pr-3 rounded cursor-pointer transition-colors ${
           isActive
-            ? 'text-primary' 
+            ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
             : 'hover:bg-accent text-muted-foreground hover:text-foreground'
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
@@ -89,12 +89,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
           )}
         </button>
         
-        <span 
-          className={`truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap ${
-            isActive ? 'bg-primary/10 border-l-2 border-l-primary pl-2 py-0.5 rounded-r' : ''
-          }`}
-          title={section.title}
-        >
+        <span className="truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap" title={section.title}>
           {section.title}
         </span>
       </div>
