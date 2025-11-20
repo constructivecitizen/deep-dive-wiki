@@ -670,7 +670,6 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
                   }
                 }
               }}
-              disabled={expandMode === 'mixed'}
               className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
