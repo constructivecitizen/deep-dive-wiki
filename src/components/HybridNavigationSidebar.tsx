@@ -198,10 +198,10 @@ interface HybridNavigationSidebarProps {
     <>
       {/* Folder Header - Clickable to navigate */}
       <div
-        className={`relative flex items-center gap-1.5 py-1 px-2 rounded-md group transition-colors cursor-pointer min-w-0 ${
+        className={`relative flex items-center gap-1.5 py-1 pr-2 rounded-md group transition-colors cursor-pointer min-w-0 border-l-2 ${
           isActiveNode 
-            ? 'bg-primary/10 border-l-2 border-l-primary text-primary' 
-            : 'hover:bg-accent/50'
+            ? 'bg-primary/10 border-l-primary text-primary' 
+            : 'hover:bg-accent/50 border-l-transparent'
         }`}
         onClick={handleNodeClick}
       >
