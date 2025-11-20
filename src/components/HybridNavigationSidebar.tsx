@@ -596,83 +596,84 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           )}
         </div>
 
-        {/* New Folder Button */}
-        <div className="p-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={startCreating}
-            className="w-8 h-8 p-0 mx-auto block"
-            title="Add new folder"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
+        {/* Bottom Controls - Plus Button (left) and Depth Control (right) */}
+        <div className="p-3 flex items-center justify-between">
+          {/* Plus Button on the left */}
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={startCreating}
+              className="w-8 h-8 p-0"
+              title="Add new folder"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
 
-          {isCreating && (
-            <div className="mt-2 flex items-center gap-2">
-              <Input
-                ref={inputRef}
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Folder name..."
-                className="text-sm"
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCreateFolder}
-                disabled={!newFolderName.trim()}
-                className="h-6 w-6 p-0"
-              >
-                <Check className="w-3 h-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setIsCreating(false);
-                  setNewFolderName("");
-                }}
-                className="h-6 w-6 p-0"
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Depth Control */}
-      <div className="p-2 border-t border-border section-bg-2">
-        <div className="flex items-center justify-center gap-2">
-          <label className="text-xs text-muted-foreground text-center">
-            Content Depth:
-          </label>
-          <Select
-            value={expandMode === 'mixed' ? 'mixed' : expandDepth.toString()}
-            onValueChange={(value) => {
-              if (value !== 'mixed' && onExpandDepthChange) {
-                onExpandDepthChange(parseInt(value));
-              }
-            }}
-          >
-          <SelectTrigger className="h-7 text-sm w-7 text-center px-0 [&>svg]:hidden justify-center">
-            <span className="w-full text-center">
-              {expandMode === 'mixed' ? '-' : expandDepth + 1}
-            </span>
-          </SelectTrigger>
-          <SelectContent className="bg-popover z-50 w-7 min-w-0">
-            {expandMode === 'mixed' && (
-              <SelectItem value="mixed" disabled className="px-0 justify-center text-center">-</SelectItem>
+            {isCreating && (
+              <div className="mt-2 flex items-center gap-2">
+                <Input
+                  ref={inputRef}
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Folder name..."
+                  className="text-sm"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCreateFolder}
+                  disabled={!newFolderName.trim()}
+                  className="h-6 w-6 p-0"
+                >
+                  <Check className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsCreating(false);
+                    setNewFolderName("");
+                  }}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
             )}
-            {Array.from({ length: 21 }, (_, i) => (
-              <SelectItem key={i} value={i.toString()} className="px-0 justify-center text-center">
-                {i + 1}
-              </SelectItem>
-            ))}
-          </SelectContent>
-          </Select>
+          </div>
+
+          {/* Content Depth Control on the right */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground">
+              Content Depth:
+            </label>
+            <Select
+              value={expandMode === 'mixed' ? 'mixed' : expandDepth.toString()}
+              onValueChange={(value) => {
+                if (value !== 'mixed' && onExpandDepthChange) {
+                  onExpandDepthChange(parseInt(value));
+                }
+              }}
+            >
+            <SelectTrigger className="h-7 text-sm w-7 text-center px-0 [&>svg]:hidden justify-center">
+              <span className="w-full text-center">
+                {expandMode === 'mixed' ? '-' : expandDepth + 1}
+              </span>
+            </SelectTrigger>
+            <SelectContent className="bg-popover z-50 w-7 min-w-0">
+              {expandMode === 'mixed' && (
+                <SelectItem value="mixed" disabled className="px-0 justify-center text-center">-</SelectItem>
+              )}
+              {Array.from({ length: 21 }, (_, i) => (
+                <SelectItem key={i} value={i.toString()} className="px-0 justify-center text-center">
+                  {i + 1}
+                </SelectItem>
+              ))}
+            </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
     </div>
