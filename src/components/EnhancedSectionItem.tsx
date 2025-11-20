@@ -54,8 +54,8 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   };
 
   const hasChildren = section.children && section.children.length > 0;
-  // Keep first 2 levels with original spacing, reduce increment for deeper levels
-  const indentationPx = depth <= 1 ? depth * 22 + 16 : 38 + (depth - 1) * 16;
+  // Set specific indentation: depth 0 = 16px, depth 1 = 31px, deeper levels = 31 + (depth-1)*16
+  const indentationPx = depth === 0 ? 16 : depth === 1 ? 31 : 31 + (depth - 1) * 16;
   
   // Check if this section is currently active - must match BOTH section ID AND document path
   const isActive = activeSectionId === section.id && activeDocumentPath === folderPath;
