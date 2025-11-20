@@ -70,7 +70,7 @@ export const PageBreadcrumb = ({
   };
 
   return (
-    <div className="animate-fade-in mb-1.5">
+    <div className="animate-fade-in mb-1">
       <div className="flex items-center gap-2 text-base text-muted-foreground flex-wrap">
         {hierarchicalTrail.map((item, index) => (
           <div key={item.id} className="flex items-center gap-2">
