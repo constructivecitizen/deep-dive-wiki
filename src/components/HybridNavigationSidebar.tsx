@@ -659,7 +659,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           >
           <SelectTrigger className="h-7 text-sm w-7 text-center px-0 [&>svg]:hidden justify-center">
             <span className="w-full text-center">
-              {expandMode === 'mixed' ? '-' : expandDepth}
+              {expandMode === 'mixed' ? '-' : expandDepth + 1}
             </span>
           </SelectTrigger>
           <SelectContent className="bg-popover z-50 w-7 min-w-0">
@@ -668,7 +668,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             )}
             {Array.from({ length: 21 }, (_, i) => (
               <SelectItem key={i} value={i.toString()} className="px-0 justify-center text-center">
-                {i}
+                {i + 1}
               </SelectItem>
             ))}
           </SelectContent>
