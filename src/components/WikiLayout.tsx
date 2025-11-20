@@ -64,7 +64,7 @@ export const WikiLayout = ({
                     <img 
                       src={BetterProdLogoText} 
                       alt="etterProd" 
-                      className="h-10 w-auto"
+                      className="h-10 w-auto mt-2"
                     />
                   </div>
                 </div>
