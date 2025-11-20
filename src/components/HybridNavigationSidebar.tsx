@@ -457,7 +457,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       <div className="mb-1 min-w-0">
         <button
           onClick={() => toggleFilterSection(sectionKey)}
-          className="flex items-center justify-start gap-2 w-full py-0.5 px-2 hover:bg-accent/50 rounded-md transition-colors min-w-0"
+          className="flex items-center justify-start gap-1 w-full py-0.5 px-2 hover:bg-accent/50 rounded-md transition-colors min-w-0"
         >
         {expandedFilters[sectionKey] ? (
           <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -468,7 +468,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       </button>
       
       {expandedFilters[sectionKey] && (
-        <div className="ml-6 space-y-1 mt-1">
+        <div className="space-y-1 mt-1" style={{ marginLeft: '31px' }}>
           {items.map(item => (
             <div key={item.key} className="flex items-center justify-start space-x-2 py-0.5 min-w-0">
               <Checkbox
