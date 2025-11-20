@@ -65,7 +65,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
       <div 
         className={`flex items-center gap-1 py-0.5 pr-3 rounded cursor-pointer transition-colors border-l-2 ${
           isActive
-            ? 'bg-primary/10 border-l-primary text-primary' 
+            ? 'bg-primary/10 border-l-primary text-primary font-medium' 
             : 'hover:bg-accent text-muted-foreground hover:text-foreground border-l-transparent'
         }`}
         style={{ marginLeft: `${indentationPx}px` }}
