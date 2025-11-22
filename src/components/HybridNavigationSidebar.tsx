@@ -693,12 +693,12 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
                   }
                 }}
               >
-                <SelectTrigger className="h-7 w-12 text-sm text-center px-1 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+                <SelectTrigger className="h-7 w-9 text-sm text-center px-1 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 [&>svg]:hidden">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent align="end" className="min-w-[3rem]">
-                  <SelectItem value="on" className="text-sm text-center justify-center">on</SelectItem>
-                  <SelectItem value="off" className="text-sm text-center justify-center">off</SelectItem>
+                  <SelectItem value="on" className="text-sm text-center justify-center">On</SelectItem>
+                  <SelectItem value="off" className="text-sm text-center justify-center">Off</SelectItem>
                   <SelectItem value="-" disabled className="text-sm text-center justify-center">-</SelectItem>
                 </SelectContent>
               </Select>
