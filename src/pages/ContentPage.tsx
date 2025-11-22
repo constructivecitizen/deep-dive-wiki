@@ -118,7 +118,10 @@ const ContentPage: React.FC = () => {
     expandDepth,
     expandMode,
     manualOverrides,
-    setManualOverride
+    setManualOverride,
+    showDescriptions,
+    descriptionOverrides,
+    setDescriptionOverride
   } = useLayoutContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -355,6 +358,12 @@ const ContentPage: React.FC = () => {
     setManualOverride(sectionId, newExpanded);
   };
 
+  // Handle description toggle
+  const handleDescriptionToggle = (sectionId: string, currentlyVisible: boolean) => {
+    const newVisible = !currentlyVisible;
+    setDescriptionOverride(sectionId, newVisible);
+  };
+
   // Provide section navigation function to layout context
   useEffect(() => {
     console.log('Setting up sectionNavigateRef');
@@ -478,6 +487,9 @@ const ContentPage: React.FC = () => {
               expandedSections={expandMode === 'mixed' ? manualOverrides : undefined}
               defaultExpandDepth={expandMode === 'depth' ? expandDepth : undefined}
               onToggleSection={handleSectionToggle}
+              showDescriptions={showDescriptions}
+              descriptionOverrides={descriptionOverrides}
+              onToggleDescription={handleDescriptionToggle}
             />
           </div>
         ) : (
@@ -491,6 +503,9 @@ const ContentPage: React.FC = () => {
               expandedSections={expandMode === 'mixed' ? manualOverrides : undefined}
               defaultExpandDepth={expandMode === 'depth' ? expandDepth : undefined}
               onToggleSection={handleSectionToggle}
+              showDescriptions={showDescriptions}
+              descriptionOverrides={descriptionOverrides}
+              onToggleDescription={handleDescriptionToggle}
             />
           </div>
         )}

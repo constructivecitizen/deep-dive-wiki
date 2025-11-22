@@ -38,6 +38,8 @@ interface HybridNavigationSidebarProps {
   expandDepth?: number;
   expandMode?: 'depth' | 'mixed';
   onExpandDepthChange?: (depth: number) => void;
+  showDescriptions?: 'on' | 'off' | 'mixed';
+  onShowDescriptionsChange?: (mode: 'on' | 'off') => void;
 }
 
   const FolderNode: React.FC<{
@@ -341,7 +343,9 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   setActiveSectionId,
   expandDepth = 1,
   expandMode = 'depth',
-  onExpandDepthChange
+  onExpandDepthChange,
+  showDescriptions = 'on',
+  onShowDescriptionsChange
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -596,7 +600,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           )}
         </div>
 
-        {/* Bottom Controls - Plus Button (left) and Depth Control (right) */}
+        {/* Bottom Controls - Plus Button (left) and Controls (right) */}
         <div className="py-2 px-3 border-t border-sidebar-border flex items-center justify-between">
           {/* Plus Button on the left */}
           <div>
@@ -644,34 +648,61 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             )}
           </div>
 
-          {/* Content Depth Control on the right */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-muted-foreground">
-              Content Depth:
-            </label>
-            <Input
-              type="text"
-              value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()}
-              onChange={(e) => {
-                const value = e.target.value.trim();
-                if (value === '-' || value === '') return;
-                const num = parseInt(value);
-                if (!isNaN(num) && num >= 1 && num <= 21) {
-                  onExpandDepthChange?.(num - 1);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const value = e.currentTarget.value.trim();
+          {/* Controls on the right */}
+          <div className="flex items-center gap-3">
+            {/* Content Depth Control */}
+            <div className="flex items-center gap-1.5">
+              <label className="text-xs text-muted-foreground whitespace-nowrap">
+                Content Depth:
+              </label>
+              <Input
+                type="text"
+                value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()}
+                onChange={(e) => {
+                  const value = e.target.value.trim();
                   if (value === '-' || value === '') return;
                   const num = parseInt(value);
                   if (!isNaN(num) && num >= 1 && num <= 21) {
                     onExpandDepthChange?.(num - 1);
                   }
-                }
-              }}
-              className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            />
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const value = e.currentTarget.value.trim();
+                    if (value === '-' || value === '') return;
+                    const num = parseInt(value);
+                    if (!isNaN(num) && num >= 1 && num <= 21) {
+                      onExpandDepthChange?.(num - 1);
+                    }
+                  }
+                }}
+                className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            </div>
+
+            {/* Description Visibility Control */}
+            <div className="flex items-center gap-1.5">
+              <label className="text-xs text-muted-foreground whitespace-nowrap">
+                Descriptions:
+              </label>
+              <Select
+                value={showDescriptions}
+                onValueChange={(value: string) => {
+                  if (value === 'on' || value === 'off') {
+                    onShowDescriptionsChange?.(value);
+                  }
+                }}
+              >
+                <SelectTrigger className="h-7 w-12 text-sm text-center px-1 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end" className="min-w-[3rem]">
+                  <SelectItem value="on" className="text-sm text-center justify-center">on</SelectItem>
+                  <SelectItem value="off" className="text-sm text-center justify-center">off</SelectItem>
+                  <SelectItem value="-" disabled className="text-sm text-center justify-center">-</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>

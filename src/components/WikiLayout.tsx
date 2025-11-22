@@ -23,6 +23,8 @@ interface WikiLayoutProps {
   expandDepth?: number;
   expandMode?: 'depth' | 'mixed';
   onExpandDepthChange?: (depth: number) => void;
+  showDescriptions?: 'on' | 'off' | 'mixed';
+  onShowDescriptionsChange?: (mode: 'on' | 'off') => void;
 }
 
 export const WikiLayout = ({ 
@@ -41,7 +43,9 @@ export const WikiLayout = ({
   setActiveSectionId,
   expandDepth,
   expandMode,
-  onExpandDepthChange
+  onExpandDepthChange,
+  showDescriptions,
+  onShowDescriptionsChange
 }: WikiLayoutProps) => {
   return (
     <ResizablePanelGroup 
@@ -87,6 +91,8 @@ export const WikiLayout = ({
               expandDepth={expandDepth}
               expandMode={expandMode}
               onExpandDepthChange={onExpandDepthChange}
+              showDescriptions={showDescriptions}
+              onShowDescriptionsChange={onShowDescriptionsChange}
             />
           </div>
         </aside>
