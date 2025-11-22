@@ -21,6 +21,9 @@ interface HierarchicalContentDisplayProps {
   expandedSections?: Record<string, boolean>;
   defaultExpandDepth?: number;
   onToggleSection?: (sectionId: string, currentlyExpanded: boolean) => void;
+  showDescriptions?: 'on' | 'off' | 'mixed';
+  descriptionOverrides?: Record<string, boolean>;
+  onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void;
 }
 
 // Helper function to extract full hierarchical content for a section
@@ -134,7 +137,10 @@ const ContentSectionComponent: React.FC<{
   expandedSections?: Record<string, boolean>;
   defaultExpandDepth?: number;
   onToggleSection?: (sectionId: string, currentlyExpanded: boolean) => void;
-}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection }) => {
+  showDescriptions?: 'on' | 'off' | 'mixed';
+  descriptionOverrides?: Record<string, boolean>;
+  onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void;
+}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions = 'on', descriptionOverrides, onToggleDescription }) => {
   // Determine initial expanded state
   const getInitialExpandedState = () => {
     if (expandedSections && section.id in expandedSections) {
@@ -188,6 +194,19 @@ const ContentSectionComponent: React.FC<{
   
   const contentColorClass = getContentColorClass(depth);
 
+  // Determine if content should be visible
+  const getContentVisibility = () => {
+    if (showDescriptions === 'off') return false;
+    if (showDescriptions === 'on') return true;
+    // mixed mode - check overrides
+    if (descriptionOverrides && section.id in descriptionOverrides) {
+      return descriptionOverrides[section.id];
+    }
+    return true; // Default to visible
+  };
+
+  const isContentVisible = getContentVisibility();
+
   // If this is the document title section, render as page title
   if (isDocumentTitle) {
     return (
@@ -220,6 +239,9 @@ const ContentSectionComponent: React.FC<{
                 expandedSections={expandedSections}
                 defaultExpandDepth={defaultExpandDepth}
                 onToggleSection={onToggleSection}
+                showDescriptions={showDescriptions}
+                descriptionOverrides={descriptionOverrides}
+                onToggleDescription={onToggleDescription}
               />
             ))}
           </div>
@@ -287,7 +309,7 @@ const ContentSectionComponent: React.FC<{
 
       {isExpanded && (
         <div className="mt-2">
-          {hasContent && (
+          {hasContent && isContentVisible && (
             <div 
               className={`prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
               style={{ marginLeft: `${contentIndentationPx}px` }}
@@ -312,6 +334,9 @@ const ContentSectionComponent: React.FC<{
                   expandedSections={expandedSections}
                   defaultExpandDepth={defaultExpandDepth}
                   onToggleSection={onToggleSection}
+                  showDescriptions={showDescriptions}
+                  descriptionOverrides={descriptionOverrides}
+                  onToggleDescription={onToggleDescription}
                 />
               ))}
             </div>
@@ -331,7 +356,10 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   documentTitle,
   expandedSections,
   defaultExpandDepth,
-  onToggleSection
+  onToggleSection,
+  showDescriptions,
+  descriptionOverrides,
+  onToggleDescription
 }) => {
   
   // Clean tag syntax from content before parsing
@@ -368,6 +396,9 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
             expandedSections={expandedSections}
             defaultExpandDepth={defaultExpandDepth}
             onToggleSection={onToggleSection}
+            showDescriptions={showDescriptions}
+            descriptionOverrides={descriptionOverrides}
+            onToggleDescription={onToggleDescription}
           />
         ))}
       </div>

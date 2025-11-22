@@ -22,6 +22,10 @@ interface LayoutContextType {
   manualOverrides: Record<string, boolean>;
   setExpandDepth: (depth: number) => void;
   setManualOverride: (sectionId: string, isExpanded: boolean) => void;
+  showDescriptions: 'on' | 'off' | 'mixed';
+  descriptionOverrides: Record<string, boolean>;
+  setShowDescriptions: (mode: 'on' | 'off') => void;
+  setDescriptionOverride: (sectionId: string, isVisible: boolean) => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | null>(null);
@@ -48,6 +52,8 @@ export const PersistentLayout: React.FC = () => {
   const [expandDepth, setExpandDepth] = useState(1);
   const [expandMode, setExpandMode] = useState<'depth' | 'mixed'>('depth');
   const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>({});
+  const [showDescriptions, setShowDescriptionsState] = useState<'on' | 'off' | 'mixed'>('on');
+  const [descriptionOverrides, setDescriptionOverrides] = useState<Record<string, boolean>>({});
   
   // Ref for section navigation function - will be set by ContentPage
   const sectionNavigateRef = React.useRef<((sectionTitle: string) => void) | null>(null);
@@ -103,6 +109,16 @@ export const PersistentLayout: React.FC = () => {
     setManualOverrides({});
   };
 
+  const handleSetDescriptionOverride = (sectionId: string, isVisible: boolean) => {
+    setDescriptionOverrides(prev => ({ ...prev, [sectionId]: isVisible }));
+    setShowDescriptionsState('mixed');
+  };
+
+  const handleShowDescriptionsChange = (mode: 'on' | 'off') => {
+    setShowDescriptionsState(mode);
+    setDescriptionOverrides({});
+  };
+
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -128,7 +144,11 @@ export const PersistentLayout: React.FC = () => {
       expandMode,
       manualOverrides,
       setExpandDepth: handleExpandDepthChange,
-      setManualOverride: handleSetManualOverride
+      setManualOverride: handleSetManualOverride,
+      showDescriptions,
+      descriptionOverrides,
+      setShowDescriptions: handleShowDescriptionsChange,
+      setDescriptionOverride: handleSetDescriptionOverride
     }}>
       <WikiLayout
         navigationStructure={navigationStructure}
@@ -146,6 +166,8 @@ export const PersistentLayout: React.FC = () => {
         expandDepth={expandDepth}
         expandMode={expandMode}
         onExpandDepthChange={handleExpandDepthChange}
+        showDescriptions={showDescriptions}
+        onShowDescriptionsChange={handleShowDescriptionsChange}
       >
         <Outlet />
       </WikiLayout>
