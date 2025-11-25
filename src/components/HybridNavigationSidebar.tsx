@@ -552,8 +552,38 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
 
     return (
     <div className="h-full w-full flex flex-col bg-sidebar">
+      {/* Navigation Tree */}
+      <div className="flex-1 section-bg-3 overflow-y-auto p-3">
+        <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
+          Navigation
+        </div>
+        {topLevelNodes.length > 0 ? (
+          topLevelNodes.map((item) => (
+            <FolderNode
+              key={item.id}
+              node={item}
+              contentNodes={contentNodes}
+              onStructureUpdate={onStructureUpdate}
+              onNavigationClick={onNavigationClick}
+              currentNavId={currentNavId}
+              setShowEditor={setShowEditor}
+              currentPath={currentPath}
+              allRootNodes={topLevelNodes}
+              onSectionNavigate={onSectionNavigate}
+              activeSectionId={activeSectionId}
+              activeDocumentPath={activeDocumentPath}
+              setActiveSectionId={setActiveSectionId}
+            />
+          ))
+        ) : (
+          <div className="p-3 text-center text-muted-foreground">
+            <p className="text-sm">No folders found</p>
+          </div>
+        )}
+      </div>
+
       {/* Filters Section */}
-      <div className="border-b border-sidebar-border section-bg-2 p-3">
+      <div className="border-t border-sidebar-border section-bg-2 p-3">
         <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
           Filters
         </div>
@@ -567,41 +597,9 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             />
           ))}
         </div>
-      </div>
-
-      {/* Navigation Tree */}
-      <div className="flex-1 flex flex-col section-bg-3 overflow-hidden">
-        <div className="flex-1 overflow-y-auto p-3">
-          <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
-            Navigation
-          </div>
-          {topLevelNodes.length > 0 ? (
-            topLevelNodes.map((item) => (
-              <FolderNode
-                key={item.id}
-                node={item}
-                contentNodes={contentNodes}
-                onStructureUpdate={onStructureUpdate}
-                onNavigationClick={onNavigationClick}
-                currentNavId={currentNavId}
-                setShowEditor={setShowEditor}
-                currentPath={currentPath}
-                allRootNodes={topLevelNodes}
-                onSectionNavigate={onSectionNavigate}
-                activeSectionId={activeSectionId}
-                activeDocumentPath={activeDocumentPath}
-                setActiveSectionId={setActiveSectionId}
-              />
-            ))
-          ) : (
-            <div className="p-3 text-center text-muted-foreground">
-              <p className="text-sm">No folders found</p>
-            </div>
-          )}
-        </div>
 
         {/* Bottom Controls - Plus Button (left) and Controls (right) */}
-        <div className="py-2 px-3 border-t border-sidebar-border flex items-center justify-between">
+        <div className="py-2 px-3 border-t border-sidebar-border flex items-center justify-between mt-3">
           {/* Plus Button on the left */}
           <div>
             <Button
