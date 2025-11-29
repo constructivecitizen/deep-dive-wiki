@@ -307,7 +307,8 @@ const ContentSectionComponent: React.FC<{
         </div>
       </div>
 
-      {isExpanded && (
+      {/* Show content area when expanded OR when at boundary depth with descriptions on */}
+      {(isExpanded || (defaultExpandDepth !== undefined && depth === defaultExpandDepth && isContentVisible && hasContent)) && (
         <div className="mt-2">
           {hasContent && isContentVisible && (
             <div 
@@ -319,7 +320,7 @@ const ContentSectionComponent: React.FC<{
             />
           )}
           
-          {hasChildren && (
+          {hasChildren && isExpanded && (
             <div className="space-y-2">
               {section.children.map((child, index) => (
                 <ContentSectionComponent
