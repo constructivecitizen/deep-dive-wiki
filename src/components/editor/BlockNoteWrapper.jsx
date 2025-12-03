@@ -156,39 +156,50 @@ export function BlockNoteWrapper({
     try {
       const blocks = editor.document;
       let currentHeadingLevel = 1;
+      let foundElements = 0;
+      let totalBlocks = 0;
       
-      const applyToBlocks = (blocksArr) => {
-        for (let i = 0; i < blocksArr.length; i++) {
-          const block = blocksArr[i];
-          const blockEl = wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
+      // Flatten all blocks to process in order
+      const flattenBlocks = (blocksArr, result = []) => {
+        for (const block of blocksArr) {
+          result.push(block);
+          if (block.children && block.children.length > 0) {
+            flattenBlocks(block.children, result);
+          }
+        }
+        return result;
+      };
+      
+      const allBlocks = flattenBlocks(blocks);
+      totalBlocks = allBlocks.length;
+      
+      for (const block of allBlocks) {
+        // BlockNote uses data-id attribute
+        const blockEl = wrapperRef.current.querySelector(`[data-id="${block.id}"]`);
+        
+        if (blockEl) {
+          foundElements++;
           
           if (block.type === 'heading') {
             const originalLevel = block.props?.originalLevel || block.props?.level || 1;
             currentHeadingLevel = originalLevel;
             
-            if (blockEl) {
-              if (originalLevel <= 10) {
-                blockEl.setAttribute('data-level', originalLevel);
-              } else {
-                blockEl.setAttribute('data-level-deep', 'true');
-                blockEl.style.setProperty('--extra-levels', originalLevel - 10);
-              }
+            if (originalLevel <= 10) {
+              blockEl.setAttribute('data-level', originalLevel);
+            } else {
+              blockEl.setAttribute('data-level-deep', 'true');
+              blockEl.style.setProperty('--extra-levels', originalLevel - 10);
             }
           } else if (block.type === 'paragraph') {
             // Apply colored background to paragraphs based on preceding heading level
-            if (blockEl) {
-              const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
-              blockEl.setAttribute('data-content-level', colorLevel);
-              blockEl.setAttribute('data-indent', Math.min(currentHeadingLevel, 10));
-            }
-          }
-          
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children);
+            const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
+            blockEl.setAttribute('data-content-level', colorLevel);
+            blockEl.setAttribute('data-indent', Math.min(currentHeadingLevel, 10));
           }
         }
-      };
-      applyToBlocks(blocks);
+      }
+      
+      console.log(`[BlockNote Styles] Applied to ${foundElements}/${totalBlocks} blocks`);
     } catch (e) {
       console.error('Failed to apply block styles:', e);
     }
@@ -244,6 +255,26 @@ export function BlockNoteWrapper({
     
     return () => unsubscribe?.();
   }, [editor, applyBlockStyles]);
+
+  // MutationObserver to re-apply styles when DOM changes
+  useEffect(() => {
+    if (!wrapperRef.current) return;
+    
+    const observer = new MutationObserver(() => {
+      applyBlockStyles();
+    });
+    
+    observer.observe(wrapperRef.current, {
+      childList: true,
+      subtree: true,
+    });
+    
+    // Initial application with longer delays to ensure DOM is ready
+    setTimeout(applyBlockStyles, 200);
+    setTimeout(applyBlockStyles, 500);
+    
+    return () => observer.disconnect();
+  }, [applyBlockStyles]);
 
   // Get the actual level (originalLevel) from a block
   const getBlockOriginalLevel = (block) => {
