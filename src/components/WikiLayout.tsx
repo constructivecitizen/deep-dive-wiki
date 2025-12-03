@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
+import { SearchOverlay } from "./SearchOverlay";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
 import BetterProdLogoB from "@/assets/BetterProd-logo-3A-3.png";
 import BetterProdLogoText from "@/assets/BetterProd-logo-3B.png";
@@ -47,6 +48,8 @@ export const WikiLayout = ({
   showDescriptions,
   onShowDescriptionsChange
 }: WikiLayoutProps) => {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   return (
     <ResizablePanelGroup 
       id="wiki-layout-persistent"
@@ -93,6 +96,7 @@ export const WikiLayout = ({
               onExpandDepthChange={onExpandDepthChange}
               showDescriptions={showDescriptions}
               onShowDescriptionsChange={onShowDescriptionsChange}
+              onSearchOpen={() => setIsSearchOpen(true)}
             />
           </div>
         </aside>
@@ -101,7 +105,10 @@ export const WikiLayout = ({
       <ResizableHandle withHandle />
       
       <ResizablePanel id="main-panel" defaultSize={80}>
-        <div className="h-screen">
+        <div className="h-screen relative">
+          {isSearchOpen && (
+            <SearchOverlay onClose={() => setIsSearchOpen(false)} />
+          )}
           <ScrollArea className="h-full">
             <main className="pl-20 pr-6 py-8 max-w-4xl">
               {children}
