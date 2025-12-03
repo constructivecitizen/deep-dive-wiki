@@ -256,24 +256,14 @@ export function BlockNoteWrapper({
     return () => unsubscribe?.();
   }, [editor, applyBlockStyles]);
 
-  // MutationObserver to re-apply styles when DOM changes
+  // Additional delayed style application for reliability
   useEffect(() => {
-    if (!wrapperRef.current) return;
-    
-    const observer = new MutationObserver(() => {
-      applyBlockStyles();
-    });
-    
-    observer.observe(wrapperRef.current, {
-      childList: true,
-      subtree: true,
-    });
-    
-    // Initial application with longer delays to ensure DOM is ready
-    setTimeout(applyBlockStyles, 200);
-    setTimeout(applyBlockStyles, 500);
-    
-    return () => observer.disconnect();
+    const timer1 = setTimeout(applyBlockStyles, 300);
+    const timer2 = setTimeout(applyBlockStyles, 600);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, [applyBlockStyles]);
 
   // Get the actual level (originalLevel) from a block
