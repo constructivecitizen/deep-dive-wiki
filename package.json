@@ -15,6 +15,8 @@
     "@blocknote/mantine": "^0.44.0",
     "@blocknote/react": "^0.44.0",
     "@hookform/resolvers": "^3.10.0",
+    "@mantine/core": "^8.3.9",
+    "@mantine/hooks": "^8.3.9",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
