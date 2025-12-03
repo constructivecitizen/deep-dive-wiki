@@ -12,7 +12,6 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { AlertTriangle } from "lucide-react";
 
 // Color palette for deep level indicators (cycles through 6 colors)
 const LEVEL_COLORS = [
@@ -274,29 +273,6 @@ export function BlockNoteWrapper({
 
   return (
     <div className="blocknote-wrapper" ref={wrapperRef}>
-      {/* Deep level warning banner */}
-      {hasDeepLevels && !readOnly && (
-        <div className="flex items-center gap-2 mb-2 p-2 bg-amber-50 border border-amber-200 rounded-md text-amber-800 text-xs">
-          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-          <span>
-            This document has deep hierarchy (level 4+). Visual display is limited to H1-H3, but all levels are preserved.
-            Use <strong>Markdown mode</strong> for precise level control with <code>####</code> syntax.
-          </span>
-        </div>
-      )}
-      
-      {/* Keyboard hint toolbar */}
-      {!readOnly && (
-        <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md border border-border text-xs text-muted-foreground">
-          <span>
-            <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">Tab</kbd>
-            {' '}to indent, {' '}
-            <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">Shift+Tab</kbd>
-            {' '}to outdent selected headings
-          </span>
-        </div>
-      )}
-      
       <BlockNoteView
         editor={editor}
         editable={!readOnly}
