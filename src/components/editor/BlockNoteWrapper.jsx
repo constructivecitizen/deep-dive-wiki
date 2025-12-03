@@ -13,121 +13,25 @@ import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { useEffect, useRef, useCallback } from "react";
 
-// CSS for visual styling to match view mode
-const EDITOR_STYLES = `
-  /* Headings align with parent paragraph text (12px padding offset per level) */
-  .blocknote-wrapper [data-level="1"] { margin-left: 0 !important; }
-  .blocknote-wrapper [data-level="2"] { margin-left: 12px !important; }
-  .blocknote-wrapper [data-level="3"] { margin-left: 24px !important; }
-  .blocknote-wrapper [data-level="4"] { margin-left: 36px !important; }
-  .blocknote-wrapper [data-level="5"] { margin-left: 48px !important; }
-  .blocknote-wrapper [data-level="6"] { margin-left: 60px !important; }
-  .blocknote-wrapper [data-level="7"] { margin-left: 72px !important; }
-  .blocknote-wrapper [data-level="8"] { margin-left: 84px !important; }
-  .blocknote-wrapper [data-level="9"] { margin-left: 96px !important; }
-  .blocknote-wrapper [data-level="10"] { margin-left: 108px !important; }
-  .blocknote-wrapper [data-level-deep] { margin-left: calc(108px + (var(--extra-levels) * 12px)) !important; }
-  
-  /* Font sizing based on level - matching view mode exactly */
-  .blocknote-wrapper [data-level="1"] h1,
-  .blocknote-wrapper [data-level="1"] h2,
-  .blocknote-wrapper [data-level="1"] h3 {
-    font-size: 1.25rem !important;
-    font-weight: 600 !important;
-    line-height: 1.625 !important;
-    color: hsl(var(--foreground)) !important;
-  }
-  .blocknote-wrapper [data-level="2"] h1,
-  .blocknote-wrapper [data-level="2"] h2,
-  .blocknote-wrapper [data-level="2"] h3 {
-    font-size: 1.125rem !important;
-    font-weight: 500 !important;
-    line-height: 1.625 !important;
-    color: hsl(var(--foreground)) !important;
-  }
-  .blocknote-wrapper [data-level="3"] h1,
-  .blocknote-wrapper [data-level="3"] h2,
-  .blocknote-wrapper [data-level="3"] h3 {
-    font-size: 1rem !important;
-    font-weight: 500 !important;
-    line-height: 1.5 !important;
-    color: hsl(var(--foreground)) !important;
-  }
-  .blocknote-wrapper [data-level="4"] h1,
-  .blocknote-wrapper [data-level="4"] h2,
-  .blocknote-wrapper [data-level="4"] h3,
-  .blocknote-wrapper [data-level="5"] h1,
-  .blocknote-wrapper [data-level="5"] h2,
-  .blocknote-wrapper [data-level="5"] h3,
-  .blocknote-wrapper [data-level="6"] h1,
-  .blocknote-wrapper [data-level="6"] h2,
-  .blocknote-wrapper [data-level="6"] h3,
-  .blocknote-wrapper [data-level-deep] h1,
-  .blocknote-wrapper [data-level-deep] h2,
-  .blocknote-wrapper [data-level-deep] h3 {
-    font-size: 0.875rem !important;
-    font-weight: 500 !important;
-    line-height: 1.5 !important;
-    color: hsl(var(--foreground)) !important;
-  }
+// Design system content level colors (fallbacks if CSS vars not available)
+const CONTENT_COLORS = {
+  1: { bg: '160 40% 95%', border: '160 40% 70%' },
+  2: { bg: '210 40% 95%', border: '210 40% 70%' },
+  3: { bg: '270 40% 95%', border: '270 40% 70%' },
+  4: { bg: '40 50% 95%', border: '40 50% 70%' },
+  5: { bg: '340 40% 95%', border: '340 40% 70%' },
+  6: { bg: '190 40% 95%', border: '190 40% 70%' },
+};
 
-  /* Colored paragraph blocks - using design system content-level colors */
-  .blocknote-wrapper [data-content-level] {
-    border-radius: 0.375rem !important;
-    padding: 7px 9px !important;
-    margin: 4px 0 !important;
-    border-left-width: 2px !important;
-    border-left-style: solid !important;
+// Helper to get CSS variable value or fallback
+function getCSSVar(varName, fallback) {
+  try {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return value || fallback;
+  } catch {
+    return fallback;
   }
-  
-  /* Level 1 - Warm green/teal */
-  .blocknote-wrapper [data-content-level="1"] {
-    background: hsl(var(--content-level-1)) !important;
-    border-left-color: hsl(var(--content-border-1)) !important;
-  }
-  
-  /* Level 2 - Soft blue */
-  .blocknote-wrapper [data-content-level="2"] {
-    background: hsl(var(--content-level-2)) !important;
-    border-left-color: hsl(var(--content-border-2)) !important;
-  }
-  
-  /* Level 3 - Light purple */
-  .blocknote-wrapper [data-content-level="3"] {
-    background: hsl(var(--content-level-3)) !important;
-    border-left-color: hsl(var(--content-border-3)) !important;
-  }
-  
-  /* Level 4 - Warm amber */
-  .blocknote-wrapper [data-content-level="4"] {
-    background: hsl(var(--content-level-4)) !important;
-    border-left-color: hsl(var(--content-border-4)) !important;
-  }
-  
-  /* Level 5 - Soft pink */
-  .blocknote-wrapper [data-content-level="5"] {
-    background: hsl(var(--content-level-5)) !important;
-    border-left-color: hsl(var(--content-border-5)) !important;
-  }
-  
-  /* Level 6 - Cool cyan */
-  .blocknote-wrapper [data-content-level="6"] {
-    background: hsl(var(--content-level-6)) !important;
-    border-left-color: hsl(var(--content-border-6)) !important;
-  }
-
-  /* Paragraph indentation matches its heading */
-  .blocknote-wrapper [data-content-level][data-indent="1"] { margin-left: 0 !important; }
-  .blocknote-wrapper [data-content-level][data-indent="2"] { margin-left: 12px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="3"] { margin-left: 24px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="4"] { margin-left: 36px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="5"] { margin-left: 48px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="6"] { margin-left: 60px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="7"] { margin-left: 72px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="8"] { margin-left: 84px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="9"] { margin-left: 96px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="10"] { margin-left: 108px !important; }
-`;
+}
 
 export function BlockNoteWrapper({
   initialBlocks,
@@ -138,18 +42,7 @@ export function BlockNoteWrapper({
   const wrapperRef = useRef(null);
   const editor = useCreateBlockNote();
 
-  // Inject editor styles once
-  useEffect(() => {
-    const styleId = 'blocknote-editor-styles';
-    if (!document.getElementById(styleId)) {
-      const styleEl = document.createElement('style');
-      styleEl.id = styleId;
-      styleEl.textContent = EDITOR_STYLES;
-      document.head.appendChild(styleEl);
-    }
-  }, []);
-
-  // Apply data attributes to blocks for visual styling
+  // Apply inline styles directly to blocks for visual styling
   const applyBlockStyles = useCallback(() => {
     if (!editor || !wrapperRef.current) return;
     
@@ -178,7 +71,7 @@ export function BlockNoteWrapper({
         const blockOuter = wrapperRef.current.querySelector(`.bn-block-outer[data-id="${block.id}"]`);
         if (!blockOuter) continue;
         
-        // Find the .bn-block-content element inside (this is where CSS expects the attributes)
+        // Find the .bn-block-content element inside
         const blockContent = blockOuter.querySelector('.bn-block-content');
         if (!blockContent) continue;
         
@@ -188,21 +81,64 @@ export function BlockNoteWrapper({
           const originalLevel = block.props?.originalLevel || block.props?.level || 1;
           currentHeadingLevel = originalLevel;
           
-          if (originalLevel <= 10) {
-            blockContent.setAttribute('data-level', originalLevel);
-          } else {
-            blockContent.setAttribute('data-level-deep', 'true');
-            blockContent.style.setProperty('--extra-levels', originalLevel - 10);
+          // Apply indentation directly via inline style
+          const indentPx = (originalLevel - 1) * 12;
+          blockContent.style.marginLeft = `${indentPx}px`;
+          
+          // Apply font styling to the heading element
+          const h = blockContent.querySelector('h1, h2, h3');
+          if (h) {
+            // Get foreground color from CSS var
+            const fgColor = getCSSVar('--foreground', '222.2 84% 4.9%');
+            h.style.color = `hsl(${fgColor})`;
+            
+            if (originalLevel === 1) {
+              h.style.fontSize = '1.25rem';
+              h.style.fontWeight = '600';
+              h.style.lineHeight = '1.625';
+            } else if (originalLevel === 2) {
+              h.style.fontSize = '1.125rem';
+              h.style.fontWeight = '500';
+              h.style.lineHeight = '1.625';
+            } else if (originalLevel === 3) {
+              h.style.fontSize = '1rem';
+              h.style.fontWeight = '500';
+              h.style.lineHeight = '1.5';
+            } else {
+              // Level 4+ - smaller font
+              h.style.fontSize = '0.875rem';
+              h.style.fontWeight = '500';
+              h.style.lineHeight = '1.5';
+            }
           }
+          
+          // Store data attribute for debugging
+          blockContent.setAttribute('data-level', originalLevel);
+          
         } else if (block.type === 'paragraph') {
           // Apply colored background to paragraphs based on preceding heading level
           const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
+          const indentPx = (currentHeadingLevel - 1) * 12;
+          
+          // Get colors from CSS vars or use fallbacks
+          const bgColor = getCSSVar(`--content-level-${colorLevel}`, CONTENT_COLORS[colorLevel].bg);
+          const borderColor = getCSSVar(`--content-border-${colorLevel}`, CONTENT_COLORS[colorLevel].border);
+          
+          // Apply inline styles directly - highest specificity
+          blockContent.style.background = `hsl(${bgColor})`;
+          blockContent.style.borderLeft = `2px solid hsl(${borderColor})`;
+          blockContent.style.borderRadius = '0.375rem';
+          blockContent.style.padding = '7px 9px';
+          blockContent.style.margin = '4px 0';
+          blockContent.style.marginLeft = `${indentPx}px`;
+          
+          // Store data attributes for debugging
           blockContent.setAttribute('data-content-level', colorLevel);
           blockContent.setAttribute('data-indent', Math.min(currentHeadingLevel, 10));
         }
       }
       
-      console.log(`[BlockNote Styles] Applied to ${foundElements}/${totalBlocks} blocks`);
+      console.log(`[BlockNote Styles] Applied inline styles to ${foundElements}/${totalBlocks} blocks`);
     } catch (e) {
       console.error('Failed to apply block styles:', e);
     }
