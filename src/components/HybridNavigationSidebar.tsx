@@ -40,6 +40,7 @@ interface HybridNavigationSidebarProps {
   onExpandDepthChange?: (depth: number) => void;
   showDescriptions?: 'on' | 'off' | 'mixed';
   onShowDescriptionsChange?: (mode: 'on' | 'off') => void;
+  onSearchOpen?: () => void;
 }
 
   const FolderNode: React.FC<{
@@ -345,7 +346,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   expandMode = 'depth',
   onExpandDepthChange,
   showDescriptions = 'on',
-  onShowDescriptionsChange
+  onShowDescriptionsChange,
+  onSearchOpen
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -553,33 +555,46 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
     return (
     <div className="h-full w-full flex flex-col bg-sidebar">
       {/* Navigation Tree */}
-      <div className="flex-1 section-bg-3 overflow-y-auto p-3">
+      <div className="flex-1 section-bg-3 overflow-y-auto p-3 flex flex-col">
         <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
           Navigation
         </div>
-        {topLevelNodes.length > 0 ? (
-          topLevelNodes.map((item) => (
-            <FolderNode
-              key={item.id}
-              node={item}
-              contentNodes={contentNodes}
-              onStructureUpdate={onStructureUpdate}
-              onNavigationClick={onNavigationClick}
-              currentNavId={currentNavId}
-              setShowEditor={setShowEditor}
-              currentPath={currentPath}
-              allRootNodes={topLevelNodes}
-              onSectionNavigate={onSectionNavigate}
-              activeSectionId={activeSectionId}
-              activeDocumentPath={activeDocumentPath}
-              setActiveSectionId={setActiveSectionId}
-            />
-          ))
-        ) : (
-          <div className="p-3 text-center text-muted-foreground">
-            <p className="text-sm">No folders found</p>
-          </div>
-        )}
+        <div className="flex-1 overflow-y-auto">
+          {topLevelNodes.length > 0 ? (
+            topLevelNodes.map((item) => (
+              <FolderNode
+                key={item.id}
+                node={item}
+                contentNodes={contentNodes}
+                onStructureUpdate={onStructureUpdate}
+                onNavigationClick={onNavigationClick}
+                currentNavId={currentNavId}
+                setShowEditor={setShowEditor}
+                currentPath={currentPath}
+                allRootNodes={topLevelNodes}
+                onSectionNavigate={onSectionNavigate}
+                activeSectionId={activeSectionId}
+                activeDocumentPath={activeDocumentPath}
+                setActiveSectionId={setActiveSectionId}
+              />
+            ))
+          ) : (
+            <div className="p-3 text-center text-muted-foreground">
+              <p className="text-sm">No folders found</p>
+            </div>
+          )}
+        </div>
+
+        {/* Search trigger - at bottom of Navigation */}
+        <div className="mt-3 pt-2 border-t border-sidebar-border/50">
+          <button
+            onClick={onSearchOpen}
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors"
+          >
+            <Search className="w-4 h-4" />
+            <span>Search...</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters Section */}
