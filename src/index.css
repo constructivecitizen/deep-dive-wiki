@@ -209,31 +209,31 @@
   }
 
   .ProseMirror h1 {
-    @apply text-2xl font-bold mb-4 text-foreground;
+    @apply text-xl font-semibold mb-2 text-foreground leading-relaxed;
   }
 
   .ProseMirror h2 {
-    @apply text-xl font-bold mb-3 text-foreground;
+    @apply text-lg font-medium mb-2 text-foreground leading-relaxed;
   }
 
   .ProseMirror h3 {
-    @apply text-lg font-bold mb-2 text-foreground;
+    @apply text-base font-medium mb-2 text-foreground leading-normal;
   }
 
   .ProseMirror h4 {
-    @apply text-base font-bold mb-2 text-foreground;
+    @apply text-sm font-medium mb-2 text-foreground leading-normal;
   }
 
   .ProseMirror h5 {
-    @apply text-sm font-bold mb-2 text-foreground;
+    @apply text-sm mb-2 text-foreground leading-normal;
   }
 
   .ProseMirror h6 {
-    @apply text-xs font-bold mb-2 text-foreground;
+    @apply text-sm mb-2 text-foreground leading-normal;
   }
 
   .ProseMirror p {
-    @apply mb-3 text-foreground leading-relaxed;
+    @apply mb-2 text-foreground leading-relaxed text-sm;
   }
 
   .ProseMirror p.is-editor-empty:first-child::before {
