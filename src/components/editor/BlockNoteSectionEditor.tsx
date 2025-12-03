@@ -20,7 +20,6 @@ interface BlockNoteSectionEditorProps {
   onSave: (sections: DocumentSection[]) => void;
   onClose?: () => void;
   readOnly?: boolean;
-  defaultIncludeChildren?: boolean;
 }
 
 /**
@@ -32,10 +31,8 @@ export function BlockNoteSectionEditor({
   onSave,
   onClose,
   readOnly = false,
-  defaultIncludeChildren = true,
 }: BlockNoteSectionEditorProps) {
   const editorRef = useRef<any>(null);
-  const [includeChildren, setIncludeChildren] = useState(defaultIncludeChildren);
   const [editorMode, setEditorMode] = useState<'blocknote' | 'markdown'>('blocknote');
   const [markdownContent, setMarkdownContent] = useState('');
   
@@ -250,8 +247,6 @@ export function BlockNoteSectionEditor({
                   initialBlocks={initialBlocks}
                   onEditorReady={handleEditorReady}
                   readOnly={readOnly}
-                  includeChildren={includeChildren}
-                  onIncludeChildrenChange={setIncludeChildren}
                 />
               </Suspense>
             ) : (
