@@ -13,24 +13,97 @@ import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { useEffect, useRef, useCallback } from "react";
 
-// Design system content level colors (fallbacks if CSS vars not available)
-const CONTENT_COLORS = {
-  1: { bg: '160 40% 95%', border: '160 40% 70%' },
-  2: { bg: '210 40% 95%', border: '210 40% 70%' },
-  3: { bg: '270 40% 95%', border: '270 40% 70%' },
-  4: { bg: '40 50% 95%', border: '40 50% 70%' },
-  5: { bg: '340 40% 95%', border: '340 40% 70%' },
-  6: { bg: '190 40% 95%', border: '190 40% 70%' },
-};
-
-// Helper to get CSS variable value or fallback
-function getCSSVar(varName, fallback) {
-  try {
-    const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-    return value || fallback;
-  } catch {
-    return fallback;
+// CSS styles injected into the editor for styling based on data attributes
+const EDITOR_STYLES = `
+  /* Heading styles based on data-original-level */
+  .blocknote-wrapper [data-content-type="heading"][data-original-level] .bn-inline-content {
+    color: hsl(var(--foreground, 222.2 84% 4.9%));
   }
+  
+  /* Level 1 headings */
+  .blocknote-wrapper [data-content-type="heading"][data-original-level="1"] .bn-inline-content {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.625;
+  }
+  
+  /* Level 2 headings */
+  .blocknote-wrapper [data-content-type="heading"][data-original-level="2"] .bn-inline-content {
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.625;
+  }
+  
+  /* Level 3 headings */
+  .blocknote-wrapper [data-content-type="heading"][data-original-level="3"] .bn-inline-content {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  
+  /* Level 4+ headings (default for any level >= 4) */
+  .blocknote-wrapper [data-content-type="heading"][data-original-level] .bn-inline-content {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  
+  /* Re-apply specific levels with higher specificity */
+  .blocknote-wrapper [data-content-type="heading"][data-original-level="1"] .bn-inline-content {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+  }
+  .blocknote-wrapper [data-content-type="heading"][data-original-level="2"] .bn-inline-content {
+    font-size: 1.125rem !important;
+    font-weight: 500 !important;
+  }
+  .blocknote-wrapper [data-content-type="heading"][data-original-level="3"] .bn-inline-content {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Paragraph styles based on data-color-level (cycles 1-6) */
+  .blocknote-wrapper [data-content-type="paragraph"][data-color-level] {
+    border-radius: 0.375rem;
+    padding: 7px 9px;
+    margin: 4px 0;
+  }
+  
+  .blocknote-wrapper [data-content-type="paragraph"][data-color-level="1"] {
+    background: hsl(var(--content-level-1, 160 40% 95%));
+    border-left: 2px solid hsl(var(--content-border-1, 160 40% 70%));
+  }
+  .blocknote-wrapper [data-content-type="paragraph"][data-color-level="2"] {
+    background: hsl(var(--content-level-2, 210 40% 95%));
+    border-left: 2px solid hsl(var(--content-border-2, 210 40% 70%));
+  }
+  .blocknote-wrapper [data-content-type="paragraph"][data-color-level="3"] {
+    background: hsl(var(--content-level-3, 270 40% 95%));
+    border-left: 2px solid hsl(var(--content-border-3, 270 40% 70%));
+  }
+  .blocknote-wrapper [data-content-type="paragraph"][data-color-level="4"] {
+    background: hsl(var(--content-level-4, 40 50% 95%));
+    border-left: 2px solid hsl(var(--content-border-4, 40 50% 70%));
+  }
+  .blocknote-wrapper [data-content-type="paragraph"][data-color-level="5"] {
+    background: hsl(var(--content-level-5, 340 40% 95%));
+    border-left: 2px solid hsl(var(--content-border-5, 340 40% 70%));
+  }
+  .blocknote-wrapper [data-content-type="paragraph"][data-color-level="6"] {
+    background: hsl(var(--content-level-6, 190 40% 95%));
+    border-left: 2px solid hsl(var(--content-border-6, 190 40% 70%));
+  }
+`;
+
+// Helper to flatten blocks
+function flattenBlocks(blocksArr, result = []) {
+  for (const block of blocksArr) {
+    result.push(block);
+    if (block.children && block.children.length > 0) {
+      flattenBlocks(block.children, result);
+    }
+  }
+  return result;
 }
 
 export function BlockNoteWrapper({
@@ -40,109 +113,102 @@ export function BlockNoteWrapper({
 }) {
   const hasInitializedRef = useRef(false);
   const wrapperRef = useRef(null);
+  const observerRef = useRef(null);
+  const rafRef = useRef(null);
   const editor = useCreateBlockNote();
 
-  // Apply inline styles directly to blocks for visual styling
-  const applyBlockStyles = useCallback(() => {
+  // Apply data attributes to blocks for CSS-based styling
+  const applyDataAttributes = useCallback(() => {
     if (!editor || !wrapperRef.current) return;
     
     try {
       const blocks = editor.document;
       let currentHeadingLevel = 1;
-      let foundElements = 0;
-      let totalBlocks = 0;
-      
-      // Flatten all blocks to process in order
-      const flattenBlocks = (blocksArr, result = []) => {
-        for (const block of blocksArr) {
-          result.push(block);
-          if (block.children && block.children.length > 0) {
-            flattenBlocks(block.children, result);
-          }
-        }
-        return result;
-      };
       
       const allBlocks = flattenBlocks(blocks);
-      totalBlocks = allBlocks.length;
       
       for (const block of allBlocks) {
-        // Find the block element directly - works for both top-level and nested blocks
         const blockElement = wrapperRef.current.querySelector(`.bn-block[data-id="${block.id}"]`);
         if (!blockElement) continue;
         
-        // Find the .bn-block-content element inside
         const blockContent = blockElement.querySelector('.bn-block-content');
         if (!blockContent) continue;
-        
-        foundElements++;
         
         if (block.type === 'heading') {
           const originalLevel = block.props?.originalLevel || block.props?.level || 1;
           currentHeadingLevel = originalLevel;
           
-          // Apply indentation directly via inline style
+          // Set data attribute for CSS targeting
+          blockContent.setAttribute('data-original-level', originalLevel);
+          
+          // Apply indentation inline (CSS can't use attr() in calc())
           const indentPx = (originalLevel - 1) * 12;
           blockContent.style.marginLeft = `${indentPx}px`;
           
-          // Apply font styling to the heading element
-          const h = blockContent.querySelector('h1, h2, h3');
-          if (h) {
-            // Get foreground color from CSS var
-            const fgColor = getCSSVar('--foreground', '222.2 84% 4.9%');
-            h.style.color = `hsl(${fgColor})`;
-            
-            if (originalLevel === 1) {
-              h.style.fontSize = '1.25rem';
-              h.style.fontWeight = '600';
-              h.style.lineHeight = '1.625';
-            } else if (originalLevel === 2) {
-              h.style.fontSize = '1.125rem';
-              h.style.fontWeight = '500';
-              h.style.lineHeight = '1.625';
-            } else if (originalLevel === 3) {
-              h.style.fontSize = '1rem';
-              h.style.fontWeight = '500';
-              h.style.lineHeight = '1.5';
-            } else {
-              // Level 4+ - smaller font
-              h.style.fontSize = '0.875rem';
-              h.style.fontWeight = '500';
-              h.style.lineHeight = '1.5';
-            }
-          }
-          
-          // Store data attribute for debugging
-          blockContent.setAttribute('data-level', originalLevel);
-          
         } else if (block.type === 'paragraph') {
-          // Apply colored background to paragraphs based on preceding heading level
+          // Color cycles through 1-6 based on heading level
           const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
+          
+          // Set data attributes for CSS targeting
+          blockContent.setAttribute('data-original-level', currentHeadingLevel);
+          blockContent.setAttribute('data-color-level', colorLevel);
+          
+          // Apply indentation inline
           const indentPx = (currentHeadingLevel - 1) * 12;
-          
-          // Get colors from CSS vars or use fallbacks
-          const bgColor = getCSSVar(`--content-level-${colorLevel}`, CONTENT_COLORS[colorLevel].bg);
-          const borderColor = getCSSVar(`--content-border-${colorLevel}`, CONTENT_COLORS[colorLevel].border);
-          
-          // Apply inline styles directly - highest specificity
-          blockContent.style.background = `hsl(${bgColor})`;
-          blockContent.style.borderLeft = `2px solid hsl(${borderColor})`;
-          blockContent.style.borderRadius = '0.375rem';
-          blockContent.style.padding = '7px 9px';
-          blockContent.style.margin = '4px 0';
           blockContent.style.marginLeft = `${indentPx}px`;
-          
-          // Store data attributes for debugging
-          blockContent.setAttribute('data-content-level', colorLevel);
-          blockContent.setAttribute('data-indent', Math.min(currentHeadingLevel, 10));
         }
       }
-      
-      console.log(`[BlockNote Styles] Applied inline styles to ${foundElements}/${totalBlocks} blocks`);
     } catch (e) {
-      console.error('Failed to apply block styles:', e);
+      console.error('Failed to apply data attributes:', e);
     }
   }, [editor]);
+
+  // Use MutationObserver to detect BlockNote re-renders and reapply attributes
+  useEffect(() => {
+    if (!editor || !wrapperRef.current) return;
+    
+    // Debounced attribute application
+    const scheduleApply = () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      rafRef.current = requestAnimationFrame(() => {
+        applyDataAttributes();
+      });
+    };
+    
+    // Create observer
+    observerRef.current = new MutationObserver((mutations) => {
+      // Only react to relevant mutations
+      const hasRelevantMutation = mutations.some(m => 
+        m.type === 'childList' || 
+        (m.type === 'attributes' && m.attributeName !== 'data-original-level' && m.attributeName !== 'data-color-level')
+      );
+      
+      if (hasRelevantMutation) {
+        scheduleApply();
+      }
+    });
+    
+    observerRef.current.observe(wrapperRef.current, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'data-id', 'data-content-type']
+    });
+    
+    // Initial application
+    scheduleApply();
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [editor, applyDataAttributes]);
 
   // Pass editor to parent
   useEffect(() => {
@@ -165,7 +231,6 @@ export function BlockNoteWrapper({
             backgroundColor: "default",
             textAlignment: "left",
             ...(block.props || {}),
-            // Ensure originalLevel is preserved
             originalLevel: block.props?.originalLevel || block.props?.level || 1,
           },
           content: block.content || [],
@@ -175,35 +240,11 @@ export function BlockNoteWrapper({
         editor.replaceBlocks(editor.document, blocksForEditor);
       }
       hasInitializedRef.current = true;
-      // Apply styles after initialization
-      setTimeout(applyBlockStyles, 100);
     } catch (error) {
       console.error("Failed to initialize editor content:", error);
       hasInitializedRef.current = true;
     }
-  }, [editor, initialBlocks, applyBlockStyles]);
-
-  // Apply styles when editor content changes
-  useEffect(() => {
-    if (!editor) return;
-    
-    const unsubscribe = editor.onChange(() => {
-      // Debounce the style application
-      setTimeout(applyBlockStyles, 50);
-    });
-    
-    return () => unsubscribe?.();
-  }, [editor, applyBlockStyles]);
-
-  // Additional delayed style application for reliability
-  useEffect(() => {
-    const timer1 = setTimeout(applyBlockStyles, 300);
-    const timer2 = setTimeout(applyBlockStyles, 600);
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, [applyBlockStyles]);
+  }, [editor, initialBlocks]);
 
   // Get the actual level (originalLevel) from a block
   const getBlockOriginalLevel = (block) => {
@@ -215,14 +256,12 @@ export function BlockNoteWrapper({
     if (!editor) return;
     
     try {
-      // Get selected blocks or fall back to cursor block
       let blocksToUpdate = [];
       
       const selection = editor.getSelection();
       if (selection && selection.blocks && selection.blocks.length > 0) {
         blocksToUpdate = selection.blocks;
       } else {
-        // Fall back to cursor block
         const cursorBlock = editor.getTextCursorPosition()?.block;
         if (cursorBlock) {
           blocksToUpdate = [cursorBlock];
@@ -231,16 +270,12 @@ export function BlockNoteWrapper({
       
       if (blocksToUpdate.length === 0) return;
       
-      let hasUpdates = false;
-      
       for (const block of blocksToUpdate) {
-        // Only update heading blocks
         if (block.type !== "heading") continue;
         
         const currentOriginalLevel = getBlockOriginalLevel(block);
         const newOriginalLevel = currentOriginalLevel + delta;
         
-        // Check bounds
         if (newOriginalLevel < 1 || newOriginalLevel > 99) continue;
         
         const newVisualLevel = Math.min(newOriginalLevel, 3);
@@ -252,17 +287,11 @@ export function BlockNoteWrapper({
             originalLevel: newOriginalLevel,
           },
         });
-        
-        hasUpdates = true;
-      }
-      
-      if (hasUpdates) {
-        setTimeout(applyBlockStyles, 50);
       }
     } catch (error) {
       console.error("Failed to change level:", error);
     }
-  }, [editor, applyBlockStyles]);
+  }, [editor]);
 
   // Tab/Shift+Tab keyboard handler for indent/outdent
   useEffect(() => {
@@ -274,10 +303,8 @@ export function BlockNoteWrapper({
         e.stopPropagation();
         
         if (e.shiftKey) {
-          // Shift+Tab = outdent (decrease level)
           handleLevelChange(-1);
         } else {
-          // Tab = indent (increase level)
           handleLevelChange(1);
         }
       }
@@ -292,6 +319,7 @@ export function BlockNoteWrapper({
 
   return (
     <div className="blocknote-wrapper" ref={wrapperRef}>
+      <style>{EDITOR_STYLES}</style>
       <BlockNoteView
         editor={editor}
         editable={!readOnly}
@@ -310,7 +338,6 @@ function convertChildren(children) {
       backgroundColor: "default",
       textAlignment: "left",
       ...(block.props || {}),
-      // Ensure originalLevel is preserved in children
       originalLevel: block.props?.originalLevel || block.props?.level || 1,
     },
     content: block.content || [],
