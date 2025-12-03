@@ -67,12 +67,12 @@ export function BlockNoteWrapper({
       totalBlocks = allBlocks.length;
       
       for (const block of allBlocks) {
-        // Find the outer block element first
-        const blockOuter = wrapperRef.current.querySelector(`.bn-block-outer[data-id="${block.id}"]`);
-        if (!blockOuter) continue;
+        // Find the block element directly - works for both top-level and nested blocks
+        const blockElement = wrapperRef.current.querySelector(`.bn-block[data-id="${block.id}"]`);
+        if (!blockElement) continue;
         
         // Find the .bn-block-content element inside
-        const blockContent = blockOuter.querySelector('.bn-block-content');
+        const blockContent = blockElement.querySelector('.bn-block-content');
         if (!blockContent) continue;
         
         foundElements++;
