@@ -5,13 +5,14 @@
  * with BlockNote's deeply nested generic types
  * 
  * Supports N-level depth (up to 99 levels) via originalLevel metadata
+ * Use Tab/Shift+Tab to indent/outdent selected blocks
  */
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ChevronUp, ChevronDown, Users, User, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 // Color palette for deep level indicators (cycles through 6 colors)
 const LEVEL_COLORS = [
@@ -58,12 +59,9 @@ export function BlockNoteWrapper({
   initialBlocks,
   onEditorReady,
   readOnly = false,
-  includeChildren = true,
-  onIncludeChildrenChange,
 }) {
   const hasInitializedRef = useRef(false);
   const wrapperRef = useRef(null);
-  const [selectedBlockId, setSelectedBlockId] = useState(null);
   const [hasDeepLevels, setHasDeepLevels] = useState(false);
   const editor = useCreateBlockNote();
 
@@ -184,127 +182,95 @@ export function BlockNoteWrapper({
     return () => unsubscribe?.();
   }, [editor, applyDeepLevelStyles]);
 
-  // Track selection changes for level adjustment controls
-  useEffect(() => {
-    if (!editor) return;
-    
-    const handleSelectionChange = () => {
-      try {
-        const selection = editor.getSelection();
-        if (selection && selection.blocks && selection.blocks.length > 0) {
-          setSelectedBlockId(selection.blocks[0].id);
-        } else {
-          // Try to get cursor block
-          const cursorBlock = editor.getTextCursorPosition()?.block;
-          setSelectedBlockId(cursorBlock?.id || null);
-        }
-      } catch (e) {
-        setSelectedBlockId(null);
-      }
-    };
-
-    // Subscribe to editor changes
-    const unsubscribe = editor.onSelectionChange(handleSelectionChange);
-    return () => unsubscribe?.();
-  }, [editor]);
-
   // Get the actual level (originalLevel) from a block
   const getBlockOriginalLevel = (block) => {
     return block?.props?.originalLevel || block?.props?.level || 1;
   };
 
-  // Increase level (indent) - supports N levels (up to 99)
-  const handleIncreaseLevel = useCallback(() => {
-    if (!editor || !selectedBlockId) return;
+  // Handle indent/outdent for selected blocks
+  const handleLevelChange = useCallback((delta) => {
+    if (!editor) return;
     
     try {
-      const block = editor.getBlock(selectedBlockId);
-      if (!block || block.type !== "heading") return;
+      // Get selected blocks or fall back to cursor block
+      let blocksToUpdate = [];
       
-      const currentOriginalLevel = getBlockOriginalLevel(block);
-      if (currentOriginalLevel >= 99) return; // Max level is 99
-      
-      const newOriginalLevel = currentOriginalLevel + 1;
-      const newVisualLevel = Math.min(newOriginalLevel, 3);
-      
-      // Update the heading level
-      editor.updateBlock(selectedBlockId, {
-        props: { 
-          ...block.props, 
-          level: newVisualLevel,
-          originalLevel: newOriginalLevel,
-        },
-      });
-      
-      // If include children, update child heading levels too
-      if (includeChildren && block.children) {
-        updateChildLevels(editor, block.children, 1);
+      const selection = editor.getSelection();
+      if (selection && selection.blocks && selection.blocks.length > 0) {
+        blocksToUpdate = selection.blocks;
+      } else {
+        // Fall back to cursor block
+        const cursorBlock = editor.getTextCursorPosition()?.block;
+        if (cursorBlock) {
+          blocksToUpdate = [cursorBlock];
+        }
       }
       
-      // Update hasDeepLevels flag and reapply styles
-      if (newOriginalLevel > 3) {
-        setHasDeepLevels(true);
+      if (blocksToUpdate.length === 0) return;
+      
+      let hasUpdates = false;
+      
+      for (const block of blocksToUpdate) {
+        // Only update heading blocks
+        if (block.type !== "heading") continue;
+        
+        const currentOriginalLevel = getBlockOriginalLevel(block);
+        const newOriginalLevel = currentOriginalLevel + delta;
+        
+        // Check bounds
+        if (newOriginalLevel < 1 || newOriginalLevel > 99) continue;
+        
+        const newVisualLevel = Math.min(newOriginalLevel, 3);
+        
+        editor.updateBlock(block.id, {
+          props: { 
+            ...block.props, 
+            level: newVisualLevel,
+            originalLevel: newOriginalLevel,
+          },
+        });
+        
+        hasUpdates = true;
+        
+        // Update hasDeepLevels flag if we go above level 3
+        if (newOriginalLevel > 3) {
+          setHasDeepLevels(true);
+        }
       }
-      setTimeout(applyDeepLevelStyles, 50);
+      
+      if (hasUpdates) {
+        setTimeout(applyDeepLevelStyles, 50);
+      }
     } catch (error) {
-      console.error("Failed to increase level:", error);
+      console.error("Failed to change level:", error);
     }
-  }, [editor, selectedBlockId, includeChildren, applyDeepLevelStyles]);
+  }, [editor, applyDeepLevelStyles]);
 
-  // Decrease level (outdent) - supports N levels
-  const handleDecreaseLevel = useCallback(() => {
-    if (!editor || !selectedBlockId) return;
+  // Tab/Shift+Tab keyboard handler for indent/outdent
+  useEffect(() => {
+    if (!editor || readOnly) return;
     
-    try {
-      const block = editor.getBlock(selectedBlockId);
-      if (!block || block.type !== "heading") return;
-      
-      const currentOriginalLevel = getBlockOriginalLevel(block);
-      if (currentOriginalLevel <= 1) return; // Min level is 1
-      
-      const newOriginalLevel = currentOriginalLevel - 1;
-      const newVisualLevel = Math.min(newOriginalLevel, 3);
-      
-      // Update the heading level
-      editor.updateBlock(selectedBlockId, {
-        props: { 
-          ...block.props, 
-          level: newVisualLevel,
-          originalLevel: newOriginalLevel,
-        },
-      });
-      
-      // If include children, update child heading levels too
-      if (includeChildren && block.children) {
-        updateChildLevels(editor, block.children, -1);
+    const handleKeyDown = (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (e.shiftKey) {
+          // Shift+Tab = outdent (decrease level)
+          handleLevelChange(-1);
+        } else {
+          // Tab = indent (increase level)
+          handleLevelChange(1);
+        }
       }
-      
-      setTimeout(applyDeepLevelStyles, 50);
-    } catch (error) {
-      console.error("Failed to decrease level:", error);
+    };
+    
+    const wrapper = wrapperRef.current;
+    if (wrapper) {
+      wrapper.addEventListener('keydown', handleKeyDown, true);
+      return () => wrapper.removeEventListener('keydown', handleKeyDown, true);
     }
-  }, [editor, selectedBlockId, includeChildren, applyDeepLevelStyles]);
-
-  // Get current block level for display (uses originalLevel)
-  const getCurrentBlockLevel = () => {
-    if (!editor || !selectedBlockId) return null;
-    try {
-      const block = editor.getBlock(selectedBlockId);
-      if (block?.type === "heading") {
-        return getBlockOriginalLevel(block);
-      }
-    } catch (e) {}
-    return null;
-  };
-
-  const currentLevel = getCurrentBlockLevel();
-  
-  // Get color class for level indicator badge
-  const getLevelColorClass = (level) => {
-    if (level <= 3) return 'bg-muted text-muted-foreground';
-    const colorIndex = (level - 4) % LEVEL_COLORS.length;
-    return LEVEL_COLORS[colorIndex];
-  };
+  }, [editor, readOnly, handleLevelChange]);
 
   return (
     <div className="blocknote-wrapper" ref={wrapperRef}>
@@ -319,48 +285,15 @@ export function BlockNoteWrapper({
         </div>
       )}
       
-      {/* Level adjustment toolbar - only show when a heading is selected */}
-      {currentLevel !== null && !readOnly && (
-        <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md border border-border">
-          {/* Level indicator with color coding for deep levels */}
-          <span className={`text-xs px-2 py-0.5 rounded border ${getLevelColorClass(currentLevel)}`}>
-            Level {currentLevel}
+      {/* Keyboard hint toolbar */}
+      {!readOnly && (
+        <div className="flex items-center gap-2 mb-2 p-2 bg-muted/50 rounded-md border border-border text-xs text-muted-foreground">
+          <span>
+            <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">Tab</kbd>
+            {' '}to indent, {' '}
+            <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">Shift+Tab</kbd>
+            {' '}to outdent selected headings
           </span>
-          
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleDecreaseLevel}
-              disabled={currentLevel <= 1}
-              className="p-1 rounded hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Decrease level (outdent)"
-            >
-              <ChevronUp className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleIncreaseLevel}
-              disabled={currentLevel >= 99}
-              className="p-1 rounded hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Increase level (indent)"
-            >
-              <ChevronDown className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="h-4 w-px bg-border mx-1" />
-
-          {/* Include children toggle */}
-          <button
-            onClick={() => onIncludeChildrenChange?.(!includeChildren)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-              includeChildren 
-                ? "bg-primary text-primary-foreground" 
-                : "bg-muted text-muted-foreground hover:bg-accent"
-            }`}
-            title={includeChildren ? "Include children in level changes" : "Only change selected block"}
-          >
-            {includeChildren ? <Users className="w-3 h-3" /> : <User className="w-3 h-3" />}
-            <span>{includeChildren ? "With children" : "Only this"}</span>
-          </button>
         </div>
       )}
       
@@ -388,42 +321,6 @@ function convertChildren(children) {
     content: block.content || [],
     children: block.children ? convertChildren(block.children) : [],
   }));
-}
-
-function collectChildIds(children, ids) {
-  for (const child of children) {
-    ids.push(child.id);
-    if (child.children && child.children.length > 0) {
-      collectChildIds(child.children, ids);
-    }
-  }
-}
-
-// Update child levels with N-level support
-function updateChildLevels(editor, children, delta) {
-  for (const child of children) {
-    if (child.type === "heading") {
-      const currentOriginalLevel = child.props?.originalLevel || child.props?.level || 1;
-      const newOriginalLevel = Math.max(1, Math.min(99, currentOriginalLevel + delta));
-      const newVisualLevel = Math.min(newOriginalLevel, 3);
-      
-      try {
-        editor.updateBlock(child.id, {
-          props: { 
-            ...child.props, 
-            level: newVisualLevel,
-            originalLevel: newOriginalLevel,
-          },
-        });
-      } catch (e) {
-        console.error("Failed to update child level:", e);
-      }
-    }
-    
-    if (child.children && child.children.length > 0) {
-      updateChildLevels(editor, child.children, delta);
-    }
-  }
 }
 
 export default BlockNoteWrapper;
