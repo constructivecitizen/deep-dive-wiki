@@ -68,7 +68,7 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     // Support up to 30 levels of headers
-    const headingMatch = line.match(/^(#{1,30})\s*(.+?)(?:\s*\[(.*?)\])?$/);
+    const headingMatch = line.match(/^(#{1,99})\s*(.+?)(?:\s*\[(.*?)\])?$/);
     
     if (headingMatch) {
       // Process any accumulated content

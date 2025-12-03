@@ -31,7 +31,7 @@ export class HierarchyParser {
       const line = lines[i].trim();
       if (!line) continue;
 
-      const headerMatch = line.match(/^(#{1,6})\s+(.+?)(?:\s+\[([^\]]+)\])?$/);
+      const headerMatch = line.match(/^(#{1,99})\s+(.+?)(?:\s+\[([^\]]+)\])?$/);
       
       if (headerMatch) {
         foundFirstHeader = true;
