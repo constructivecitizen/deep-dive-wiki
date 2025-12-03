@@ -1,14 +1,13 @@
-import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView } from "@blocknote/mantine";
-import "@blocknote/mantine/style.css";
-import "@blocknote/core/fonts/inter.css";
 import { 
   flatSectionsToBlocks, 
   blocksToFlatSections,
   SimpleBlock 
 } from "@/lib/blockNoteConversions";
 import { DocumentSection } from "@/services/contentService";
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState, lazy, Suspense } from "react";
+
+// Lazy load the JSX wrapper to isolate BlockNote types
+const BlockNoteWrapper = lazy(() => import("./BlockNoteWrapper"));
 
 interface BlockNoteSectionEditorProps {
   sections: DocumentSection[];
@@ -19,8 +18,7 @@ interface BlockNoteSectionEditorProps {
 
 /**
  * BlockNote-based editor for hierarchical document sections
- * Uses standard BlockNote blocks (headings, paragraphs, lists)
- * Converts between flat DocumentSection[] and BlockNote's nested block structure
+ * Uses a JSX wrapper to avoid TypeScript type inference issues
  */
 export function BlockNoteSectionEditor({
   sections,
@@ -28,45 +26,29 @@ export function BlockNoteSectionEditor({
   onClose,
   readOnly = false,
 }: BlockNoteSectionEditorProps) {
-  const hasInitializedRef = useRef(false);
+  const editorRef = useRef<any>(null);
   
   // Convert flat sections to BlockNote blocks for initial content
   const initialBlocks = flatSectionsToBlocks(sections);
 
-  // Create the BlockNote editor
-  const editor = useCreateBlockNote();
-
-  // Initialize editor content from sections
-  useEffect(() => {
-    if (hasInitializedRef.current || !editor) return;
-    
-    try {
-      const blocksForEditor = convertSimpleBlocksToEditorBlocks(initialBlocks);
-      
-      if (blocksForEditor.length > 0) {
-        editor.replaceBlocks(editor.document, blocksForEditor);
-      }
-      
-      hasInitializedRef.current = true;
-    } catch (error) {
-      console.error("Failed to initialize editor content:", error);
-      hasInitializedRef.current = true;
-    }
-  }, [editor, initialBlocks]);
+  // Handle editor ready callback
+  const handleEditorReady = useCallback((editor: any) => {
+    editorRef.current = editor;
+  }, []);
 
   // Handle save - convert BlockNote blocks back to flat sections
   const handleSave = useCallback(() => {
-    if (!editor) return;
+    if (!editorRef.current) return;
     
     try {
-      const currentBlocks = editor.document;
+      const currentBlocks = editorRef.current.document;
       const simpleBlocks = convertEditorBlocksToSimpleBlocks(currentBlocks);
       const flatSections = blocksToFlatSections(simpleBlocks);
       onSave(flatSections);
     } catch (error) {
       console.error("Failed to save editor content:", error);
     }
-  }, [editor, onSave]);
+  }, [onSave]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -116,39 +98,23 @@ export function BlockNoteSectionEditor({
 
       {/* Editor */}
       <div className="flex-1 overflow-auto p-4">
-        <BlockNoteView
-          editor={editor}
-          editable={!readOnly}
-          theme="light"
-        />
+        <Suspense fallback={<div className="text-muted-foreground">Loading editor...</div>}>
+          <BlockNoteWrapper
+            initialBlocks={initialBlocks}
+            onEditorReady={handleEditorReady}
+            readOnly={readOnly}
+          />
+        </Suspense>
       </div>
     </div>
   );
 }
 
 /**
- * Convert SimpleBlock[] to BlockNote editor blocks
- */
-function convertSimpleBlocksToEditorBlocks(simpleBlocks: SimpleBlock[]): any[] {
-  return simpleBlocks.map((block) => ({
-    id: block.id,
-    type: block.type,
-    props: {
-      textColor: "default",
-      backgroundColor: "default",
-      textAlignment: "left",
-      ...(block.props || {}),
-    },
-    content: block.content || [],
-    children: convertSimpleBlocksToEditorBlocks(block.children),
-  }));
-}
-
-/**
  * Convert BlockNote editor blocks back to SimpleBlock[]
  */
 function convertEditorBlocksToSimpleBlocks(editorBlocks: any[]): SimpleBlock[] {
-  return editorBlocks.map((block) => ({
+  return editorBlocks.map((block: any) => ({
     id: block.id,
     type: block.type,
     props: block.props,
