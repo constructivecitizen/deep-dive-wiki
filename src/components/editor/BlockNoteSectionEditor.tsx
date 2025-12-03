@@ -14,6 +14,7 @@ interface BlockNoteSectionEditorProps {
   onSave: (sections: DocumentSection[]) => void;
   onClose?: () => void;
   readOnly?: boolean;
+  defaultIncludeChildren?: boolean;
 }
 
 /**
@@ -25,8 +26,10 @@ export function BlockNoteSectionEditor({
   onSave,
   onClose,
   readOnly = false,
+  defaultIncludeChildren = true,
 }: BlockNoteSectionEditorProps) {
   const editorRef = useRef<any>(null);
+  const [includeChildren, setIncludeChildren] = useState(defaultIncludeChildren);
   
   // Convert flat sections to BlockNote blocks for initial content
   const initialBlocks = flatSectionsToBlocks(sections);
@@ -103,6 +106,8 @@ export function BlockNoteSectionEditor({
             initialBlocks={initialBlocks}
             onEditorReady={handleEditorReady}
             readOnly={readOnly}
+            includeChildren={includeChildren}
+            onIncludeChildrenChange={setIncludeChildren}
           />
         </Suspense>
       </div>
