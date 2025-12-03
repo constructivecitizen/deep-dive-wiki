@@ -28,12 +28,13 @@ const EDITOR_STYLES = `
   .blocknote-wrapper [data-level="10"] { margin-left: 108px !important; }
   .blocknote-wrapper [data-level-deep] { margin-left: calc(108px + (var(--extra-levels) * 12px)) !important; }
   
-  /* Font sizing based on level */
+  /* Font sizing based on level - matching view mode exactly */
   .blocknote-wrapper [data-level="1"] h1,
   .blocknote-wrapper [data-level="1"] h2,
   .blocknote-wrapper [data-level="1"] h3 {
     font-size: 1.25rem !important;
     font-weight: 600 !important;
+    line-height: 1.625 !important;
     color: hsl(var(--foreground)) !important;
   }
   .blocknote-wrapper [data-level="2"] h1,
@@ -41,18 +42,20 @@ const EDITOR_STYLES = `
   .blocknote-wrapper [data-level="2"] h3 {
     font-size: 1.125rem !important;
     font-weight: 500 !important;
+    line-height: 1.625 !important;
     color: hsl(var(--foreground)) !important;
   }
   .blocknote-wrapper [data-level="3"] h1,
   .blocknote-wrapper [data-level="3"] h2,
-  .blocknote-wrapper [data-level="3"] h3,
-  .blocknote-wrapper [data-level="4"] h1,
-  .blocknote-wrapper [data-level="4"] h2,
-  .blocknote-wrapper [data-level="4"] h3 {
+  .blocknote-wrapper [data-level="3"] h3 {
     font-size: 1rem !important;
     font-weight: 500 !important;
+    line-height: 1.5 !important;
     color: hsl(var(--foreground)) !important;
   }
+  .blocknote-wrapper [data-level="4"] h1,
+  .blocknote-wrapper [data-level="4"] h2,
+  .blocknote-wrapper [data-level="4"] h3,
   .blocknote-wrapper [data-level="5"] h1,
   .blocknote-wrapper [data-level="5"] h2,
   .blocknote-wrapper [data-level="5"] h3,
@@ -64,75 +67,53 @@ const EDITOR_STYLES = `
   .blocknote-wrapper [data-level-deep] h3 {
     font-size: 0.875rem !important;
     font-weight: 500 !important;
-    color: hsl(var(--muted-foreground)) !important;
+    line-height: 1.5 !important;
+    color: hsl(var(--foreground)) !important;
   }
 
-  /* Colored paragraph blocks - matching content-level colors from index.css */
+  /* Colored paragraph blocks - using design system content-level colors */
   .blocknote-wrapper [data-content-level] {
     border-radius: 0.375rem !important;
     padding: 7px 9px !important;
     margin: 4px 0 !important;
-  }
-  .blocknote-wrapper [data-content-level]::before {
-    content: '' !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    width: 3px !important;
-    border-radius: 3px 0 0 3px !important;
-  }
-  .blocknote-wrapper [data-content-level] {
-    position: relative !important;
-    padding-left: 12px !important;
+    border-left-width: 2px !important;
+    border-left-style: solid !important;
   }
   
   /* Level 1 - Warm green/teal */
   .blocknote-wrapper [data-content-level="1"] {
-    background: hsl(155 40% 96%) !important;
-  }
-  .blocknote-wrapper [data-content-level="1"]::before {
-    background: hsl(155 40% 75%) !important;
+    background: hsl(var(--content-level-1)) !important;
+    border-left-color: hsl(var(--content-border-1)) !important;
   }
   
   /* Level 2 - Soft blue */
   .blocknote-wrapper [data-content-level="2"] {
-    background: hsl(200 50% 96%) !important;
-  }
-  .blocknote-wrapper [data-content-level="2"]::before {
-    background: hsl(200 50% 75%) !important;
+    background: hsl(var(--content-level-2)) !important;
+    border-left-color: hsl(var(--content-border-2)) !important;
   }
   
   /* Level 3 - Light purple */
   .blocknote-wrapper [data-content-level="3"] {
-    background: hsl(270 40% 96%) !important;
-  }
-  .blocknote-wrapper [data-content-level="3"]::before {
-    background: hsl(270 40% 75%) !important;
+    background: hsl(var(--content-level-3)) !important;
+    border-left-color: hsl(var(--content-border-3)) !important;
   }
   
   /* Level 4 - Warm amber */
   .blocknote-wrapper [data-content-level="4"] {
-    background: hsl(35 50% 96%) !important;
-  }
-  .blocknote-wrapper [data-content-level="4"]::before {
-    background: hsl(35 50% 75%) !important;
+    background: hsl(var(--content-level-4)) !important;
+    border-left-color: hsl(var(--content-border-4)) !important;
   }
   
   /* Level 5 - Soft pink */
   .blocknote-wrapper [data-content-level="5"] {
-    background: hsl(330 40% 96%) !important;
-  }
-  .blocknote-wrapper [data-content-level="5"]::before {
-    background: hsl(330 40% 75%) !important;
+    background: hsl(var(--content-level-5)) !important;
+    border-left-color: hsl(var(--content-border-5)) !important;
   }
   
   /* Level 6 - Cool cyan */
   .blocknote-wrapper [data-content-level="6"] {
-    background: hsl(180 40% 96%) !important;
-  }
-  .blocknote-wrapper [data-content-level="6"]::before {
-    background: hsl(180 40% 75%) !important;
+    background: hsl(var(--content-level-6)) !important;
+    border-left-color: hsl(var(--content-border-6)) !important;
   }
 
   /* Paragraph indentation matches its heading */
