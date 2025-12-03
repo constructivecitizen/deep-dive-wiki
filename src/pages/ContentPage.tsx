@@ -2,7 +2,7 @@ import React, { useEffect, useState, useReducer } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PageBreadcrumb } from "@/components/PageBreadcrumb";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
-import { UnifiedEditor } from "@/components/UnifiedEditor";
+import { BlockNoteSectionEditor } from "@/components/editor";
 import { HierarchicalContentDisplay } from "@/components/HierarchicalContentDisplay";
 import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { useLayoutContext } from "@/components/PersistentLayout";
@@ -230,18 +230,12 @@ const ContentPage: React.FC = () => {
     }
   };
 
-  const handleEditorSave = async (content: string) => {
+  // BlockNote editor save handler - receives DocumentSection[] directly
+  const handleEditorSave = async (sections: DocumentSection[]) => {
     if (!state.pageData || state.pageData.type !== 'document') return;
     
     try {
-      // Use the document title for pre-header content
-      const documentTitle = state.pageData.document.title;
-      
-      // Parse the markdown content into sections
-      const { HierarchyParser } = await import('@/lib/hierarchyParser');
-      const sections = HierarchyParser.parseMarkup(content, documentTitle).sections;
-      
-      // Save the document content
+      // Save the document content directly (sections already parsed by BlockNote)
       await ContentService.saveDocumentContent(state.pageData.document.path, sections);
       
       // Reload the page data to reflect changes
@@ -467,11 +461,8 @@ const ContentPage: React.FC = () => {
         />
         
         {showEditor ? (
-          <UnifiedEditor
-            editorData={{
-              type: 'document',
-              content: convertSectionsToMarkdown(sections)
-            }}
+          <BlockNoteSectionEditor
+            sections={sections}
             onSave={handleEditorSave}
             onClose={() => setShowEditor(false)}
           />
