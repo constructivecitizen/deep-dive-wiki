@@ -15,18 +15,18 @@ import { useEffect, useRef, useCallback } from "react";
 
 // CSS for visual styling to match view mode
 const EDITOR_STYLES = `
-  /* Base indentation: 25px per level starting at level 2 */
+  /* Headings align with parent paragraph text (12px padding offset per level) */
   .blocknote-wrapper [data-level="1"] { margin-left: 0 !important; }
-  .blocknote-wrapper [data-level="2"] { margin-left: 25px !important; }
-  .blocknote-wrapper [data-level="3"] { margin-left: 50px !important; }
-  .blocknote-wrapper [data-level="4"] { margin-left: 75px !important; }
-  .blocknote-wrapper [data-level="5"] { margin-left: 100px !important; }
-  .blocknote-wrapper [data-level="6"] { margin-left: 125px !important; }
-  .blocknote-wrapper [data-level="7"] { margin-left: 150px !important; }
-  .blocknote-wrapper [data-level="8"] { margin-left: 175px !important; }
-  .blocknote-wrapper [data-level="9"] { margin-left: 200px !important; }
-  .blocknote-wrapper [data-level="10"] { margin-left: 225px !important; }
-  .blocknote-wrapper [data-level-deep] { margin-left: calc(225px + (var(--extra-levels) * 25px)) !important; }
+  .blocknote-wrapper [data-level="2"] { margin-left: 12px !important; }
+  .blocknote-wrapper [data-level="3"] { margin-left: 24px !important; }
+  .blocknote-wrapper [data-level="4"] { margin-left: 36px !important; }
+  .blocknote-wrapper [data-level="5"] { margin-left: 48px !important; }
+  .blocknote-wrapper [data-level="6"] { margin-left: 60px !important; }
+  .blocknote-wrapper [data-level="7"] { margin-left: 72px !important; }
+  .blocknote-wrapper [data-level="8"] { margin-left: 84px !important; }
+  .blocknote-wrapper [data-level="9"] { margin-left: 96px !important; }
+  .blocknote-wrapper [data-level="10"] { margin-left: 108px !important; }
+  .blocknote-wrapper [data-level-deep] { margin-left: calc(108px + (var(--extra-levels) * 12px)) !important; }
   
   /* Font sizing based on level */
   .blocknote-wrapper [data-level="1"] h1,
@@ -135,17 +135,17 @@ const EDITOR_STYLES = `
     background: hsl(180 40% 75%) !important;
   }
 
-  /* Paragraph indentation to match parent heading */
+  /* Paragraph indentation matches its heading */
   .blocknote-wrapper [data-content-level][data-indent="1"] { margin-left: 0 !important; }
-  .blocknote-wrapper [data-content-level][data-indent="2"] { margin-left: 25px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="3"] { margin-left: 50px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="4"] { margin-left: 75px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="5"] { margin-left: 100px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="6"] { margin-left: 125px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="7"] { margin-left: 150px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="8"] { margin-left: 175px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="9"] { margin-left: 200px !important; }
-  .blocknote-wrapper [data-content-level][data-indent="10"] { margin-left: 225px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="2"] { margin-left: 12px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="3"] { margin-left: 24px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="4"] { margin-left: 36px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="5"] { margin-left: 48px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="6"] { margin-left: 60px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="7"] { margin-left: 72px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="8"] { margin-left: 84px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="9"] { margin-left: 96px !important; }
+  .blocknote-wrapper [data-content-level][data-indent="10"] { margin-left: 108px !important; }
 `;
 
 export function BlockNoteWrapper({
