@@ -174,28 +174,31 @@ export function BlockNoteWrapper({
       totalBlocks = allBlocks.length;
       
       for (const block of allBlocks) {
-        // BlockNote uses data-id attribute
-        const blockEl = wrapperRef.current.querySelector(`[data-id="${block.id}"]`);
+        // Find the outer block element first
+        const blockOuter = wrapperRef.current.querySelector(`.bn-block-outer[data-id="${block.id}"]`);
+        if (!blockOuter) continue;
         
-        if (blockEl) {
-          foundElements++;
+        // Find the .bn-block-content element inside (this is where CSS expects the attributes)
+        const blockContent = blockOuter.querySelector('.bn-block-content');
+        if (!blockContent) continue;
+        
+        foundElements++;
+        
+        if (block.type === 'heading') {
+          const originalLevel = block.props?.originalLevel || block.props?.level || 1;
+          currentHeadingLevel = originalLevel;
           
-          if (block.type === 'heading') {
-            const originalLevel = block.props?.originalLevel || block.props?.level || 1;
-            currentHeadingLevel = originalLevel;
-            
-            if (originalLevel <= 10) {
-              blockEl.setAttribute('data-level', originalLevel);
-            } else {
-              blockEl.setAttribute('data-level-deep', 'true');
-              blockEl.style.setProperty('--extra-levels', originalLevel - 10);
-            }
-          } else if (block.type === 'paragraph') {
-            // Apply colored background to paragraphs based on preceding heading level
-            const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
-            blockEl.setAttribute('data-content-level', colorLevel);
-            blockEl.setAttribute('data-indent', Math.min(currentHeadingLevel, 10));
+          if (originalLevel <= 10) {
+            blockContent.setAttribute('data-level', originalLevel);
+          } else {
+            blockContent.setAttribute('data-level-deep', 'true');
+            blockContent.style.setProperty('--extra-levels', originalLevel - 10);
           }
+        } else if (block.type === 'paragraph') {
+          // Apply colored background to paragraphs based on preceding heading level
+          const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
+          blockContent.setAttribute('data-content-level', colorLevel);
+          blockContent.setAttribute('data-indent', Math.min(currentHeadingLevel, 10));
         }
       }
       
