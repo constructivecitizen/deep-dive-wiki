@@ -13,61 +13,45 @@ import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { useEffect, useRef, useState, useCallback } from "react";
 
-// CSS for visual styling to match view mode
+// Color palette for deep level indicators (cycles through 6 colors)
+const LEVEL_COLORS = [
+  'bg-blue-100 text-blue-700 border-blue-300',
+  'bg-green-100 text-green-700 border-green-300',
+  'bg-purple-100 text-purple-700 border-purple-300',
+  'bg-orange-100 text-orange-700 border-orange-300',
+  'bg-pink-100 text-pink-700 border-pink-300',
+  'bg-teal-100 text-teal-700 border-teal-300',
+];
+
+// CSS for visual indentation of deep levels
 const DEEP_LEVEL_STYLES = `
-  /* Base heading styles matching view mode */
-  .blocknote-wrapper [data-node-type="heading"] .bn-inline-content {
-    line-height: 1.625 !important; /* leading-relaxed */
-  }
+  .blocknote-wrapper [data-level="4"] { margin-left: 24px !important; }
+  .blocknote-wrapper [data-level="5"] { margin-left: 48px !important; }
+  .blocknote-wrapper [data-level="6"] { margin-left: 72px !important; }
+  .blocknote-wrapper [data-level="7"] { margin-left: 96px !important; }
+  .blocknote-wrapper [data-level="8"] { margin-left: 120px !important; }
+  .blocknote-wrapper [data-level="9"] { margin-left: 144px !important; }
+  .blocknote-wrapper [data-level="10"] { margin-left: 168px !important; }
+  .blocknote-wrapper [data-level-deep] { margin-left: calc(168px + (var(--extra-levels) * 24px)) !important; }
   
-  /* Level 1 (H1): text-xl font-semibold - matches depth 0 */
-  .blocknote-wrapper [data-node-type="heading"][data-level="1"] .bn-inline-content {
-    font-size: 1.25rem !important;
-    font-weight: 600 !important;
+  /* Visual indicators for deep levels */
+  .blocknote-wrapper [data-level]::before {
+    content: attr(data-level-badge);
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-right: 6px;
+    font-weight: 500;
+    vertical-align: middle;
   }
-  
-  /* Level 2 (H2): text-lg font-medium - matches depth 1 */
-  .blocknote-wrapper [data-node-type="heading"][data-level="2"] .bn-inline-content {
-    font-size: 1.125rem !important;
-    font-weight: 500 !important;
-  }
-  
-  /* Level 3 (H3): text-base font-medium - matches depth 2 */
-  .blocknote-wrapper [data-node-type="heading"][data-level="3"] .bn-inline-content {
-    font-size: 1rem !important;
-    font-weight: 500 !important;
-    line-height: 1.5 !important; /* leading-normal */
-  }
-  
-  /* Level 4+ styling via data-original-level attribute */
-  .blocknote-wrapper [data-original-level="4"] .bn-inline-content,
-  .blocknote-wrapper [data-original-level="5"] .bn-inline-content,
-  .blocknote-wrapper [data-original-level="6"] .bn-inline-content,
-  .blocknote-wrapper [data-original-level="7"] .bn-inline-content,
-  .blocknote-wrapper [data-original-level="8"] .bn-inline-content,
-  .blocknote-wrapper [data-original-level="9"] .bn-inline-content,
-  .blocknote-wrapper [data-original-level="10"] .bn-inline-content {
-    font-size: 0.875rem !important;
-    font-weight: 500 !important;
-    line-height: 1.5 !important;
-  }
-  
-  /* Indentation: 25px per level to match view mode */
-  .blocknote-wrapper [data-original-level="2"] { margin-left: 25px !important; }
-  .blocknote-wrapper [data-original-level="3"] { margin-left: 50px !important; }
-  .blocknote-wrapper [data-original-level="4"] { margin-left: 75px !important; }
-  .blocknote-wrapper [data-original-level="5"] { margin-left: 100px !important; }
-  .blocknote-wrapper [data-original-level="6"] { margin-left: 125px !important; }
-  .blocknote-wrapper [data-original-level="7"] { margin-left: 150px !important; }
-  .blocknote-wrapper [data-original-level="8"] { margin-left: 175px !important; }
-  .blocknote-wrapper [data-original-level="9"] { margin-left: 200px !important; }
-  .blocknote-wrapper [data-original-level="10"] { margin-left: 225px !important; }
-  
-  /* Paragraph blocks following headings - inherit parent indentation */
-  .blocknote-wrapper [data-node-type="paragraph"] .bn-inline-content {
-    font-size: 0.875rem !important;
-    line-height: 1.5 !important;
-  }
+  .blocknote-wrapper [data-level="4"]::before { background: #dbeafe; color: #1d4ed8; }
+  .blocknote-wrapper [data-level="5"]::before { background: #dcfce7; color: #15803d; }
+  .blocknote-wrapper [data-level="6"]::before { background: #f3e8ff; color: #7c3aed; }
+  .blocknote-wrapper [data-level="7"]::before { background: #ffedd5; color: #c2410c; }
+  .blocknote-wrapper [data-level="8"]::before { background: #fce7f3; color: #be185d; }
+  .blocknote-wrapper [data-level="9"]::before { background: #ccfbf1; color: #0f766e; }
+  .blocknote-wrapper [data-level-deep]::before { background: #e5e7eb; color: #374151; }
 `;
 
 export function BlockNoteWrapper({
@@ -91,7 +75,7 @@ export function BlockNoteWrapper({
     }
   }, []);
 
-  // Apply data attributes to blocks for visual styling to match view mode
+  // Apply data attributes to blocks for visual indentation
   const applyDeepLevelStyles = useCallback(() => {
     if (!editor || !wrapperRef.current) return;
     
@@ -101,10 +85,19 @@ export function BlockNoteWrapper({
         for (const block of blocksArr) {
           if (block.type === 'heading') {
             const originalLevel = block.props?.originalLevel || block.props?.level || 1;
-            // Find the DOM element for this block and apply data-original-level for CSS targeting
-            const blockEl = wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
-            if (blockEl) {
-              blockEl.setAttribute('data-original-level', originalLevel);
+            if (originalLevel > 3) {
+              // Find the DOM element for this block
+              const blockEl = wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
+              if (blockEl) {
+                if (originalLevel <= 10) {
+                  blockEl.setAttribute('data-level', originalLevel);
+                  blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
+                } else {
+                  blockEl.setAttribute('data-level-deep', 'true');
+                  blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
+                  blockEl.style.setProperty('--extra-levels', originalLevel - 10);
+                }
+              }
             }
           }
           if (block.children && block.children.length > 0) {
