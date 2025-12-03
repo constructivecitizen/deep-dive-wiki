@@ -281,14 +281,21 @@ More detailed content with \`code\`.`}
             <div className="space-y-4 text-sm">
               <div>
                 <h4 className="font-medium mb-2">Headers & Hierarchy</h4>
+                <p className="text-muted-foreground text-xs mb-2">
+                  Supports up to 99 levels of depth using # symbols:
+                </p>
                 <div className="bg-background p-2 rounded border font-mono text-xs">
                   # Level 1 [tags]<br/>
                   ## Level 2 [tags]<br/>
                   ### Level 3 [tags]<br/>
                   #### Level 4 [tags]<br/>
                   ##### Level 5 [tags]<br/>
-                  ###### Level 6 [tags]
+                  ...<br/>
+                  {'#'.repeat(10)} Level 10 [tags]
                 </div>
+                <p className="text-muted-foreground text-xs mt-2">
+                  Visual editor shows levels 4+ as H3, but all levels are preserved.
+                </p>
               </div>
               
               <div>

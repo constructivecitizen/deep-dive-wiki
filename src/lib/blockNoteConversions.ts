@@ -42,6 +42,7 @@ export function flatSectionsToBlocks(sections: DocumentSection[]): SimpleBlock[]
 
 /**
  * Creates a BlockNote-compatible block from a DocumentSection
+ * Stores originalLevel for N-level support (up to 99 levels)
  */
 function createSectionBlock(section: DocumentSection): SimpleBlock {
   const children: SimpleBlock[] = [];
@@ -56,7 +57,8 @@ function createSectionBlock(section: DocumentSection): SimpleBlock {
     id: section.id,
     type: "heading",
     props: {
-      level: Math.min(section.level, 3), // BlockNote headings support 1-3
+      level: Math.min(section.level, 3), // BlockNote visual display (1-3)
+      originalLevel: section.level, // Preserve actual level (1-99) for round-trip
     },
     content: [{ type: "text", text: section.title, styles: {} }],
     children,
@@ -175,14 +177,18 @@ function categorizeChildren(children: SimpleBlock[]): { contentBlocks: SimpleBlo
 
 /**
  * Converts a heading block to a DocumentSection
+ * Uses originalLevel if available for N-level support
  */
 function blockToSection(block: SimpleBlock, level: number): DocumentSection {
   const title = extractTextContent(block.content);
   
+  // Use originalLevel from props if available (preserves levels 4-99)
+  const actualLevel = (block.props?.originalLevel as number) || level;
+  
   return {
     id: block.id,
     title,
-    level,
+    level: actualLevel,
     content: "",
     tags: [],
   };
