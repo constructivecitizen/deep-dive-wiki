@@ -94,50 +94,6 @@ const DEEP_LEVEL_STYLES = `
   .blocknote-wrapper .bn-inline-content {
     font-size: inherit !important;
   }
-  
-  /* Colored backgrounds for paragraph blocks based on preceding heading level */
-  .blocknote-wrapper .bn-block[data-color-level="1"] {
-    background-color: hsl(155 40% 96%) !important;
-    border-left: 2px solid hsl(155 50% 45%) !important;
-    border-radius: 4px !important;
-    padding: 7px 9px !important;
-    margin-bottom: 0.5rem !important;
-  }
-  .blocknote-wrapper .bn-block[data-color-level="2"] {
-    background-color: hsl(210 50% 96%) !important;
-    border-left: 2px solid hsl(210 60% 50%) !important;
-    border-radius: 4px !important;
-    padding: 7px 9px !important;
-    margin-bottom: 0.5rem !important;
-  }
-  .blocknote-wrapper .bn-block[data-color-level="3"] {
-    background-color: hsl(265 45% 96%) !important;
-    border-left: 2px solid hsl(265 50% 55%) !important;
-    border-radius: 4px !important;
-    padding: 7px 9px !important;
-    margin-bottom: 0.5rem !important;
-  }
-  .blocknote-wrapper .bn-block[data-color-level="4"] {
-    background-color: hsl(25 55% 96%) !important;
-    border-left: 2px solid hsl(25 65% 50%) !important;
-    border-radius: 4px !important;
-    padding: 7px 9px !important;
-    margin-bottom: 0.5rem !important;
-  }
-  .blocknote-wrapper .bn-block[data-color-level="5"] {
-    background-color: hsl(340 40% 96%) !important;
-    border-left: 2px solid hsl(340 50% 55%) !important;
-    border-radius: 4px !important;
-    padding: 7px 9px !important;
-    margin-bottom: 0.5rem !important;
-  }
-  .blocknote-wrapper .bn-block[data-color-level="6"] {
-    background-color: hsl(180 45% 96%) !important;
-    border-left: 2px solid hsl(180 55% 40%) !important;
-    border-radius: 4px !important;
-    padding: 7px 9px !important;
-    margin-bottom: 0.5rem !important;
-  }
 `;
 
 export function BlockNoteWrapper({
@@ -161,59 +117,31 @@ export function BlockNoteWrapper({
     }
   }, []);
 
-  // Apply data attributes to blocks for visual indentation and paragraph coloring
+  // Apply data attributes to blocks for visual indentation
   const applyDeepLevelStyles = useCallback(() => {
     if (!editor || !wrapperRef.current) return;
     
     try {
       const blocks = editor.document;
-      let currentHeadingLevel = 1; // Track the level of the most recent heading
-      
       const applyToBlocks = (blocksArr) => {
         for (const block of blocksArr) {
-          const blockEl = wrapperRef.current.querySelector(`[data-id="${block.id}"]`);
-          
           if (block.type === 'heading') {
             const originalLevel = block.props?.originalLevel || block.props?.level || 1;
-            currentHeadingLevel = originalLevel; // Update current heading level
-            
-            if (originalLevel > 3 && blockEl) {
-              if (originalLevel <= 10) {
-                blockEl.setAttribute('data-level', originalLevel);
-                blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
-              } else {
-                blockEl.setAttribute('data-level-deep', 'true');
-                blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
-                blockEl.style.setProperty('--extra-levels', originalLevel - 10);
+            if (originalLevel > 3) {
+              // Find the DOM element for this block
+              const blockEl = wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
+              if (blockEl) {
+                if (originalLevel <= 10) {
+                  blockEl.setAttribute('data-level', originalLevel);
+                  blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
+                } else {
+                  blockEl.setAttribute('data-level-deep', 'true');
+                  blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
+                  blockEl.style.setProperty('--extra-levels', originalLevel - 10);
+                }
               }
             }
-          } else if (block.type === 'paragraph') {
-            // Apply inline styles directly to the .bn-block element
-            const blockContainerEl = wrapperRef.current.querySelector(
-              `.bn-block[data-id="${block.id}"]`
-            );
-            if (blockContainerEl) {
-              const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
-              
-              // Define colors based on level
-              const colorStyles = {
-                1: { bg: 'hsl(155 40% 96%)', border: 'hsl(155 50% 45%)' },
-                2: { bg: 'hsl(210 50% 96%)', border: 'hsl(210 60% 50%)' },
-                3: { bg: 'hsl(265 45% 96%)', border: 'hsl(265 50% 55%)' },
-                4: { bg: 'hsl(25 55% 96%)', border: 'hsl(25 65% 50%)' },
-                5: { bg: 'hsl(340 40% 96%)', border: 'hsl(340 50% 55%)' },
-                6: { bg: 'hsl(180 45% 96%)', border: 'hsl(180 55% 40%)' },
-              };
-              
-              const style = colorStyles[colorLevel];
-              blockContainerEl.style.setProperty('background-color', style.bg, 'important');
-              blockContainerEl.style.setProperty('border-left', `2px solid ${style.border}`, 'important');
-              blockContainerEl.style.setProperty('border-radius', '4px', 'important');
-              blockContainerEl.style.setProperty('padding', '7px 9px', 'important');
-              blockContainerEl.style.setProperty('margin-bottom', '0.5rem', 'important');
-            }
           }
-          
           if (block.children && block.children.length > 0) {
             applyToBlocks(block.children);
           }
