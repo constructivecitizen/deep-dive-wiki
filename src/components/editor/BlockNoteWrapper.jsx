@@ -100,6 +100,7 @@ export function BlockNoteWrapper({
   initialBlocks,
   onEditorReady,
   readOnly = false,
+  onChange,
 }) {
   const hasInitializedRef = useRef(false);
   const wrapperRef = useRef(null);
@@ -211,17 +212,19 @@ export function BlockNoteWrapper({
     }
   }, [editor, initialBlocks, applyDeepLevelStyles]);
 
-  // Apply deep level styles when editor content changes
+  // Apply deep level styles when editor content changes and notify parent
   useEffect(() => {
     if (!editor) return;
     
     const unsubscribe = editor.onChange(() => {
       // Debounce the style application
       setTimeout(applyDeepLevelStyles, 50);
+      // Notify parent of changes for auto-save
+      onChange?.();
     });
     
     return () => unsubscribe?.();
-  }, [editor, applyDeepLevelStyles]);
+  }, [editor, applyDeepLevelStyles, onChange]);
 
   // Get the actual level (originalLevel) from a block
   const getBlockOriginalLevel = (block) => {
