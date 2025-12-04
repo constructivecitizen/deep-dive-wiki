@@ -186,11 +186,16 @@ const applyDeepLevelStyles = useCallback(() => {
             console.log('  Found p.bn-inline-content:', !!paragraphEl);
             console.log('  Found li:', !!listItemEl);
             
-            if (targetEl) {
-              const colorLevel = ((currentLevel - 1) % 6) + 1;
-              targetEl.setAttribute('data-level', colorLevel);
-              successCount++;
-              console.log(`  ✓ SUCCESS: Set data-level="${colorLevel}" on ${targetEl.tagName}`);
+if (targetEl) {
+  const colorLevel = ((currentLevel - 1) % 6) + 1;
+  targetEl.setAttribute('data-level', colorLevel);
+  
+  // IMMEDIATE CHECK - verify attribute is actually set
+  const verifyAttr = targetEl.getAttribute('data-level');
+  const text = targetEl.textContent.substring(0, 40);
+  console.log(`  ✓ Set data-level="${colorLevel}" on P, verify="${verifyAttr}", text="${text}"`);
+  
+  successCount++;
             } else {
               failCount++;
               console.log(`  ✗ FAIL: No <p> or <li> found`);
