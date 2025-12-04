@@ -135,88 +135,26 @@ export function BlockNoteWrapper({
   }, []);
 
   // Apply data attributes to blocks for visual indentation and content backgrounds
-  const applyDeepLevelStyles = useCallback(() => {
+ const applyDeepLevelStyles = useCallback(() => {
   if (!editor || !wrapperRef.current) return;
   
-  console.log('=== Applying Styles ===');
+  console.log('=== DOCUMENT STRUCTURE ===');
+  const blocks = editor.document;
   
-  try {
-    const blocks = editor.document;
-    
-    const applyToBlocks = (blocksArr, inheritedLevel = 1) => {
-      for (const block of blocksArr) {
-        // Find the .bn-block element by data-id
-        const blockEl = wrapperRef.current.querySelector(`[data-id="${block.id}"]`);
-        
-        console.log(`Block ${block.id}: type=${block.type}, found=${!!blockEl}`);
-        
-        if (block.type === 'heading') {
-          const originalLevel = block.props?.originalLevel || block.props?.level || 1;
-          
-          // Apply heading level badges for deep levels (4+)
-          if (blockEl && originalLevel > 3) {
-            const blockContent = blockEl.querySelector('.bn-block-content');
-            if (blockContent) {
-              if (originalLevel <= 10) {
-                blockContent.setAttribute('data-level', originalLevel);
-                blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
-              } else {
-                blockContent.setAttribute('data-level-deep', 'true');
-                blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
-                blockContent.style.setProperty('--extra-levels', originalLevel - 10);
-              }
-            }
-          }
-          
-          // Process children with the current heading's level
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, originalLevel);
-          }
-        } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
-          // Apply content level to paragraph and list blocks
-          if (blockEl) {
-            // Find the actual <p> or <li> element
-            const paragraphEl = blockEl.querySelector('p.bn-inline-content');
-            const listItemEl = blockEl.querySelector('li');
-            
-            const targetEl = paragraphEl || listItemEl;
-            
-            console.log(`  Looking for p/li in block ${block.id}: found=${!!targetEl}`);
-            
-            if (targetEl) {
-              // Cycle through 6 colors for all 99 levels
-              const colorLevel = ((inheritedLevel - 1) % 6) + 1;
-              targetEl.setAttribute('data-level', colorLevel);
-              console.log(`  ✓ Applied data-level="${colorLevel}" to ${targetEl.tagName} (parent level ${inheritedLevel})`);
-            } else {
-              console.log(`  ✗ No p/li found in block ${block.id}`);
-              console.log(`  Block HTML:`, blockEl.outerHTML.substring(0, 300));
-            }
-          }
-          
-          // Process children if any
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, inheritedLevel);
-          }
-        } else {
-          // For any other block types, just process children
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, inheritedLevel);
-          }
-        }
+  const showStructure = (blocksArr, indent = 0) => {
+    for (const block of blocksArr) {
+      const prefix = '  '.repeat(indent);
+      const text = block.content?.[0]?.text || 'no text';
+      const truncatedText = text.substring(0, 40);
+      console.log(`${prefix}Type: ${block.type}, Text: "${truncatedText}", Children: ${block.children?.length || 0}`);
+      if (block.children?.length > 0) {
+        showStructure(block.children, indent + 1);
       }
-    };
-    
-    applyToBlocks(blocks);
-  } catch (e) {
-    console.error('Failed to apply level styles:', e);
-  }
-}, [editor]);
-    
-    applyToBlocks(blocks);
-  } catch (e) {
-    console.error('Failed to apply level styles:', e);
-  }
+    }
+  };
+  
+  showStructure(blocks);
+  console.log('=== END STRUCTURE ===');
 }, [editor]);
 
   // Check for deep levels (4+) in initial blocks
