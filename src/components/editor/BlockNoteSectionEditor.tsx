@@ -8,12 +8,14 @@ import { useEffect, useCallback, useRef, useState, lazy, Suspense } from "react"
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  FileText, Save, Eye, Bold, Italic, List, Link2, Code, Edit3 
+  FileText, Save, Eye, Bold, Italic, List, Link2, Code, Edit3, Check, Loader2 
 } from "lucide-react";
 import { HierarchyParser } from "@/lib/hierarchyParser";
 
 // Lazy load the JSX wrapper to isolate BlockNote types
 const BlockNoteWrapper = lazy(() => import("./BlockNoteWrapper"));
+
+const AUTO_SAVE_DELAY = 2000; // 2 seconds debounce
 
 interface BlockNoteSectionEditorProps {
   sections: DocumentSection[];
@@ -35,6 +37,9 @@ export function BlockNoteSectionEditor({
   const editorRef = useRef<any>(null);
   const [editorMode, setEditorMode] = useState<'blocknote' | 'markdown'>('blocknote');
   const [markdownContent, setMarkdownContent] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasChangesRef = useRef(false);
   
   // Convert flat sections to BlockNote blocks for initial content
   const initialBlocks = flatSectionsToBlocks(sections);
@@ -50,26 +55,64 @@ export function BlockNoteSectionEditor({
     editorRef.current = editor;
   }, []);
 
-  // Handle save - convert content back to flat sections
-  const handleSave = useCallback(() => {
+  // Get current content as sections
+  const getCurrentSections = useCallback((): DocumentSection[] => {
+    if (editorMode === 'blocknote' && editorRef.current) {
+      const currentBlocks = editorRef.current.document;
+      const simpleBlocks = convertEditorBlocksToSimpleBlocks(currentBlocks);
+      return blocksToFlatSections(simpleBlocks);
+    } else {
+      return markdownToSections(markdownContent);
+    }
+  }, [editorMode, markdownContent]);
+
+  // Perform save without closing
+  const performSave = useCallback((closeAfter = false) => {
     try {
-      let flatSections: DocumentSection[];
-      
-      if (editorMode === 'blocknote' && editorRef.current) {
-        const currentBlocks = editorRef.current.document;
-        const simpleBlocks = convertEditorBlocksToSimpleBlocks(currentBlocks);
-        flatSections = blocksToFlatSections(simpleBlocks);
-      } else {
-        // Parse markdown to sections
-        flatSections = markdownToSections(markdownContent);
-      }
-      
+      const flatSections = getCurrentSections();
+      setSaveStatus('saving');
       onSave(flatSections);
-      onClose?.();
+      hasChangesRef.current = false;
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+      if (closeAfter) {
+        onClose?.();
+      }
     } catch (error) {
       console.error("Failed to save editor content:", error);
+      setSaveStatus('idle');
     }
-  }, [onSave, onClose, editorMode, markdownContent]);
+  }, [getCurrentSections, onSave, onClose]);
+
+  // Trigger auto-save with debounce
+  const triggerAutoSave = useCallback(() => {
+    hasChangesRef.current = true;
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+    autoSaveTimerRef.current = setTimeout(() => {
+      if (hasChangesRef.current) {
+        performSave(false);
+      }
+    }, AUTO_SAVE_DELAY);
+  }, [performSave]);
+
+  // Cleanup auto-save timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Handle manual save with close
+  const handleSaveAndClose = useCallback(() => {
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+    performSave(true);
+  }, [performSave]);
 
   // Toggle between BlockNote and Markdown modes
   const toggleEditorMode = useCallback(() => {
@@ -132,16 +175,22 @@ export function BlockNoteSectionEditor({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        handleSave();
+        performSave(false);
       }
       if (e.key === "Escape" && onClose) {
+        if (autoSaveTimerRef.current) {
+          clearTimeout(autoSaveTimerRef.current);
+        }
+        if (hasChangesRef.current) {
+          performSave(false);
+        }
         onClose();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [handleSave, onClose]);
+  }, [performSave, onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
@@ -222,15 +271,29 @@ export function BlockNoteSectionEditor({
                 </div>
               )}
 
-              {/* Save & Close */}
-              <Button onClick={handleSave} size="sm">
+              {/* Save Status & Close */}
+              <div className="flex items-center gap-2">
+                {saveStatus === 'saving' && (
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Saving...
+                  </span>
+                )}
+                {saveStatus === 'saved' && (
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Check className="h-3 w-3" />
+                    Saved
+                  </span>
+                )}
+              </div>
+              <Button onClick={() => performSave(false)} variant="outline" size="sm">
                 <Save className="h-4 w-4 mr-2" />
-                Save Changes
+                Save
               </Button>
               {onClose && (
-                <Button onClick={onClose} variant="outline" size="sm">
+                <Button onClick={handleSaveAndClose} size="sm">
                   <Eye className="h-4 w-4 mr-2" />
-                  Back to View
+                  Save & Close
                 </Button>
               )}
             </div>
@@ -247,12 +310,16 @@ export function BlockNoteSectionEditor({
                   initialBlocks={initialBlocks}
                   onEditorReady={handleEditorReady}
                   readOnly={readOnly}
+                  onChange={triggerAutoSave}
                 />
               </Suspense>
             ) : (
               <Textarea
                 value={markdownContent}
-                onChange={(e) => setMarkdownContent(e.target.value)}
+                onChange={(e) => {
+                  setMarkdownContent(e.target.value);
+                  triggerAutoSave();
+                }}
                 placeholder={`Start typing or paste your content...
 
 Use markup like:
