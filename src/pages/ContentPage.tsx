@@ -233,18 +233,28 @@ const ContentPage: React.FC = () => {
   // BlockNote editor save handler - receives DocumentSection[] directly
   // skipReload: when true, don't reload page data (used for auto-save to keep editor open)
   const handleEditorSave = async (sections: DocumentSection[], skipReload = false) => {
-    if (!state.pageData || state.pageData.type !== 'document') return;
+    console.log('handleEditorSave called, skipReload:', skipReload, 'sections:', sections.length);
+    if (!state.pageData || state.pageData.type !== 'document') {
+      console.log('handleEditorSave: No document page data, returning');
+      return;
+    }
     
     try {
       // Save the document content directly (sections already parsed by BlockNote)
+      console.log('Calling ContentService.saveDocumentContent...');
       await ContentService.saveDocumentContent(state.pageData.document.path, sections);
+      console.log('ContentService.saveDocumentContent completed');
       
       // Refresh the sidebar to reflect changes (always do this)
+      console.log('Calling onStructureUpdate...');
       onStructureUpdate();
       
       // Only reload page data when explicitly closing the editor
       if (!skipReload) {
+        console.log('Reloading page data (skipReload=false)...');
         await loadCurrentPageData(state.pageData.document.path);
+      } else {
+        console.log('Skipping page data reload (skipReload=true)');
       }
       
       console.log('Document saved successfully');
