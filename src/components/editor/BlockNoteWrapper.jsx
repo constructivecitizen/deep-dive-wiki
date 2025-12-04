@@ -96,42 +96,42 @@ const DEEP_LEVEL_STYLES = `
   }
   
   /* Colored backgrounds for paragraph blocks based on preceding heading level */
-  .blocknote-wrapper [data-color-level="1"] {
+  .blocknote-wrapper .bn-block[data-color-level="1"] {
     background-color: hsl(155 40% 96%) !important;
     border-left: 2px solid hsl(155 50% 45%) !important;
     border-radius: 4px !important;
     padding: 7px 9px !important;
     margin-bottom: 0.5rem !important;
   }
-  .blocknote-wrapper [data-color-level="2"] {
+  .blocknote-wrapper .bn-block[data-color-level="2"] {
     background-color: hsl(210 50% 96%) !important;
     border-left: 2px solid hsl(210 60% 50%) !important;
     border-radius: 4px !important;
     padding: 7px 9px !important;
     margin-bottom: 0.5rem !important;
   }
-  .blocknote-wrapper [data-color-level="3"] {
+  .blocknote-wrapper .bn-block[data-color-level="3"] {
     background-color: hsl(265 45% 96%) !important;
     border-left: 2px solid hsl(265 50% 55%) !important;
     border-radius: 4px !important;
     padding: 7px 9px !important;
     margin-bottom: 0.5rem !important;
   }
-  .blocknote-wrapper [data-color-level="4"] {
+  .blocknote-wrapper .bn-block[data-color-level="4"] {
     background-color: hsl(25 55% 96%) !important;
     border-left: 2px solid hsl(25 65% 50%) !important;
     border-radius: 4px !important;
     padding: 7px 9px !important;
     margin-bottom: 0.5rem !important;
   }
-  .blocknote-wrapper [data-color-level="5"] {
+  .blocknote-wrapper .bn-block[data-color-level="5"] {
     background-color: hsl(340 40% 96%) !important;
     border-left: 2px solid hsl(340 50% 55%) !important;
     border-radius: 4px !important;
     padding: 7px 9px !important;
     margin-bottom: 0.5rem !important;
   }
-  .blocknote-wrapper [data-color-level="6"] {
+  .blocknote-wrapper .bn-block[data-color-level="6"] {
     background-color: hsl(180 45% 96%) !important;
     border-left: 2px solid hsl(180 55% 40%) !important;
     border-radius: 4px !important;
@@ -188,13 +188,13 @@ export function BlockNoteWrapper({
               }
             }
           } else if (block.type === 'paragraph') {
-            // Apply color level to the .bn-block-content element within paragraph blocks
-            const contentEl = wrapperRef.current.querySelector(
-              `[data-id="${block.id}"] .bn-block-content[data-content-type="paragraph"]`
+            // Apply color level directly to the .bn-block element with this data-id
+            const blockContainerEl = wrapperRef.current.querySelector(
+              `.bn-block[data-id="${block.id}"]`
             );
-            if (contentEl) {
+            if (blockContainerEl) {
               const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
-              contentEl.setAttribute('data-color-level', colorLevel);
+              blockContainerEl.setAttribute('data-color-level', colorLevel);
             }
           }
           
