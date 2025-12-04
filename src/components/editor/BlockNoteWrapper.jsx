@@ -45,7 +45,7 @@ const DEEP_LEVEL_STYLES = `
   .blocknote-wrapper [data-content-type="heading"][data-level="9"]::before { background: #ccfbf1; color: #0f766e; }
   .blocknote-wrapper [data-content-type="heading"][data-level-deep]::before { background: #e5e7eb; color: #374151; }
   
-  /* Ensure headings have NO background color - target h1-h6 explicitly */
+  /* Ensure headings have NO background color */
   .blocknote-wrapper h1, 
   .blocknote-wrapper h2, 
   .blocknote-wrapper h3, 
@@ -57,9 +57,9 @@ const DEEP_LEVEL_STYLES = `
     padding: 0 !important;
   }
   
-  /* Background colors for <p> and <li> elements ONLY - cycles through 6 colors for all 99 levels */
-  .blocknote-wrapper p[data-content-level="1"],
-  .blocknote-wrapper li[data-content-level="1"] {
+  /* Background colors for <p> and <li> elements ONLY - using data-level */
+  .blocknote-wrapper p[data-level="1"],
+  .blocknote-wrapper li[data-level="1"] {
     background-color: hsl(155, 40%, 96%) !important;
     border-left: 3px solid hsl(155, 40%, 75%) !important;
     padding: 8px 12px !important;
@@ -67,8 +67,8 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-content-level="2"],
-  .blocknote-wrapper li[data-content-level="2"] {
+  .blocknote-wrapper p[data-level="2"],
+  .blocknote-wrapper li[data-level="2"] {
     background-color: hsl(210, 50%, 96%) !important;
     border-left: 3px solid hsl(210, 50%, 75%) !important;
     padding: 8px 12px !important;
@@ -76,8 +76,8 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-content-level="3"],
-  .blocknote-wrapper li[data-content-level="3"] {
+  .blocknote-wrapper p[data-level="3"],
+  .blocknote-wrapper li[data-level="3"] {
     background-color: hsl(265, 45%, 96%) !important;
     border-left: 3px solid hsl(265, 45%, 75%) !important;
     padding: 8px 12px !important;
@@ -85,8 +85,8 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-content-level="4"],
-  .blocknote-wrapper li[data-content-level="4"] {
+  .blocknote-wrapper p[data-level="4"],
+  .blocknote-wrapper li[data-level="4"] {
     background-color: hsl(25, 55%, 96%) !important;
     border-left: 3px solid hsl(25, 55%, 75%) !important;
     padding: 8px 12px !important;
@@ -94,8 +94,8 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-content-level="5"],
-  .blocknote-wrapper li[data-content-level="5"] {
+  .blocknote-wrapper p[data-level="5"],
+  .blocknote-wrapper li[data-level="5"] {
     background-color: hsl(340, 40%, 96%) !important;
     border-left: 3px solid hsl(340, 40%, 75%) !important;
     padding: 8px 12px !important;
@@ -103,8 +103,8 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-content-level="6"],
-  .blocknote-wrapper li[data-content-level="6"] {
+  .blocknote-wrapper p[data-level="6"],
+  .blocknote-wrapper li[data-level="6"] {
     background-color: hsl(180, 45%, 96%) !important;
     border-left: 3px solid hsl(180, 45%, 75%) !important;
     padding: 8px 12px !important;
