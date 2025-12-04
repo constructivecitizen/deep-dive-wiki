@@ -59,6 +59,20 @@ const DEEP_LEVEL_STYLES = `
     background-color: transparent !important;
   }
   
+  /* Align h2+ headings with paragraph text above them */
+  .blocknote-wrapper [data-content-type="heading"] {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+  }
+  
+  .blocknote-wrapper .bn-block-outer {
+    margin-left: 0 !important;
+  }
+  
+  .blocknote-wrapper .bn-block-content {
+    padding-left: 0 !important;
+  }
+  
   .blocknote-wrapper .ProseMirror h1,
   .blocknote-wrapper [data-content-type="heading"][data-level="1"] .bn-inline-content {
     font-size: 1.25rem !important;
