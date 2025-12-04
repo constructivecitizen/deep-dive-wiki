@@ -9,9 +9,34 @@
  */
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
+import { BlockNoteSchema, defaultBlockSpecs } from "@blocknote/core";
 import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+
+// Create custom schema with originalLevel prop for headings
+const createCustomSchema = () => {
+  // Get the default heading spec and extend it
+  const defaultHeading = defaultBlockSpecs.heading;
+  
+  // Create a modified heading spec with originalLevel prop
+  const customHeading = {
+    ...defaultHeading,
+    propSchema: {
+      ...defaultHeading.propSchema,
+      originalLevel: {
+        default: 1,
+      },
+    },
+  };
+  
+  return BlockNoteSchema.create({
+    blockSpecs: {
+      ...defaultBlockSpecs,
+      heading: customHeading,
+    },
+  });
+};
 
 // Color palette for deep level indicators (cycles through 6 colors)
 const LEVEL_COLORS = [
@@ -132,7 +157,12 @@ export function BlockNoteWrapper({
   const hasInitializedRef = useRef(false);
   const wrapperRef = useRef(null);
   const [hasDeepLevels, setHasDeepLevels] = useState(false);
-  const editor = useCreateBlockNote();
+  
+  // Create custom schema with originalLevel prop support
+  const schema = useMemo(() => createCustomSchema(), []);
+  
+  // Create editor with custom schema
+  const editor = useCreateBlockNote({ schema });
 
   // Inject deep level styles once
   useEffect(() => {
