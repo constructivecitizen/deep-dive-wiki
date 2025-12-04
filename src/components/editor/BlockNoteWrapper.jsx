@@ -57,9 +57,8 @@ const DEEP_LEVEL_STYLES = `
     padding: 0 !important;
   }
   
-  /* Background colors for <p> and <li> elements ONLY - using data-level */
-  .blocknote-wrapper p[data-level="1"],
-  .blocknote-wrapper li[data-level="1"] {
+  /* Background colors for paragraph .bn-block-content divs - cycles through 6 colors for all 99 levels */
+  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="1"] {
     background-color: hsl(155, 40%, 96%) !important;
     border-left: 3px solid hsl(155, 40%, 75%) !important;
     padding: 8px 12px !important;
@@ -67,8 +66,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-level="2"],
-  .blocknote-wrapper li[data-level="2"] {
+  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="2"] {
     background-color: hsl(210, 50%, 96%) !important;
     border-left: 3px solid hsl(210, 50%, 75%) !important;
     padding: 8px 12px !important;
@@ -76,8 +74,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-level="3"],
-  .blocknote-wrapper li[data-level="3"] {
+  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="3"] {
     background-color: hsl(265, 45%, 96%) !important;
     border-left: 3px solid hsl(265, 45%, 75%) !important;
     padding: 8px 12px !important;
@@ -85,8 +82,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-level="4"],
-  .blocknote-wrapper li[data-level="4"] {
+  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="4"] {
     background-color: hsl(25, 55%, 96%) !important;
     border-left: 3px solid hsl(25, 55%, 75%) !important;
     padding: 8px 12px !important;
@@ -94,8 +90,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-level="5"],
-  .blocknote-wrapper li[data-level="5"] {
+  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="5"] {
     background-color: hsl(340, 40%, 96%) !important;
     border-left: 3px solid hsl(340, 40%, 75%) !important;
     padding: 8px 12px !important;
@@ -103,8 +98,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper p[data-level="6"],
-  .blocknote-wrapper li[data-level="6"] {
+  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="6"] {
     background-color: hsl(180, 45%, 96%) !important;
     border-left: 3px solid hsl(180, 45%, 75%) !important;
     padding: 8px 12px !important;
@@ -135,106 +129,90 @@ export function BlockNoteWrapper({
   }, []);
 
   // Apply data attributes to blocks for visual indentation and content backgrounds
-const applyDeepLevelStyles = useCallback(() => {
-  if (!editor || !wrapperRef.current) return;
-  
-  console.log('=== APPLYING STYLES ===');
-  let successCount = 0;
-  let failCount = 0;
-  
-  try {
-    const blocks = editor.document;
+  const applyDeepLevelStyles = useCallback(() => {
+    if (!editor || !wrapperRef.current) return;
     
-    const applyToBlocks = (blocksArr, inheritedLevel = 1) => {
-      let currentLevel = inheritedLevel;
+    console.log('=== APPLYING STYLES ===');
+    let successCount = 0;
+    let failCount = 0;
+    
+    try {
+      const blocks = editor.document;
       
-      for (const block of blocksArr) {
-        const blockEl = 
-          wrapperRef.current.querySelector(`[data-id="${block.id}"]`) ||
-          wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
+      const applyToBlocks = (blocksArr, inheritedLevel = 1) => {
+        let currentLevel = inheritedLevel; // Track level for siblings
         
-        if (block.type === 'heading') {
-          const originalLevel = block.props?.originalLevel || block.props?.level || 1;
-          currentLevel = originalLevel;
+        for (const block of blocksArr) {
+          // Find the .bn-block element by data-id
+          const blockEl = 
+            wrapperRef.current.querySelector(`[data-id="${block.id}"]`) ||
+            wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
           
-          if (blockEl && originalLevel > 3) {
-            const blockContent = blockEl.querySelector('.bn-block-content');
-            if (blockContent) {
-              if (originalLevel <= 10) {
-                blockContent.setAttribute('data-level', originalLevel);
-                blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
-              } else {
-                blockContent.setAttribute('data-level-deep', 'true');
-                blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
-                blockContent.style.setProperty('--extra-levels', originalLevel - 10);
+          if (block.type === 'heading') {
+            const originalLevel = block.props?.originalLevel || block.props?.level || 1;
+            currentLevel = originalLevel; // Update current level for subsequent siblings
+            
+            // Apply heading level badges for deep levels (4+)
+            if (blockEl && originalLevel > 3) {
+              const blockContent = blockEl.querySelector('.bn-block-content');
+              if (blockContent) {
+                if (originalLevel <= 10) {
+                  blockContent.setAttribute('data-level', originalLevel);
+                  blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
+                } else {
+                  blockContent.setAttribute('data-level-deep', 'true');
+                  blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
+                  blockContent.style.setProperty('--extra-levels', originalLevel - 10);
+                }
               }
             }
-          }
-          
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, originalLevel);
-          }
-        } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
-          console.log(`Processing paragraph: "${block.content?.[0]?.text?.substring(0, 30)}"`);
-          
-          if (blockEl) {
-            console.log('  blockEl found, searching for <p>...');
-            const paragraphEl = blockEl.querySelector('p.bn-inline-content');
-            const listItemEl = blockEl.querySelector('li');
-            const targetEl = paragraphEl || listItemEl;
             
-            console.log('  Found p.bn-inline-content:', !!paragraphEl);
-            console.log('  Found li:', !!listItemEl);
-            
-if (targetEl) {
-  const colorLevel = ((currentLevel - 1) % 6) + 1;
-  
-  // Instead of setAttribute, apply styles directly
-  const colors = [
-    { bg: 'hsl(155, 40%, 96%)', border: 'hsl(155, 40%, 75%)' }, // 1
-    { bg: 'hsl(210, 50%, 96%)', border: 'hsl(210, 50%, 75%)' }, // 2
-    { bg: 'hsl(265, 45%, 96%)', border: 'hsl(265, 45%, 75%)' }, // 3
-    { bg: 'hsl(25, 55%, 96%)', border: 'hsl(25, 55%, 75%)' },   // 4
-    { bg: 'hsl(340, 40%, 96%)', border: 'hsl(340, 40%, 75%)' }, // 5
-    { bg: 'hsl(180, 45%, 96%)', border: 'hsl(180, 45%, 75%)' }  // 6
-  ];
-  
-  const color = colors[colorLevel - 1];
-  targetEl.style.backgroundColor = color.bg;
-  targetEl.style.borderLeft = `3px solid ${color.border}`;
-  targetEl.style.padding = '8px 12px';
-  targetEl.style.margin = '4px 0';
-  targetEl.style.borderRadius = '4px';
-  
-  console.log(`  ✓ Applied inline styles (level ${colorLevel}) to: "${targetEl.textContent.substring(0, 40)}"`);
-  successCount++;
-} else {
+            // Process children with this heading's level
+            if (block.children && block.children.length > 0) {
+              applyToBlocks(block.children, originalLevel);
+            }
+          } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
+            // Apply color based on currentLevel (from most recent heading at this level)
+            if (blockEl) {
+              // Target the .bn-block-content div, which is more stable
+              const blockContent = blockEl.querySelector('.bn-block-content');
+              
+              if (blockContent) {
+                const colorLevel = ((currentLevel - 1) % 6) + 1;
+                blockContent.setAttribute('data-level', colorLevel);
+                
+                // Verify immediately
+                const verify = blockContent.getAttribute('data-level');
+                successCount++;
+                console.log(`  ✓ Set data-level="${colorLevel}" on .bn-block-content, verify="${verify}"`);
+              } else {
+                failCount++;
+                console.log(`  ✗ No .bn-block-content found`);
+              }
+            } else {
               failCount++;
-              console.log(`  ✗ FAIL: No <p> or <li> found`);
-              console.log('  blockEl HTML:', blockEl.outerHTML.substring(0, 200));
+              console.log(`  ✗ blockEl not found for ${block.id}`);
+            }
+            
+            // Process children if any
+            if (block.children && block.children.length > 0) {
+              applyToBlocks(block.children, currentLevel);
             }
           } else {
-            failCount++;
-            console.log(`  ✗ FAIL: blockEl not found for block ID ${block.id}`);
-          }
-          
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, currentLevel);
-          }
-        } else {
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, currentLevel);
+            // For any other block types, just process children
+            if (block.children && block.children.length > 0) {
+              applyToBlocks(block.children, currentLevel);
+            }
           }
         }
-      }
-    };
-    
-    applyToBlocks(blocks);
-    console.log(`=== DONE: ${successCount} colored, ${failCount} failed ===`);
-  } catch (e) {
-    console.error('Failed to apply level styles:', e);
-  }
-}, [editor]);
+      };
+      
+      applyToBlocks(blocks);
+      console.log(`=== DONE: ${successCount} colored, ${failCount} failed ===`);
+    } catch (e) {
+      console.error('Failed to apply level styles:', e);
+    }
+  }, [editor]);
 
   // Check for deep levels (4+) in initial blocks
   useEffect(() => {
