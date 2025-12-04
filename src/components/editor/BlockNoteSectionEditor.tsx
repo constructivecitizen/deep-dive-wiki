@@ -8,7 +8,7 @@ import { useEffect, useCallback, useRef, useState, lazy, Suspense } from "react"
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  FileText, Save, Eye, Bold, Italic, List, Link2, Code, Edit3, Check, Loader2 
+  FileText, Eye, Bold, Italic, List, Link2, Code, Edit3 
 } from "lucide-react";
 import { HierarchyParser } from "@/lib/hierarchyParser";
 
@@ -37,7 +37,6 @@ export function BlockNoteSectionEditor({
   const editorRef = useRef<any>(null);
   const [editorMode, setEditorMode] = useState<'blocknote' | 'markdown'>('blocknote');
   const [markdownContent, setMarkdownContent] = useState('');
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasChangesRef = useRef(false);
   
@@ -70,19 +69,15 @@ export function BlockNoteSectionEditor({
   const performSave = useCallback((closeAfter = false) => {
     try {
       const flatSections = getCurrentSections();
-      setSaveStatus('saving');
       // Auto-save (closeAfter=false) should skip reload to keep editor state intact
       // Manual close (closeAfter=true) should reload to show updated content
       onSave(flatSections, !closeAfter);
       hasChangesRef.current = false;
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
       if (closeAfter) {
         onClose?.();
       }
     } catch (error) {
       console.error("Failed to save editor content:", error);
-      setSaveStatus('idle');
     }
   }, [getCurrentSections, onSave, onClose]);
 
@@ -273,25 +268,7 @@ export function BlockNoteSectionEditor({
                 </div>
               )}
 
-              {/* Save Status & Close */}
-              <div className="flex items-center gap-2">
-                {saveStatus === 'saving' && (
-                  <span className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Saving...
-                  </span>
-                )}
-                {saveStatus === 'saved' && (
-                  <span className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Check className="h-3 w-3" />
-                    Saved
-                  </span>
-                )}
-              </div>
-              <Button onClick={() => performSave(false)} variant="outline" size="sm">
-                <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
+              {/* Close button */}
               {onClose && (
                 <Button onClick={handleSaveAndClose} size="sm">
                   <Eye className="h-4 w-4 mr-2" />
