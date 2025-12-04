@@ -188,15 +188,27 @@ const applyDeepLevelStyles = useCallback(() => {
             
 if (targetEl) {
   const colorLevel = ((currentLevel - 1) % 6) + 1;
-  targetEl.setAttribute('data-level', colorLevel);
   
-  // IMMEDIATE CHECK - verify attribute is actually set
-  const verifyAttr = targetEl.getAttribute('data-level');
-  const text = targetEl.textContent.substring(0, 40);
-  console.log(`  ✓ Set data-level="${colorLevel}" on P, verify="${verifyAttr}", text="${text}"`);
+  // Instead of setAttribute, apply styles directly
+  const colors = [
+    { bg: 'hsl(155, 40%, 96%)', border: 'hsl(155, 40%, 75%)' }, // 1
+    { bg: 'hsl(210, 50%, 96%)', border: 'hsl(210, 50%, 75%)' }, // 2
+    { bg: 'hsl(265, 45%, 96%)', border: 'hsl(265, 45%, 75%)' }, // 3
+    { bg: 'hsl(25, 55%, 96%)', border: 'hsl(25, 55%, 75%)' },   // 4
+    { bg: 'hsl(340, 40%, 96%)', border: 'hsl(340, 40%, 75%)' }, // 5
+    { bg: 'hsl(180, 45%, 96%)', border: 'hsl(180, 45%, 75%)' }  // 6
+  ];
   
+  const color = colors[colorLevel - 1];
+  targetEl.style.backgroundColor = color.bg;
+  targetEl.style.borderLeft = `3px solid ${color.border}`;
+  targetEl.style.padding = '8px 12px';
+  targetEl.style.margin = '4px 0';
+  targetEl.style.borderRadius = '4px';
+  
+  console.log(`  ✓ Applied inline styles (level ${colorLevel}) to: "${targetEl.textContent.substring(0, 40)}"`);
   successCount++;
-            } else {
+} else {
               failCount++;
               console.log(`  ✗ FAIL: No <p> or <li> found`);
               console.log('  blockEl HTML:', blockEl.outerHTML.substring(0, 200));
