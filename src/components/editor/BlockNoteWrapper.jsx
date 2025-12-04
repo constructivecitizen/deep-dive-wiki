@@ -104,7 +104,7 @@ const DEEP_LEVEL_STYLES = `
   }
   
   /* Ensure content blocks don't have default margins that interfere */
-  .blocknote-wrapper [data-content-level] .bn-inline-content {
+  .blocknote-wrapper [data-level] .bn-inline-content {
     margin: 0 !important;
   }
 `;
@@ -170,7 +170,7 @@ export function BlockNoteWrapper({
             const contentEl = blockEl.querySelector('.bn-block-content');
             if (contentEl) {
               const colorLevel = ((inheritedLevel - 1) % 6) + 1;
-              contentEl.setAttribute('data-content-level', colorLevel);
+              contentEl.setAttribute('data-level', colorLevel);
               console.log(`Applied level ${colorLevel} to ${block.type} under heading level ${inheritedLevel}`);
             }
           }
