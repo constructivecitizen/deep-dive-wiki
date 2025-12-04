@@ -135,7 +135,7 @@ export function BlockNoteWrapper({
   }, []);
 
   // Apply data attributes to blocks for visual indentation and content backgrounds
- const applyDeepLevelStyles = useCallback(() => {
+const applyDeepLevelStyles = useCallback(() => {
   if (!editor || !wrapperRef.current) return;
   
   console.log('=== APPLYING STYLES ===');
@@ -175,23 +175,30 @@ export function BlockNoteWrapper({
             applyToBlocks(block.children, originalLevel);
           }
         } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
+          console.log(`Processing paragraph: "${block.content?.[0]?.text?.substring(0, 30)}"`);
+          
           if (blockEl) {
+            console.log('  blockEl found, searching for <p>...');
             const paragraphEl = blockEl.querySelector('p.bn-inline-content');
             const listItemEl = blockEl.querySelector('li');
             const targetEl = paragraphEl || listItemEl;
+            
+            console.log('  Found p.bn-inline-content:', !!paragraphEl);
+            console.log('  Found li:', !!listItemEl);
             
             if (targetEl) {
               const colorLevel = ((currentLevel - 1) % 6) + 1;
               targetEl.setAttribute('data-level', colorLevel);
               successCount++;
-              console.log(`✓ Set data-level="${colorLevel}" on ${targetEl.tagName} (text: "${targetEl.textContent.substring(0, 30)}")`);
+              console.log(`  ✓ SUCCESS: Set data-level="${colorLevel}" on ${targetEl.tagName}`);
             } else {
               failCount++;
-              console.log(`✗ No <p> or <li> found in block ${block.id}`);
+              console.log(`  ✗ FAIL: No <p> or <li> found`);
+              console.log('  blockEl HTML:', blockEl.outerHTML.substring(0, 200));
             }
           } else {
             failCount++;
-            console.log(`✗ Block element not found for ${block.id}`);
+            console.log(`  ✗ FAIL: blockEl not found for block ID ${block.id}`);
           }
           
           if (block.children && block.children.length > 0) {
