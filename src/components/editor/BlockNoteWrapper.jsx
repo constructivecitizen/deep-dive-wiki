@@ -276,14 +276,28 @@ export function BlockNoteWrapper({
 useEffect(() => {
   if (!editor || !wrapperRef.current) return;
   
+  let timeoutId = null;
+  let isApplying = false; // Re-entry guard
+  
+  const debouncedApply = () => {
+    if (isApplying) return; // Prevent re-entry
+    
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      isApplying = true;
+      applyDeepLevelStyles();
+      isApplying = false;
+    }, 100); // Wait 100ms of silence before applying
+  };
+  
   // Apply styles on editor change
   const unsubscribe = editor.onChange(() => {
-    setTimeout(applyDeepLevelStyles, 50);
+    debouncedApply();
   });
   
   // ALSO watch for DOM mutations and re-apply styles
   const observer = new MutationObserver(() => {
-    applyDeepLevelStyles();
+    debouncedApply();
   });
   
   observer.observe(wrapperRef.current, {
@@ -293,6 +307,7 @@ useEffect(() => {
   });
   
   return () => {
+    clearTimeout(timeoutId);
     unsubscribe?.();
     observer.disconnect();
   };
