@@ -23,7 +23,7 @@ const LEVEL_COLORS = [
   'bg-teal-100 text-teal-700 border-teal-300',
 ];
 
-// CSS for visual indentation of deep levels
+// CSS for visual indentation of deep levels and typography overrides
 const DEEP_LEVEL_STYLES = `
   .blocknote-wrapper [data-level="4"] { margin-left: 24px !important; }
   .blocknote-wrapper [data-level="5"] { margin-left: 48px !important; }
@@ -52,6 +52,48 @@ const DEEP_LEVEL_STYLES = `
   .blocknote-wrapper [data-level="8"]::before { background: #fce7f3; color: #be185d; }
   .blocknote-wrapper [data-level="9"]::before { background: #ccfbf1; color: #0f766e; }
   .blocknote-wrapper [data-level-deep]::before { background: #e5e7eb; color: #374151; }
+  
+  /* Typography overrides to match main content view */
+  .blocknote-wrapper .ProseMirror {
+    font-family: ui-sans-serif, system-ui, sans-serif !important;
+    background-color: transparent !important;
+  }
+  
+  .blocknote-wrapper .ProseMirror h1,
+  .blocknote-wrapper [data-content-type="heading"][data-level="1"] .bn-inline-content {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.625 !important;
+  }
+  
+  .blocknote-wrapper .ProseMirror h2,
+  .blocknote-wrapper [data-content-type="heading"][data-level="2"] .bn-inline-content {
+    font-size: 1.125rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.625 !important;
+  }
+  
+  .blocknote-wrapper .ProseMirror h3,
+  .blocknote-wrapper [data-content-type="heading"][data-level="3"] .bn-inline-content {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
+  }
+  
+  .blocknote-wrapper .ProseMirror p,
+  .blocknote-wrapper [data-content-type="paragraph"] .bn-inline-content {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.625 !important;
+  }
+  
+  /* Target BlockNote's internal text elements */
+  .blocknote-wrapper .bn-inline-content {
+    font-size: inherit !important;
+  }
 `;
 
 export function BlockNoteWrapper({
