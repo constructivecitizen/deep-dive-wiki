@@ -6,7 +6,7 @@
  * 
  * Supports N-level depth (up to 99 levels) via originalLevel metadata
  * Use Tab/Shift+Tab to indent/outdent selected blocks
- * Content blocks cycle through 6 colors based on parent heading level
+ * Content blocks (paragraphs and lists) cycle through 6 colors based on parent heading level
  */
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
@@ -57,7 +57,7 @@ const DEEP_LEVEL_STYLES = `
     padding: 0 !important;
   }
   
-  /* Background colors for <p> elements ONLY - cycles through 6 colors for all 99 levels */
+  /* Background colors for <p> and <li> elements ONLY - cycles through 6 colors for all 99 levels */
   .blocknote-wrapper p[data-content-level="1"],
   .blocknote-wrapper li[data-content-level="1"] {
     background-color: hsl(155, 40%, 96%) !important;
@@ -135,71 +135,72 @@ export function BlockNoteWrapper({
   }, []);
 
   // Apply data attributes to blocks for visual indentation and content backgrounds
-const applyDeepLevelStyles = useCallback(() => {
-  if (!editor || !wrapperRef.current) return;
-  
-  try {
-    const blocks = editor.document;
+  const applyDeepLevelStyles = useCallback(() => {
+    if (!editor || !wrapperRef.current) return;
     
-    const applyToBlocks = (blocksArr, inheritedLevel = 1) => {
-      for (const block of blocksArr) {
-        const blockEl = 
-          wrapperRef.current.querySelector(`[data-id="${block.id}"]`) ||
-          wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
-        
-        if (block.type === 'heading') {
-          const originalLevel = block.props?.originalLevel || block.props?.level || 1;
+    try {
+      const blocks = editor.document;
+      
+      const applyToBlocks = (blocksArr, inheritedLevel = 1) => {
+        for (const block of blocksArr) {
+          // Try multiple selectors since BlockNote's structure can vary
+          const blockEl = 
+            wrapperRef.current.querySelector(`[data-id="${block.id}"]`) ||
+            wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
           
-          // Apply heading level badges for deep levels (4+)
-          if (blockEl && originalLevel > 3) {
-            if (originalLevel <= 10) {
-              blockEl.setAttribute('data-level', originalLevel);
-              blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
-            } else {
-              blockEl.setAttribute('data-level-deep', 'true');
-              blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
-              blockEl.style.setProperty('--extra-levels', originalLevel - 10);
-            }
-          }
-          
-          // Process children with the current heading's level
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, originalLevel);
-          }
-        } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
-          // Apply content level background ONLY to paragraph blocks
-          if (blockEl) {
-            // Find the actual <p> or <li> element, NOT the heading
-            const paragraphEl = blockEl.querySelector('p');
-            const listItemEl = blockEl.querySelector('li');
+          if (block.type === 'heading') {
+            const originalLevel = block.props?.originalLevel || block.props?.level || 1;
             
-            const targetEl = paragraphEl || listItemEl;
-            
-            if (targetEl) {
-              // Cycle through 6 colors for all 99 levels
-              const colorLevel = ((inheritedLevel - 1) % 6) + 1;
-              targetEl.setAttribute('data-content-level', colorLevel);
+            // Apply heading level badges for deep levels (4+)
+            if (blockEl && originalLevel > 3) {
+              if (originalLevel <= 10) {
+                blockEl.setAttribute('data-level', originalLevel);
+                blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
+              } else {
+                blockEl.setAttribute('data-level-deep', 'true');
+                blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
+                blockEl.style.setProperty('--extra-levels', originalLevel - 10);
+              }
             }
-          }
-          
-          // Process children if any
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, inheritedLevel);
-          }
-        } else {
-          // For any other block types, just process children
-          if (block.children && block.children.length > 0) {
-            applyToBlocks(block.children, inheritedLevel);
+            
+            // Process children with the current heading's level
+            if (block.children && block.children.length > 0) {
+              applyToBlocks(block.children, originalLevel);
+            }
+          } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
+            // Apply content level background ONLY to <p> and <li> elements
+            if (blockEl) {
+              // Find the actual <p> or <li> element, NOT the heading
+              const paragraphEl = blockEl.querySelector('p');
+              const listItemEl = blockEl.querySelector('li');
+              
+              const targetEl = paragraphEl || listItemEl;
+              
+              if (targetEl) {
+                // Cycle through 6 colors for all 99 levels
+                const colorLevel = ((inheritedLevel - 1) % 6) + 1;
+                targetEl.setAttribute('data-content-level', colorLevel);
+              }
+            }
+            
+            // Process children if any
+            if (block.children && block.children.length > 0) {
+              applyToBlocks(block.children, inheritedLevel);
+            }
+          } else {
+            // For any other block types, just process children
+            if (block.children && block.children.length > 0) {
+              applyToBlocks(block.children, inheritedLevel);
+            }
           }
         }
-      }
-    };
-    
-    applyToBlocks(blocks);
-  } catch (e) {
-    console.error('Failed to apply level styles:', e);
-  }
-}, [editor]);
+      };
+      
+      applyToBlocks(blocks);
+    } catch (e) {
+      console.error('Failed to apply level styles:', e);
+    }
+  }, [editor]);
 
   // Check for deep levels (4+) in initial blocks
   useEffect(() => {
