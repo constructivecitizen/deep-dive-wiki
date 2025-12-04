@@ -272,17 +272,31 @@ export function BlockNoteWrapper({
     }
   }, [editor, initialBlocks, applyDeepLevelStyles]);
 
-  // Apply deep level styles when editor content changes
-  useEffect(() => {
-    if (!editor) return;
-    
-    const unsubscribe = editor.onChange(() => {
-      // Debounce the style application
-      setTimeout(applyDeepLevelStyles, 50);
-    });
-    
-    return () => unsubscribe?.();
-  }, [editor, applyDeepLevelStyles]);
+// Apply deep level styles when editor content changes AND watch for DOM mutations
+useEffect(() => {
+  if (!editor || !wrapperRef.current) return;
+  
+  // Apply styles on editor change
+  const unsubscribe = editor.onChange(() => {
+    setTimeout(applyDeepLevelStyles, 50);
+  });
+  
+  // ALSO watch for DOM mutations and re-apply styles
+  const observer = new MutationObserver(() => {
+    applyDeepLevelStyles();
+  });
+  
+  observer.observe(wrapperRef.current, {
+    childList: true,
+    subtree: true,
+    attributes: false // Don't watch attributes to avoid infinite loops
+  });
+  
+  return () => {
+    unsubscribe?.();
+    observer.disconnect();
+  };
+}, [editor, applyDeepLevelStyles]);
 
   // Get the actual level (originalLevel) from a block
   const getBlockOriginalLevel = (block) => {
