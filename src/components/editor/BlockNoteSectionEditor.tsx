@@ -19,7 +19,7 @@ const AUTO_SAVE_DELAY = 2000; // 2 seconds debounce
 
 interface BlockNoteSectionEditorProps {
   sections: DocumentSection[];
-  onSave: (sections: DocumentSection[]) => void;
+  onSave: (sections: DocumentSection[], skipReload?: boolean) => void;
   onClose?: () => void;
   readOnly?: boolean;
 }
@@ -66,12 +66,14 @@ export function BlockNoteSectionEditor({
     }
   }, [editorMode, markdownContent]);
 
-  // Perform save without closing
+  // Perform save - skipReload=true for auto-save (keep editor open), false for close
   const performSave = useCallback((closeAfter = false) => {
     try {
       const flatSections = getCurrentSections();
       setSaveStatus('saving');
-      onSave(flatSections);
+      // Auto-save (closeAfter=false) should skip reload to keep editor state intact
+      // Manual close (closeAfter=true) should reload to show updated content
+      onSave(flatSections, !closeAfter);
       hasChangesRef.current = false;
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
