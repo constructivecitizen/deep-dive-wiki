@@ -68,12 +68,15 @@ export function BlockNoteSectionEditor({
   // Perform save - skipReload=true for auto-save (keep editor open), false for close
   const performSave = useCallback((closeAfter = false) => {
     try {
+      console.log('performSave called, closeAfter:', closeAfter);
       const flatSections = getCurrentSections();
+      console.log('Saving sections:', flatSections.length, 'skipReload:', !closeAfter);
       // Auto-save (closeAfter=false) should skip reload to keep editor state intact
       // Manual close (closeAfter=true) should reload to show updated content
       onSave(flatSections, !closeAfter);
       hasChangesRef.current = false;
       if (closeAfter) {
+        console.log('Closing editor after save');
         onClose?.();
       }
     } catch (error) {
@@ -83,11 +86,13 @@ export function BlockNoteSectionEditor({
 
   // Trigger auto-save with debounce
   const triggerAutoSave = useCallback(() => {
+    console.log('triggerAutoSave called');
     hasChangesRef.current = true;
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
     }
     autoSaveTimerRef.current = setTimeout(() => {
+      console.log('Auto-save timer fired, hasChanges:', hasChangesRef.current);
       if (hasChangesRef.current) {
         performSave(false);
       }
