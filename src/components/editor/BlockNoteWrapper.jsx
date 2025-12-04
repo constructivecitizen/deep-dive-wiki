@@ -73,6 +73,10 @@ const DEEP_LEVEL_STYLES = `
     padding-left: 0 !important;
   }
   
+  .blocknote-wrapper .bn-block-content::before {
+    padding-inline-start: 0 !important;
+  }
+  
   .blocknote-wrapper .ProseMirror h1,
   .blocknote-wrapper [data-content-type="heading"][data-level="1"] .bn-inline-content {
     font-size: 1.25rem !important;
