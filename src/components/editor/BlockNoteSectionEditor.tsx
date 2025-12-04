@@ -111,24 +111,38 @@ export function BlockNoteSectionEditor({
     performSave(true);
   }, [performSave]);
 
-  // Toggle between BlockNote and Markdown modes
+  // Toggle between BlockNote and Markdown modes - saves before switching
   const toggleEditorMode = useCallback(() => {
+    // Cancel any pending auto-save
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+    
     if (editorMode === 'blocknote') {
       // Convert current BlockNote content to markdown
       if (editorRef.current) {
         const currentBlocks = editorRef.current.document;
         const simpleBlocks = convertEditorBlocksToSimpleBlocks(currentBlocks);
         const flatSections = blocksToFlatSections(simpleBlocks);
+        
+        // Save before switching (skipReload=true to keep editor open)
+        onSave(flatSections, true);
+        hasChangesRef.current = false;
+        
         const markdown = sectionsToMarkdown(flatSections);
         setMarkdownContent(markdown);
       }
       setEditorMode('markdown');
     } else {
-      // Parse markdown and prepare for BlockNote
-      // Note: BlockNote will reinitialize with updated sections
+      // Parse markdown to sections and save before switching
+      const flatSections = markdownToSections(markdownContent);
+      onSave(flatSections, true);
+      hasChangesRef.current = false;
+      
+      // Note: BlockNote will reinitialize with the saved sections
       setEditorMode('blocknote');
     }
-  }, [editorMode]);
+  }, [editorMode, markdownContent, onSave]);
 
   // Insert markdown formatting at cursor
   const insertMarkdown = useCallback((type: string) => {
