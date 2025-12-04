@@ -138,23 +138,78 @@ export function BlockNoteWrapper({
  const applyDeepLevelStyles = useCallback(() => {
   if (!editor || !wrapperRef.current) return;
   
-  console.log('=== DOCUMENT STRUCTURE ===');
-  const blocks = editor.document;
+  console.log('=== APPLYING STYLES ===');
+  let successCount = 0;
+  let failCount = 0;
   
-  const showStructure = (blocksArr, indent = 0) => {
-    for (const block of blocksArr) {
-      const prefix = '  '.repeat(indent);
-      const text = block.content?.[0]?.text || 'no text';
-      const truncatedText = text.substring(0, 40);
-      console.log(`${prefix}Type: ${block.type}, Text: "${truncatedText}", Children: ${block.children?.length || 0}`);
-      if (block.children?.length > 0) {
-        showStructure(block.children, indent + 1);
+  try {
+    const blocks = editor.document;
+    
+    const applyToBlocks = (blocksArr, inheritedLevel = 1) => {
+      let currentLevel = inheritedLevel;
+      
+      for (const block of blocksArr) {
+        const blockEl = 
+          wrapperRef.current.querySelector(`[data-id="${block.id}"]`) ||
+          wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
+        
+        if (block.type === 'heading') {
+          const originalLevel = block.props?.originalLevel || block.props?.level || 1;
+          currentLevel = originalLevel;
+          
+          if (blockEl && originalLevel > 3) {
+            const blockContent = blockEl.querySelector('.bn-block-content');
+            if (blockContent) {
+              if (originalLevel <= 10) {
+                blockContent.setAttribute('data-level', originalLevel);
+                blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
+              } else {
+                blockContent.setAttribute('data-level-deep', 'true');
+                blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
+                blockContent.style.setProperty('--extra-levels', originalLevel - 10);
+              }
+            }
+          }
+          
+          if (block.children && block.children.length > 0) {
+            applyToBlocks(block.children, originalLevel);
+          }
+        } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
+          if (blockEl) {
+            const paragraphEl = blockEl.querySelector('p.bn-inline-content');
+            const listItemEl = blockEl.querySelector('li');
+            const targetEl = paragraphEl || listItemEl;
+            
+            if (targetEl) {
+              const colorLevel = ((currentLevel - 1) % 6) + 1;
+              targetEl.setAttribute('data-level', colorLevel);
+              successCount++;
+              console.log(`✓ Set data-level="${colorLevel}" on ${targetEl.tagName} (text: "${targetEl.textContent.substring(0, 30)}")`);
+            } else {
+              failCount++;
+              console.log(`✗ No <p> or <li> found in block ${block.id}`);
+            }
+          } else {
+            failCount++;
+            console.log(`✗ Block element not found for ${block.id}`);
+          }
+          
+          if (block.children && block.children.length > 0) {
+            applyToBlocks(block.children, currentLevel);
+          }
+        } else {
+          if (block.children && block.children.length > 0) {
+            applyToBlocks(block.children, currentLevel);
+          }
+        }
       }
-    }
-  };
-  
-  showStructure(blocks);
-  console.log('=== END STRUCTURE ===');
+    };
+    
+    applyToBlocks(blocks);
+    console.log(`=== DONE: ${successCount} colored, ${failCount} failed ===`);
+  } catch (e) {
+    console.error('Failed to apply level styles:', e);
+  }
 }, [editor]);
 
   // Check for deep levels (4+) in initial blocks
