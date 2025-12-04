@@ -188,13 +188,29 @@ export function BlockNoteWrapper({
               }
             }
           } else if (block.type === 'paragraph') {
-            // Apply color level directly to the .bn-block element with this data-id
+            // Apply inline styles directly to the .bn-block element
             const blockContainerEl = wrapperRef.current.querySelector(
               `.bn-block[data-id="${block.id}"]`
             );
             if (blockContainerEl) {
               const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
-              blockContainerEl.setAttribute('data-color-level', colorLevel);
+              
+              // Define colors based on level
+              const colorStyles = {
+                1: { bg: 'hsl(155 40% 96%)', border: 'hsl(155 50% 45%)' },
+                2: { bg: 'hsl(210 50% 96%)', border: 'hsl(210 60% 50%)' },
+                3: { bg: 'hsl(265 45% 96%)', border: 'hsl(265 50% 55%)' },
+                4: { bg: 'hsl(25 55% 96%)', border: 'hsl(25 65% 50%)' },
+                5: { bg: 'hsl(340 40% 96%)', border: 'hsl(340 50% 55%)' },
+                6: { bg: 'hsl(180 45% 96%)', border: 'hsl(180 55% 40%)' },
+              };
+              
+              const style = colorStyles[colorLevel];
+              blockContainerEl.style.setProperty('background-color', style.bg, 'important');
+              blockContainerEl.style.setProperty('border-left', `2px solid ${style.border}`, 'important');
+              blockContainerEl.style.setProperty('border-radius', '4px', 'important');
+              blockContainerEl.style.setProperty('padding', '7px 9px', 'important');
+              blockContainerEl.style.setProperty('margin-bottom', '0.5rem', 'important');
             }
           }
           
