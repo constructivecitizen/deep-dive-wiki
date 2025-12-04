@@ -138,6 +138,8 @@ export function BlockNoteWrapper({
   const applyDeepLevelStyles = useCallback(() => {
   if (!editor || !wrapperRef.current) return;
   
+  console.log('=== Applying Styles ===');
+  
   try {
     const blocks = editor.document;
     
@@ -146,12 +148,13 @@ export function BlockNoteWrapper({
         // Find the .bn-block element by data-id
         const blockEl = wrapperRef.current.querySelector(`[data-id="${block.id}"]`);
         
+        console.log(`Block ${block.id}: type=${block.type}, found=${!!blockEl}`);
+        
         if (block.type === 'heading') {
           const originalLevel = block.props?.originalLevel || block.props?.level || 1;
           
           // Apply heading level badges for deep levels (4+)
           if (blockEl && originalLevel > 3) {
-            // Find the .bn-block-content child
             const blockContent = blockEl.querySelector('.bn-block-content');
             if (blockContent) {
               if (originalLevel <= 10) {
@@ -170,21 +173,24 @@ export function BlockNoteWrapper({
             applyToBlocks(block.children, originalLevel);
           }
         } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
-          // Apply content level background to paragraph and list blocks
+          // Apply content level to paragraph and list blocks
           if (blockEl) {
-            // Find the .bn-block-content child, then find <p> or <li> inside it
-            const blockContent = blockEl.querySelector('.bn-block-content');
-            if (blockContent) {
-              const paragraphEl = blockContent.querySelector('p.bn-inline-content');
-              const listItemEl = blockContent.querySelector('li');
-              
-              const targetEl = paragraphEl || listItemEl;
-              
-              if (targetEl) {
-                // Cycle through 6 colors for all 99 levels
-                const colorLevel = ((inheritedLevel - 1) % 6) + 1;
-                targetEl.setAttribute('data-content-level', colorLevel);
-              }
+            // Find the actual <p> or <li> element
+            const paragraphEl = blockEl.querySelector('p.bn-inline-content');
+            const listItemEl = blockEl.querySelector('li');
+            
+            const targetEl = paragraphEl || listItemEl;
+            
+            console.log(`  Looking for p/li in block ${block.id}: found=${!!targetEl}`);
+            
+            if (targetEl) {
+              // Cycle through 6 colors for all 99 levels
+              const colorLevel = ((inheritedLevel - 1) % 6) + 1;
+              targetEl.setAttribute('data-level', colorLevel);
+              console.log(`  ✓ Applied data-level="${colorLevel}" to ${targetEl.tagName} (parent level ${inheritedLevel})`);
+            } else {
+              console.log(`  ✗ No p/li found in block ${block.id}`);
+              console.log(`  Block HTML:`, blockEl.outerHTML.substring(0, 300));
             }
           }
           
@@ -200,6 +206,12 @@ export function BlockNoteWrapper({
         }
       }
     };
+    
+    applyToBlocks(blocks);
+  } catch (e) {
+    console.error('Failed to apply level styles:', e);
+  }
+}, [editor]);
     
     applyToBlocks(blocks);
   } catch (e) {
