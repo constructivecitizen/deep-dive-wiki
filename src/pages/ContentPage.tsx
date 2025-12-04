@@ -244,13 +244,12 @@ const ContentPage: React.FC = () => {
       // Refresh the sidebar to reflect changes
       onStructureUpdate();
       
-      // Close the editor
-      setShowEditor(false);
+      // Note: Don't close editor here - let the editor handle close via onClose callback
+      // This allows auto-save to work without closing the editor
       
       console.log('Document saved successfully');
     } catch (error) {
       console.error('Error saving document:', error);
-      // Keep editor open on error so user doesn't lose their changes
     }
   };
 
