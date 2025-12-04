@@ -6,7 +6,6 @@
  * 
  * Supports N-level depth (up to 99 levels) via originalLevel metadata
  * Use Tab/Shift+Tab to indent/outdent selected blocks
- * Content blocks (paragraphs and lists) cycle through 6 colors based on parent heading level
  */
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
@@ -14,9 +13,18 @@ import "@blocknote/mantine/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { useEffect, useRef, useState, useCallback } from "react";
 
-// CSS for visual indentation of deep levels + content block backgrounds
+// Color palette for deep level indicators (cycles through 6 colors)
+const LEVEL_COLORS = [
+  'bg-blue-100 text-blue-700 border-blue-300',
+  'bg-green-100 text-green-700 border-green-300',
+  'bg-purple-100 text-purple-700 border-purple-300',
+  'bg-orange-100 text-orange-700 border-orange-300',
+  'bg-pink-100 text-pink-700 border-pink-300',
+  'bg-teal-100 text-teal-700 border-teal-300',
+];
+
+// CSS for visual indentation of deep levels and typography overrides
 const DEEP_LEVEL_STYLES = `
-  /* Visual indentation for deep heading levels */
   .blocknote-wrapper [data-level="4"] { margin-left: 24px !important; }
   .blocknote-wrapper [data-level="5"] { margin-left: 48px !important; }
   .blocknote-wrapper [data-level="6"] { margin-left: 72px !important; }
@@ -26,8 +34,8 @@ const DEEP_LEVEL_STYLES = `
   .blocknote-wrapper [data-level="10"] { margin-left: 168px !important; }
   .blocknote-wrapper [data-level-deep] { margin-left: calc(168px + (var(--extra-levels) * 24px)) !important; }
   
-  /* Visual indicators for deep levels (headings only) */
-  .blocknote-wrapper [data-content-type="heading"][data-level]::before {
+  /* Visual indicators for deep levels */
+  .blocknote-wrapper [data-level]::before {
     content: attr(data-level-badge);
     display: inline-block;
     font-size: 9px;
@@ -37,73 +45,54 @@ const DEEP_LEVEL_STYLES = `
     font-weight: 500;
     vertical-align: middle;
   }
-  .blocknote-wrapper [data-content-type="heading"][data-level="4"]::before { background: #dbeafe; color: #1d4ed8; }
-  .blocknote-wrapper [data-content-type="heading"][data-level="5"]::before { background: #dcfce7; color: #15803d; }
-  .blocknote-wrapper [data-content-type="heading"][data-level="6"]::before { background: #f3e8ff; color: #7c3aed; }
-  .blocknote-wrapper [data-content-type="heading"][data-level="7"]::before { background: #ffedd5; color: #c2410c; }
-  .blocknote-wrapper [data-content-type="heading"][data-level="8"]::before { background: #fce7f3; color: #be185d; }
-  .blocknote-wrapper [data-content-type="heading"][data-level="9"]::before { background: #ccfbf1; color: #0f766e; }
-  .blocknote-wrapper [data-content-type="heading"][data-level-deep]::before { background: #e5e7eb; color: #374151; }
+  .blocknote-wrapper [data-level="4"]::before { background: #dbeafe; color: #1d4ed8; }
+  .blocknote-wrapper [data-level="5"]::before { background: #dcfce7; color: #15803d; }
+  .blocknote-wrapper [data-level="6"]::before { background: #f3e8ff; color: #7c3aed; }
+  .blocknote-wrapper [data-level="7"]::before { background: #ffedd5; color: #c2410c; }
+  .blocknote-wrapper [data-level="8"]::before { background: #fce7f3; color: #be185d; }
+  .blocknote-wrapper [data-level="9"]::before { background: #ccfbf1; color: #0f766e; }
+  .blocknote-wrapper [data-level-deep]::before { background: #e5e7eb; color: #374151; }
   
-  /* Ensure headings have NO background color */
-  .blocknote-wrapper h1, 
-  .blocknote-wrapper h2, 
-  .blocknote-wrapper h3, 
-  .blocknote-wrapper h4, 
-  .blocknote-wrapper h5, 
-  .blocknote-wrapper h6 {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
+  /* Typography overrides to match main content view */
+  .blocknote-wrapper .ProseMirror {
+    font-family: ui-sans-serif, system-ui, sans-serif !important;
+    background-color: transparent !important;
   }
   
-  /* Background colors for paragraph .bn-block-content divs - cycles through 6 colors for all 99 levels */
-  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="1"] {
-    background-color: hsl(155, 40%, 96%) !important;
-    border-left: 3px solid hsl(155, 40%, 75%) !important;
-    padding: 8px 12px !important;
-    margin: 4px 0 !important;
-    border-radius: 4px !important;
+  .blocknote-wrapper .ProseMirror h1,
+  .blocknote-wrapper [data-content-type="heading"][data-level="1"] .bn-inline-content {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.625 !important;
   }
   
-  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="2"] {
-    background-color: hsl(210, 50%, 96%) !important;
-    border-left: 3px solid hsl(210, 50%, 75%) !important;
-    padding: 8px 12px !important;
-    margin: 4px 0 !important;
-    border-radius: 4px !important;
+  .blocknote-wrapper .ProseMirror h2,
+  .blocknote-wrapper [data-content-type="heading"][data-level="2"] .bn-inline-content {
+    font-size: 1.125rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.625 !important;
   }
   
-  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="3"] {
-    background-color: hsl(265, 45%, 96%) !important;
-    border-left: 3px solid hsl(265, 45%, 75%) !important;
-    padding: 8px 12px !important;
-    margin: 4px 0 !important;
-    border-radius: 4px !important;
+  .blocknote-wrapper .ProseMirror h3,
+  .blocknote-wrapper [data-content-type="heading"][data-level="3"] .bn-inline-content {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.5 !important;
   }
   
-  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="4"] {
-    background-color: hsl(25, 55%, 96%) !important;
-    border-left: 3px solid hsl(25, 55%, 75%) !important;
-    padding: 8px 12px !important;
-    margin: 4px 0 !important;
-    border-radius: 4px !important;
+  .blocknote-wrapper .ProseMirror p,
+  .blocknote-wrapper [data-content-type="paragraph"] .bn-inline-content {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.625 !important;
   }
   
-  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="5"] {
-    background-color: hsl(340, 40%, 96%) !important;
-    border-left: 3px solid hsl(340, 40%, 75%) !important;
-    padding: 8px 12px !important;
-    margin: 4px 0 !important;
-    border-radius: 4px !important;
-  }
-  
-  .blocknote-wrapper .bn-block-content[data-content-type="paragraph"][data-level="6"] {
-    background-color: hsl(180, 45%, 96%) !important;
-    border-left: 3px solid hsl(180, 45%, 75%) !important;
-    padding: 8px 12px !important;
-    margin: 4px 0 !important;
-    border-radius: 4px !important;
+  /* Target BlockNote's internal text elements */
+  .blocknote-wrapper .bn-inline-content {
+    font-size: inherit !important;
   }
 `;
 
@@ -128,89 +117,39 @@ export function BlockNoteWrapper({
     }
   }, []);
 
-  // Apply data attributes to blocks for visual indentation and content backgrounds
+  // Apply data attributes to blocks for visual indentation
   const applyDeepLevelStyles = useCallback(() => {
     if (!editor || !wrapperRef.current) return;
     
-    console.log('=== APPLYING STYLES ===');
-    let successCount = 0;
-    let failCount = 0;
-    
     try {
       const blocks = editor.document;
-      
-      const applyToBlocks = (blocksArr, inheritedLevel = 1) => {
-        let currentLevel = inheritedLevel; // Track level for siblings
-        
+      const applyToBlocks = (blocksArr) => {
         for (const block of blocksArr) {
-          // Find the .bn-block element by data-id
-          const blockEl = 
-            wrapperRef.current.querySelector(`[data-id="${block.id}"]`) ||
-            wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
-          
           if (block.type === 'heading') {
             const originalLevel = block.props?.originalLevel || block.props?.level || 1;
-            currentLevel = originalLevel; // Update current level for subsequent siblings
-            
-            // Apply heading level badges for deep levels (4+)
-            if (blockEl && originalLevel > 3) {
-              const blockContent = blockEl.querySelector('.bn-block-content');
-              if (blockContent) {
+            if (originalLevel > 3) {
+              // Find the DOM element for this block
+              const blockEl = wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
+              if (blockEl) {
                 if (originalLevel <= 10) {
-                  blockContent.setAttribute('data-level', originalLevel);
-                  blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
+                  blockEl.setAttribute('data-level', originalLevel);
+                  blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
                 } else {
-                  blockContent.setAttribute('data-level-deep', 'true');
-                  blockContent.setAttribute('data-level-badge', `L${originalLevel}`);
-                  blockContent.style.setProperty('--extra-levels', originalLevel - 10);
+                  blockEl.setAttribute('data-level-deep', 'true');
+                  blockEl.setAttribute('data-level-badge', `L${originalLevel}`);
+                  blockEl.style.setProperty('--extra-levels', originalLevel - 10);
                 }
               }
             }
-            
-            // Process children with this heading's level
-            if (block.children && block.children.length > 0) {
-              applyToBlocks(block.children, originalLevel);
-            }
-          } else if (block.type === 'paragraph' || block.type === 'bulletListItem' || block.type === 'numberedListItem') {
-            // Apply color based on currentLevel (from most recent heading at this level)
-            if (blockEl) {
-              // Target the .bn-block-content div, which is more stable
-              const blockContent = blockEl.querySelector('.bn-block-content');
-              
-              if (blockContent) {
-                const colorLevel = ((currentLevel - 1) % 6) + 1;
-                blockContent.setAttribute('data-level', colorLevel);
-                
-                // Verify immediately
-                const verify = blockContent.getAttribute('data-level');
-                successCount++;
-                console.log(`  ✓ Set data-level="${colorLevel}" on .bn-block-content, verify="${verify}"`);
-              } else {
-                failCount++;
-                console.log(`  ✗ No .bn-block-content found`);
-              }
-            } else {
-              failCount++;
-              console.log(`  ✗ blockEl not found for ${block.id}`);
-            }
-            
-            // Process children if any
-            if (block.children && block.children.length > 0) {
-              applyToBlocks(block.children, currentLevel);
-            }
-          } else {
-            // For any other block types, just process children
-            if (block.children && block.children.length > 0) {
-              applyToBlocks(block.children, currentLevel);
-            }
+          }
+          if (block.children && block.children.length > 0) {
+            applyToBlocks(block.children);
           }
         }
       };
-      
       applyToBlocks(blocks);
-      console.log(`=== DONE: ${successCount} colored, ${failCount} failed ===`);
     } catch (e) {
-      console.error('Failed to apply level styles:', e);
+      console.error('Failed to apply deep level styles:', e);
     }
   }, [editor]);
 
@@ -272,46 +211,17 @@ export function BlockNoteWrapper({
     }
   }, [editor, initialBlocks, applyDeepLevelStyles]);
 
-// Apply deep level styles when editor content changes AND watch for DOM mutations
-useEffect(() => {
-  if (!editor || !wrapperRef.current) return;
-  
-  let timeoutId = null;
-  let isApplying = false; // Re-entry guard
-  
-  const debouncedApply = () => {
-    if (isApplying) return; // Prevent re-entry
+  // Apply deep level styles when editor content changes
+  useEffect(() => {
+    if (!editor) return;
     
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      isApplying = true;
-      applyDeepLevelStyles();
-      isApplying = false;
-    }, 100); // Wait 100ms of silence before applying
-  };
-  
-  // Apply styles on editor change
-  const unsubscribe = editor.onChange(() => {
-    debouncedApply();
-  });
-  
-  // ALSO watch for DOM mutations and re-apply styles
-  const observer = new MutationObserver(() => {
-    debouncedApply();
-  });
-  
-  observer.observe(wrapperRef.current, {
-    childList: true,
-    subtree: true,
-    attributes: false // Don't watch attributes to avoid infinite loops
-  });
-  
-  return () => {
-    clearTimeout(timeoutId);
-    unsubscribe?.();
-    observer.disconnect();
-  };
-}, [editor, applyDeepLevelStyles]);
+    const unsubscribe = editor.onChange(() => {
+      // Debounce the style application
+      setTimeout(applyDeepLevelStyles, 50);
+    });
+    
+    return () => unsubscribe?.();
+  }, [editor, applyDeepLevelStyles]);
 
   // Get the actual level (originalLevel) from a block
   const getBlockOriginalLevel = (block) => {
