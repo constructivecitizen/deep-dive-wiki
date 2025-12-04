@@ -55,7 +55,7 @@ const DEEP_LEVEL_STYLES = `
   .blocknote-wrapper [data-level-deep]::before { background: #e5e7eb; color: #374151; }
   
   /* Background colors for content blocks based on parent heading level */
-  .blocknote-wrapper [data-content-level="1"] {
+  .blocknote-wrapper [data-level="1"] {
     background-color: hsl(155, 40%, 96%) !important;
     border-left: 3px solid hsl(155, 40%, 75%) !important;
     padding: 8px 12px !important;
@@ -63,7 +63,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper [data-content-level="2"] {
+  .blocknote-wrapper [data-level="2"] {
     background-color: hsl(210, 50%, 96%) !important;
     border-left: 3px solid hsl(210, 50%, 75%) !important;
     padding: 8px 12px !important;
@@ -71,7 +71,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper [data-content-level="3"] {
+  .blocknote-wrapper [data-level="3"] {
     background-color: hsl(265, 45%, 96%) !important;
     border-left: 3px solid hsl(265, 45%, 75%) !important;
     padding: 8px 12px !important;
@@ -79,7 +79,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper [data-content-level="4"] {
+  .blocknote-wrapper [data-level="4"] {
     background-color: hsl(25, 55%, 96%) !important;
     border-left: 3px solid hsl(25, 55%, 75%) !important;
     padding: 8px 12px !important;
@@ -87,7 +87,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper [data-content-level="5"] {
+  .blocknote-wrapper [data-level="5"] {
     background-color: hsl(340, 40%, 96%) !important;
     border-left: 3px solid hsl(340, 40%, 75%) !important;
     padding: 8px 12px !important;
@@ -95,7 +95,7 @@ const DEEP_LEVEL_STYLES = `
     border-radius: 4px !important;
   }
   
-  .blocknote-wrapper [data-content-level="6"] {
+  .blocknote-wrapper [data-level="6"] {
     background-color: hsl(180, 45%, 96%) !important;
     border-left: 3px solid hsl(180, 45%, 75%) !important;
     padding: 8px 12px !important;
