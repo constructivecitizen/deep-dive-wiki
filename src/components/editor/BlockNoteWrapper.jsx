@@ -171,7 +171,7 @@ export function BlockNoteWrapper({
       
       const applyToBlocks = (blocksArr) => {
         for (const block of blocksArr) {
-          const blockEl = wrapperRef.current.querySelector(`[data-block-id="${block.id}"]`);
+          const blockEl = wrapperRef.current.querySelector(`[data-id="${block.id}"]`);
           
           if (block.type === 'heading') {
             const originalLevel = block.props?.originalLevel || block.props?.level || 1;
@@ -187,10 +187,15 @@ export function BlockNoteWrapper({
                 blockEl.style.setProperty('--extra-levels', originalLevel - 10);
               }
             }
-          } else if (block.type === 'paragraph' && blockEl) {
-            // Apply color level to paragraph blocks based on preceding heading
-            const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
-            blockEl.setAttribute('data-color-level', colorLevel);
+          } else if (block.type === 'paragraph') {
+            // Apply color level to the .bn-block-content element within paragraph blocks
+            const contentEl = wrapperRef.current.querySelector(
+              `[data-id="${block.id}"] .bn-block-content[data-content-type="paragraph"]`
+            );
+            if (contentEl) {
+              const colorLevel = ((currentHeadingLevel - 1) % 6) + 1;
+              contentEl.setAttribute('data-color-level', colorLevel);
+            }
           }
           
           if (block.children && block.children.length > 0) {
