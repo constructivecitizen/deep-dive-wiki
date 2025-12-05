@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 import { useNavigate } from 'react-router-dom';
-
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 interface EnhancedSectionItemProps {
   section: HierarchicalDocumentSection;
   depth: number;
@@ -60,39 +65,56 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   // Check if this section is currently active - must match BOTH section ID AND document path
   const isActive = activeSectionId === section.id && activeDocumentPath === folderPath;
 
+  const handleOpenInNewTab = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}${folderPath}#${section.id}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="text-sm">
-      <div 
-        className={`flex items-center gap-1 py-0.5 pr-3 rounded cursor-pointer transition-colors border-l-2 ${
-          isActive
-            ? 'bg-primary/10 border-l-primary text-primary font-medium' 
-            : 'hover:bg-accent text-muted-foreground hover:text-foreground border-l-transparent'
-        }`}
-        style={{ marginLeft: `${indentationPx}px` }}
-        onClick={handleSectionClick}
-      >
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (hasChildren) setIsExpanded(!isExpanded);
-          }}
-          className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded transition-colors"
-        >
-          {hasChildren ? (
-            isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            )
-          ) : (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
-        
-        <span className="truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap" title={section.title}>
-          {section.title}
-        </span>
-      </div>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div 
+            className={`flex items-center gap-1 py-0.5 pr-3 rounded cursor-pointer transition-colors border-l-2 ${
+              isActive
+                ? 'bg-primary/10 border-l-primary text-primary font-medium' 
+                : 'hover:bg-accent text-muted-foreground hover:text-foreground border-l-transparent'
+            }`}
+            style={{ marginLeft: `${indentationPx}px` }}
+            onClick={handleSectionClick}
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (hasChildren) setIsExpanded(!isExpanded);
+              }}
+              className="flex-shrink-0 w-4 h-4 flex items-center justify-center hover:bg-accent rounded transition-colors"
+            >
+              {hasChildren ? (
+                isExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                )
+              ) : (
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+            
+            <span className="truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap" title={section.title}>
+              {section.title}
+            </span>
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={handleOpenInNewTab}>
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Open in new tab
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
 
       {isExpanded && hasChildren && (
         <div className="mt-1">

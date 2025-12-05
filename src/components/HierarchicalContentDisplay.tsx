@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdownRenderer';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 
 interface ContentSection {
   level: number;
@@ -250,62 +256,79 @@ const ContentSectionComponent: React.FC<{
     );
   }
   
+  const handleOpenInNewTab = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}${documentPath || ''}#${section.id}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div id={section.id}>
-      <div 
-        className="flex items-center group"
-        style={{ marginLeft: `${indentationPx}px`, gap: '9px' }}
-      >
-        {hasChildren ? (
-          <button
-            onClick={() => {
-              if (onToggleSection) {
-                onToggleSection(section.id, isExpanded);
-              } else {
-                setIsExpanded(!isExpanded);
-              }
-            }}
-            className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
-            aria-label={isExpanded ? "Collapse section" : "Expand section"}
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div 
+            className="flex items-center group"
+            style={{ marginLeft: `${indentationPx}px`, gap: '9px' }}
           >
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            {hasChildren ? (
+              <button
+                onClick={() => {
+                  if (onToggleSection) {
+                    onToggleSection(section.id, isExpanded);
+                  } else {
+                    setIsExpanded(!isExpanded);
+                  }
+                }}
+                className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
+                aria-label={isExpanded ? "Collapse section" : "Expand section"}
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                )}
+              </button>
             ) : (
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              // Chevron toggle for leaf nodes
+              <button
+                onClick={() => {
+                  if (onToggleSection) {
+                    onToggleSection(section.id, isExpanded);
+                  } else {
+                    setIsExpanded(!isExpanded);
+                  }
+                }}
+                className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
+                aria-label={isExpanded ? "Collapse section" : "Expand section"}
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                )}
+              </button>
             )}
-          </button>
-        ) : (
-          // Chevron toggle for leaf nodes
-          <button
-            onClick={() => {
-              if (onToggleSection) {
-                onToggleSection(section.id, isExpanded);
-              } else {
-                setIsExpanded(!isExpanded);
-              }
-            }}
-            className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
-            aria-label={isExpanded ? "Collapse section" : "Expand section"}
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            )}
-          </button>
-        )}
-        
-        <div className="flex-1 min-w-0">
-          <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
-              onClick={() => {
-                if (onSectionClick) {
-                  onSectionClick(section.title);
-                }
-              }}>
-            {section.title}
-          </h1>
-        </div>
-      </div>
+            
+            <div className="flex-1 min-w-0">
+              <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
+                  onClick={() => {
+                    if (onSectionClick) {
+                      onSectionClick(section.title);
+                    }
+                  }}>
+                {section.title}
+              </h1>
+            </div>
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={handleOpenInNewTab}>
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Open in new tab
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
 
       {/* Show content area when expanded OR when at boundary depth with descriptions on */}
       {(isExpanded || (defaultExpandDepth !== undefined && depth === defaultExpandDepth && isContentVisible && hasContent)) && (

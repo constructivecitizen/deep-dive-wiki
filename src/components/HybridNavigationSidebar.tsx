@@ -11,7 +11,8 @@ import {
   Pencil,
   ChevronUp,
   Search,
-  Filter
+  Filter,
+  ExternalLink
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '../services/contentService';
@@ -22,6 +23,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { buildSectionHierarchy, HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 import { EnhancedSectionItem } from './EnhancedSectionItem';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 
 interface HybridNavigationSidebarProps {
   structure: NavigationNode[];
@@ -197,17 +204,26 @@ interface HybridNavigationSidebarProps {
   const currentPathBase = currentPath?.split('#')[0] ?? currentPath;
   const isActiveNode = currentPathBase === node.path && !activeSectionId;
 
+  const handleOpenInNewTab = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}${node.path}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <>
       {/* Folder Header - Clickable to navigate */}
-      <div
-        className={`relative flex items-center gap-1 py-1 pr-2 rounded-md group transition-colors cursor-pointer min-w-0 border-l-2 ${
-          isActiveNode 
-            ? 'bg-primary/10 border-l-primary text-primary' 
-            : 'hover:bg-accent/50 border-l-transparent'
-        }`}
-        onClick={handleNodeClick}
-      >
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div
+            className={`relative flex items-center gap-1 py-1 pr-2 rounded-md group transition-colors cursor-pointer min-w-0 border-l-2 ${
+              isActiveNode 
+                ? 'bg-primary/10 border-l-primary text-primary' 
+                : 'hover:bg-accent/50 border-l-transparent'
+            }`}
+            onClick={handleNodeClick}
+          >
         {/* Expansion toggle */}
         <button
           onClick={toggleExpanded}
@@ -303,7 +319,15 @@ interface HybridNavigationSidebarProps {
             </Button>
           </div>
         )}
-      </div>
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={handleOpenInNewTab}>
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Open in new tab
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
 
       {/* Document sections - Show hierarchical sections */}
       {expanded && hierarchicalSections.length > 0 && (
