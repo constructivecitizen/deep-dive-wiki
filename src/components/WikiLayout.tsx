@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { SearchOverlay } from "./SearchOverlay";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
@@ -55,6 +56,7 @@ export const WikiLayout = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const sidebarContent = (
     <>
@@ -86,6 +88,7 @@ export const WikiLayout = ({
           onStructureUpdate={onStructureUpdate || (() => {})}
           onNavigationClick={(navId, path) => {
             onNavigationClick?.(navId, path);
+            navigate(path);
             if (isMobile) setIsMobileSidebarOpen(false);
           }}
           setShowEditor={setShowEditor}
