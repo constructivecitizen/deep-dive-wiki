@@ -640,19 +640,21 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           ))}
         </div>
 
-        {/* Bottom Controls - Plus Button (left) and Controls (right) */}
-        <div className="py-2 px-3 border-t border-sidebar-border flex items-center justify-between mt-3">
-          {/* Home and Plus Buttons on the left */}
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCollapseAll}
-              className="w-8 h-8 p-0"
-              title="Collapse all sections"
-            >
-              <Home className="w-4 h-4" />
-            </Button>
+        {/* Bottom Controls - All items with equal spacing */}
+        <div className="py-2 pl-1 pr-3 border-t border-sidebar-border flex items-center gap-4 mt-3">
+          {/* Home Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCollapseAll}
+            className="w-8 h-8 p-0 flex-shrink-0"
+            title="Collapse all sections"
+          >
+            <Home className="w-4 h-4" />
+          </Button>
+          
+          {/* Plus Button */}
+          <div className="flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
@@ -664,7 +666,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             </Button>
 
             {isCreating && (
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-2 absolute left-3 right-3 bg-sidebar z-10">
                 <Input
                   ref={inputRef}
                   value={newFolderName}
@@ -697,61 +699,58 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
             )}
           </div>
 
-          {/* Controls on the right */}
-          <div className="flex items-center gap-3">
-            {/* Content Depth Control */}
-            <div className="flex items-center gap-1.5">
-              <label className="text-xs text-muted-foreground whitespace-nowrap">
-                Content Depth:
-              </label>
-              <Input
-                type="text"
-                value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()}
-                onChange={(e) => {
-                  const value = e.target.value.trim();
+          {/* Content Depth Control */}
+          <div className="flex items-center gap-1.5">
+            <label className="text-xs text-muted-foreground whitespace-nowrap">
+              Depth:
+            </label>
+            <Input
+              type="text"
+              value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()}
+              onChange={(e) => {
+                const value = e.target.value.trim();
+                if (value === '-' || value === '') return;
+                const num = parseInt(value);
+                if (!isNaN(num) && num >= 1 && num <= 21) {
+                  onExpandDepthChange?.(num - 1);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const value = e.currentTarget.value.trim();
                   if (value === '-' || value === '') return;
                   const num = parseInt(value);
                   if (!isNaN(num) && num >= 1 && num <= 21) {
                     onExpandDepthChange?.(num - 1);
                   }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    const value = e.currentTarget.value.trim();
-                    if (value === '-' || value === '') return;
-                    const num = parseInt(value);
-                    if (!isNaN(num) && num >= 1 && num <= 21) {
-                      onExpandDepthChange?.(num - 1);
-                    }
-                  }
-                }}
-                className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
-            </div>
+                }
+              }}
+              className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
 
-            {/* Description Visibility Control */}
-            <div className="flex items-center gap-1.5">
-              <label className="text-xs text-muted-foreground whitespace-nowrap">
-                Descriptions:
-              </label>
-              <Select
-                value={showDescriptions}
-                onValueChange={(value: string) => {
-                  if (value === 'on' || value === 'off') {
-                    onShowDescriptionsChange?.(value);
-                  }
-                }}
-              >
-                <SelectTrigger className="h-7 w-9 text-sm text-center px-1 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 [&>svg]:hidden">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="end" className="min-w-[3rem]">
-                  <SelectItem value="on" className="text-sm text-center justify-center">On</SelectItem>
-                  <SelectItem value="off" className="text-sm text-center justify-center">Off</SelectItem>
-                  <SelectItem value="-" disabled className="text-sm text-center justify-center">-</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Description Visibility Control */}
+          <div className="flex items-center gap-1.5">
+            <label className="text-xs text-muted-foreground whitespace-nowrap">
+              Desc:
+            </label>
+            <Select
+              value={showDescriptions}
+              onValueChange={(value: string) => {
+                if (value === 'on' || value === 'off') {
+                  onShowDescriptionsChange?.(value);
+                }
+              }}
+            >
+              <SelectTrigger className="h-7 w-9 text-sm text-center px-1 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 [&>svg]:hidden">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end" className="min-w-[3rem]">
+                <SelectItem value="on" className="text-sm text-center justify-center">On</SelectItem>
+                <SelectItem value="off" className="text-sm text-center justify-center">Off</SelectItem>
+                <SelectItem value="-" disabled className="text-sm text-center justify-center">-</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
