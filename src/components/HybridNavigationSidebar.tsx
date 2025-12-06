@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { buildSectionHierarchy, HierarchicalDocumentSection } from '../lib/sectionHierarchy';
 import { EnhancedSectionItem } from './EnhancedSectionItem';
@@ -391,6 +392,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isFiltersPaneOpen, setIsFiltersPaneOpen] = useState(true);
 
   // Filter states
   const [expandedFilters, setExpandedFilters] = useState({
@@ -638,124 +640,131 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
       </div>
 
       {/* Filters Section */}
-      <div className="border-t border-sidebar-border section-bg-2 p-3">
-        <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">
-          Filters
-        </div>
-        <div className="space-y-1">
-          {filterSections.map((section) => (
-            <FilterSection
-              key={section.sectionKey}
-              title={section.title}
-              sectionKey={section.sectionKey}
-              items={section.items}
-            />
-          ))}
-        </div>
-
-        {/* Bottom Controls - All items with equal spacing */}
-        <div className="py-2 border-t border-sidebar-border flex items-center gap-2 mt-3" style={{ paddingLeft: '2px' }}>
-          {/* Home Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCollapseAll}
-            className="w-8 h-8 p-0 flex-shrink-0"
-            title="Collapse all sections"
-          >
-            <Home className="w-4 h-4" />
-          </Button>
-          
-          {/* Plus Button */}
-          <div className="flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={startCreating}
-              className="w-8 h-8 p-0"
-              title="Add new folder"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-
-            {isCreating && (
-              <div className="mt-2 flex items-center gap-2 absolute left-3 right-3 bg-sidebar z-10">
-                <Input
-                  ref={inputRef}
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  placeholder="Folder name..."
-                  className="text-sm"
+      <Collapsible open={isFiltersPaneOpen} onOpenChange={setIsFiltersPaneOpen}>
+        <div className="border-t border-sidebar-border section-bg-2 p-3">
+          <CollapsibleTrigger className="w-full flex items-center gap-1 cursor-pointer hover:bg-accent/30 rounded px-1 py-0.5 -mx-1">
+            <ChevronRight className={`w-3 h-3 text-sidebar-foreground/70 transition-transform ${isFiltersPaneOpen ? 'rotate-90' : ''}`} />
+            <span className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide">
+              Filters
+            </span>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="space-y-1 mt-3">
+              {filterSections.map((section) => (
+                <FilterSection
+                  key={section.sectionKey}
+                  title={section.title}
+                  sectionKey={section.sectionKey}
+                  items={section.items}
                 />
+              ))}
+            </div>
+
+            {/* Bottom Controls - All items with equal spacing */}
+            <div className="py-2 border-t border-sidebar-border flex items-center gap-2 mt-3" style={{ paddingLeft: '2px' }}>
+              {/* Home Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCollapseAll}
+                className="w-8 h-8 p-0 flex-shrink-0"
+                title="Collapse all sections"
+              >
+                <Home className="w-4 h-4" />
+              </Button>
+              
+              {/* Plus Button */}
+              <div className="flex-shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleCreateFolder}
-                  disabled={!newFolderName.trim()}
-                  className="h-6 w-6 p-0"
+                  onClick={startCreating}
+                  className="w-8 h-8 p-0"
+                  title="Add new folder"
                 >
-                  <Check className="w-3 h-3" />
+                  <Plus className="w-4 h-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setIsCreating(false);
-                    setNewFolderName("");
-                  }}
-                  className="h-6 w-6 p-0"
-                >
-                  <X className="w-3 h-3" />
-                </Button>
+
+                {isCreating && (
+                  <div className="mt-2 flex items-center gap-2 absolute left-3 right-3 bg-sidebar z-10">
+                    <Input
+                      ref={inputRef}
+                      value={newFolderName}
+                      onChange={(e) => setNewFolderName(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      placeholder="Folder name..."
+                      className="text-sm"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCreateFolder}
+                      disabled={!newFolderName.trim()}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Check className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsCreating(false);
+                        setNewFolderName("");
+                      }}
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Content Depth Control */}
-          <div className="flex items-center gap-1.5">
-            <label className="text-xs text-muted-foreground whitespace-nowrap">
-              Depth:
-            </label>
-            <Input
-              type="text"
-              value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()}
-              onChange={(e) => {
-                const value = e.target.value;
-                const num = parseInt(value);
-                if (!isNaN(num) && num >= 1) {
-                  onExpandDepthChange?.(num - 1);
-                }
-              }}
-              className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            />
-          </div>
+              {/* Content Depth Control */}
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs text-muted-foreground whitespace-nowrap">
+                  Depth:
+                </label>
+                <Input
+                  type="text"
+                  value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const num = parseInt(value);
+                    if (!isNaN(num) && num >= 1) {
+                      onExpandDepthChange?.(num - 1);
+                    }
+                  }}
+                  className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
 
-          {/* Description Visibility Control */}
-          <div className="flex items-center gap-1.5">
-            <label className="text-xs text-muted-foreground whitespace-nowrap">
-              Desc:
-            </label>
-            <Select
-              value={showDescriptions}
-              onValueChange={(value: string) => {
-                if (value === 'on' || value === 'off') {
-                  onShowDescriptionsChange?.(value);
-                }
-              }}
-            >
-              <SelectTrigger className="h-7 w-9 text-sm text-center px-1 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 [&>svg]:hidden">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="end" className="min-w-[3rem]">
-                <SelectItem value="on" className="text-sm text-center justify-center">On</SelectItem>
-                <SelectItem value="off" className="text-sm text-center justify-center">Off</SelectItem>
-                <SelectItem value="-" disabled className="text-sm text-center justify-center">-</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              {/* Description Visibility Control */}
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs text-muted-foreground whitespace-nowrap">
+                  Desc:
+                </label>
+                <Select
+                  value={showDescriptions}
+                  onValueChange={(value: string) => {
+                    if (value === 'on' || value === 'off') {
+                      onShowDescriptionsChange?.(value);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-7 w-9 text-sm text-center px-1 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 [&>svg]:hidden">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end" className="min-w-[3rem]">
+                    <SelectItem value="on" className="text-sm text-center justify-center">On</SelectItem>
+                    <SelectItem value="off" className="text-sm text-center justify-center">Off</SelectItem>
+                    <SelectItem value="-" disabled className="text-sm text-center justify-center">-</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CollapsibleContent>
         </div>
-      </div>
+      </Collapsible>
     </div>
   );
 };
