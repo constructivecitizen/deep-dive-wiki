@@ -641,7 +641,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         </div>
 
         {/* Bottom Controls - All items with equal spacing */}
-        <div className="py-2 pl-1 pr-3 border-t border-sidebar-border flex items-center gap-4 mt-3">
+        <div className="py-2 border-t border-sidebar-border flex items-center gap-2 mt-3" style={{ paddingLeft: '2px' }}>
           {/* Home Button */}
           <Button
             variant="ghost"
