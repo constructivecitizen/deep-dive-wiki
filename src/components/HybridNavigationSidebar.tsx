@@ -721,21 +721,10 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
               type="text"
               value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()}
               onChange={(e) => {
-                const value = e.target.value.trim();
-                if (value === '-' || value === '') return;
+                const value = e.target.value;
                 const num = parseInt(value);
-                if (!isNaN(num) && num >= 1 && num <= 21) {
+                if (!isNaN(num) && num >= 1) {
                   onExpandDepthChange?.(num - 1);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const value = e.currentTarget.value.trim();
-                  if (value === '-' || value === '') return;
-                  const num = parseInt(value);
-                  if (!isNaN(num) && num >= 1 && num <= 21) {
-                    onExpandDepthChange?.(num - 1);
-                  }
                 }
               }}
               className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
