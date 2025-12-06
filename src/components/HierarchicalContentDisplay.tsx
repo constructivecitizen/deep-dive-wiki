@@ -146,9 +146,14 @@ const ContentSectionComponent: React.FC<{
   showDescriptions?: 'on' | 'off' | 'mixed';
   descriptionOverrides?: Record<string, boolean>;
   onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void;
-}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions = 'on', descriptionOverrides, onToggleDescription }) => {
+  parentWasManuallyExpanded?: boolean;
+}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions = 'on', descriptionOverrides, onToggleDescription, parentWasManuallyExpanded = false }) => {
   // Determine initial expanded state
   const getInitialExpandedState = () => {
+    // If parent was manually expanded, children start collapsed
+    if (parentWasManuallyExpanded) {
+      return false;
+    }
     if (expandedSections && section.id in expandedSections) {
       return expandedSections[section.id];
     }
@@ -159,6 +164,7 @@ const ContentSectionComponent: React.FC<{
   };
   
   const [isExpanded, setIsExpanded] = useState(getInitialExpandedState);
+  const [wasManuallyExpanded, setWasManuallyExpanded] = useState(false);
   
   // Update when external control changes
   React.useEffect(() => {
@@ -168,6 +174,20 @@ const ContentSectionComponent: React.FC<{
       setIsExpanded(depth < defaultExpandDepth);
     }
   }, [expandedSections, defaultExpandDepth, section.id, depth]);
+  
+  const handleToggle = () => {
+    const newExpanded = !isExpanded;
+    if (onToggleSection) {
+      onToggleSection(section.id, isExpanded);
+    } else {
+      setIsExpanded(newExpanded);
+    }
+    // Track that this was manually expanded so children stay collapsed
+    if (newExpanded) {
+      setWasManuallyExpanded(true);
+    }
+  };
+  
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
@@ -271,44 +291,17 @@ const ContentSectionComponent: React.FC<{
             className="flex items-center group"
             style={{ marginLeft: `${indentationPx}px`, gap: '9px' }}
           >
-            {hasChildren ? (
-              <button
-                onClick={() => {
-                  if (onToggleSection) {
-                    onToggleSection(section.id, isExpanded);
-                  } else {
-                    setIsExpanded(!isExpanded);
-                  }
-                }}
-                className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
-                aria-label={isExpanded ? "Collapse section" : "Expand section"}
-              >
-                {isExpanded ? (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                )}
-              </button>
-            ) : (
-              // Chevron toggle for leaf nodes
-              <button
-                onClick={() => {
-                  if (onToggleSection) {
-                    onToggleSection(section.id, isExpanded);
-                  } else {
-                    setIsExpanded(!isExpanded);
-                  }
-                }}
-                className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
-                aria-label={isExpanded ? "Collapse section" : "Expand section"}
-              >
-                {isExpanded ? (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                )}
-              </button>
-            )}
+            <button
+              onClick={handleToggle}
+              className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
+              aria-label={isExpanded ? "Collapse section" : "Expand section"}
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
             
             <div className="flex-1 min-w-0">
               <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
@@ -361,6 +354,7 @@ const ContentSectionComponent: React.FC<{
                   showDescriptions={showDescriptions}
                   descriptionOverrides={descriptionOverrides}
                   onToggleDescription={onToggleDescription}
+                  parentWasManuallyExpanded={wasManuallyExpanded}
                 />
               ))}
             </div>
