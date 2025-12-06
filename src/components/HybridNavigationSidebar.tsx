@@ -652,7 +652,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         </div>
 
         {/* Search trigger - at bottom of Navigation */}
-        <div className="mt-3 pt-1 border-t border-sidebar-border/50">
+        <div className="mt-3 pt-1 pb-0 border-t border-sidebar-border/50">
           <button
             onClick={onSearchOpen}
             className="w-full flex items-center gap-2 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors"
