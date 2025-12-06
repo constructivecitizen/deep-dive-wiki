@@ -18,6 +18,7 @@ interface EnhancedSectionItemProps {
   onSectionNavigate?: (sectionTitle: string) => void;
   activeSectionId?: string | null;
   activeDocumentPath?: string | null;
+  collapseKey?: number;
 }
 
 export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
@@ -29,10 +30,18 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   currentPath,
   onSectionNavigate,
   activeSectionId,
-  activeDocumentPath
+  activeDocumentPath,
+  collapseKey
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
+
+  // Collapse when collapseKey changes
+  React.useEffect(() => {
+    if (collapseKey !== undefined && collapseKey > 0) {
+      setIsExpanded(false);
+    }
+  }, [collapseKey]);
 
   const handleSectionClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -130,6 +139,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
               onSectionNavigate={onSectionNavigate}
               activeSectionId={activeSectionId}
               activeDocumentPath={activeDocumentPath}
+              collapseKey={collapseKey}
             />
           ))}
         </div>

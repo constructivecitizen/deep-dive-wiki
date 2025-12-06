@@ -50,6 +50,7 @@ interface HybridNavigationSidebarProps {
   onShowDescriptionsChange?: (mode: 'on' | 'off') => void;
   onSearchOpen?: () => void;
   onCollapseAll?: () => void;
+  sidebarCollapseKey?: number;
 }
 
   const FolderNode: React.FC<{
@@ -65,6 +66,7 @@ interface HybridNavigationSidebarProps {
   activeSectionId?: string | null;
   activeDocumentPath?: string | null;
   setActiveSectionId?: (id: string | null) => void;
+  collapseKey?: number;
 }> = ({
   node, 
   contentNodes, 
@@ -77,13 +79,21 @@ interface HybridNavigationSidebarProps {
   onSectionNavigate,
   activeSectionId,
   activeDocumentPath,
-  setActiveSectionId
+  setActiveSectionId,
+  collapseKey
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(node.title);
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Collapse when collapseKey changes
+  React.useEffect(() => {
+    if (collapseKey !== undefined && collapseKey > 0) {
+      setExpanded(false);
+    }
+  }, [collapseKey]);
 
   // Find the associated content for this folder and build hierarchical sections
   const associatedContent = contentNodes?.find(content => content.path === node.path);
@@ -348,6 +358,7 @@ interface HybridNavigationSidebarProps {
                 onSectionNavigate={onSectionNavigate}
                 activeSectionId={activeSectionId}
                 activeDocumentPath={activeDocumentPath}
+                collapseKey={collapseKey}
               />
             ))}
         </div>
@@ -374,7 +385,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   showDescriptions = 'on',
   onShowDescriptionsChange,
   onSearchOpen,
-  onCollapseAll
+  onCollapseAll,
+  sidebarCollapseKey
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -603,6 +615,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
                 activeSectionId={activeSectionId}
                 activeDocumentPath={activeDocumentPath}
                 setActiveSectionId={setActiveSectionId}
+                collapseKey={sidebarCollapseKey}
               />
             ))
           ) : (

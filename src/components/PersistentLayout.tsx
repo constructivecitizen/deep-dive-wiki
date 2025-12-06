@@ -54,6 +54,7 @@ export const PersistentLayout: React.FC = () => {
   const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>({});
   const [showDescriptions, setShowDescriptionsState] = useState<'on' | 'off' | 'mixed'>('on');
   const [descriptionOverrides, setDescriptionOverrides] = useState<Record<string, boolean>>({});
+  const [sidebarCollapseKey, setSidebarCollapseKey] = useState(0);
   
   // Ref for section navigation function - will be set by ContentPage
   const sectionNavigateRef = React.useRef<((sectionTitle: string) => void) | null>(null);
@@ -124,6 +125,8 @@ export const PersistentLayout: React.FC = () => {
     setExpandDepth(0);
     setExpandMode('depth');
     setManualOverrides({});
+    // Increment collapse key to trigger sidebar reset
+    setSidebarCollapseKey(prev => prev + 1);
   };
 
   if (isInitialLoading) {
@@ -176,6 +179,7 @@ export const PersistentLayout: React.FC = () => {
         showDescriptions={showDescriptions}
         onShowDescriptionsChange={handleShowDescriptionsChange}
         onCollapseAll={handleCollapseAll}
+        sidebarCollapseKey={sidebarCollapseKey}
       >
         <Outlet />
       </WikiLayout>

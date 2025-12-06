@@ -32,6 +32,7 @@ interface WikiLayoutProps {
   showDescriptions?: 'on' | 'off' | 'mixed';
   onShowDescriptionsChange?: (mode: 'on' | 'off') => void;
   onCollapseAll?: () => void;
+  sidebarCollapseKey?: number;
 }
 
 export const WikiLayout = ({ 
@@ -53,7 +54,8 @@ export const WikiLayout = ({
   onExpandDepthChange,
   showDescriptions,
   onShowDescriptionsChange,
-  onCollapseAll
+  onCollapseAll,
+  sidebarCollapseKey
 }: WikiLayoutProps) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -109,6 +111,7 @@ export const WikiLayout = ({
           onShowDescriptionsChange={onShowDescriptionsChange}
           onSearchOpen={() => setIsSearchOpen(true)}
           onCollapseAll={onCollapseAll}
+          sidebarCollapseKey={sidebarCollapseKey}
         />
       </div>
     </>
