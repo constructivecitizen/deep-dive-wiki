@@ -26,7 +26,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
   }, [onClose]);
 
   return (
-    <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur-sm flex flex-col items-center pt-20">
+    <div className="absolute inset-0 z-50 bg-background/70 backdrop-blur-[2px] flex flex-col items-center pt-20">
       {/* Close button */}
       <Button 
         variant="ghost" 
