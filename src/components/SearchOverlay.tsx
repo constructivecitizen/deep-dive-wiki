@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Search } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -26,7 +26,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
   }, [onClose]);
 
   return (
-    <div className="absolute inset-0 z-50 bg-background/70 backdrop-blur-[2px] flex flex-col items-center pt-20">
+    <div className="absolute inset-x-0 top-0 h-1/2 z-50 bg-background/70 backdrop-blur-[2px] flex flex-col items-center pt-20">
       {/* Close button */}
       <Button 
         variant="ghost" 
@@ -39,23 +39,13 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
       
       {/* Search container */}
       <div className="w-full max-w-xl px-6">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            ref={inputRef}
-            type="text"
-            placeholder="Search content..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-14 pl-12 pr-4 text-lg rounded-xl border-2 focus-visible:ring-2"
-          />
-        </div>
-        
-        {/* Placeholder for future search results */}
-        <div className="mt-8 text-center text-muted-foreground">
-          <p className="text-sm">Type to search across all content</p>
-          <p className="text-xs mt-2">(Search functionality coming soon)</p>
-        </div>
+        <Input
+          ref={inputRef}
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="h-14 px-4 text-lg rounded-xl border-2 focus-visible:ring-2"
+        />
       </div>
     </div>
   );
