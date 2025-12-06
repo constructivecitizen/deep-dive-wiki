@@ -12,7 +12,8 @@ import {
   ChevronUp,
   Search,
   Filter,
-  ExternalLink
+  ExternalLink,
+  Home
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '../services/contentService';
@@ -48,6 +49,7 @@ interface HybridNavigationSidebarProps {
   showDescriptions?: 'on' | 'off' | 'mixed';
   onShowDescriptionsChange?: (mode: 'on' | 'off') => void;
   onSearchOpen?: () => void;
+  onCollapseAll?: () => void;
 }
 
   const FolderNode: React.FC<{
@@ -371,7 +373,8 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   onExpandDepthChange,
   showDescriptions = 'on',
   onShowDescriptionsChange,
-  onSearchOpen
+  onSearchOpen,
+  onCollapseAll
 }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -639,8 +642,17 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
 
         {/* Bottom Controls - Plus Button (left) and Controls (right) */}
         <div className="py-2 px-3 border-t border-sidebar-border flex items-center justify-between mt-3">
-          {/* Plus Button on the left */}
-          <div>
+          {/* Home and Plus Buttons on the left */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCollapseAll}
+              className="w-8 h-8 p-0"
+              title="Collapse all sections"
+            >
+              <Home className="w-4 h-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"

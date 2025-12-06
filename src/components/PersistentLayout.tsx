@@ -119,6 +119,13 @@ export const PersistentLayout: React.FC = () => {
     setDescriptionOverrides({});
   };
 
+  const handleCollapseAll = () => {
+    // Set expand depth to 0 (which displays as "1" in UI but means no auto-expansion)
+    setExpandDepth(0);
+    setExpandMode('depth');
+    setManualOverrides({});
+  };
+
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -168,6 +175,7 @@ export const PersistentLayout: React.FC = () => {
         onExpandDepthChange={handleExpandDepthChange}
         showDescriptions={showDescriptions}
         onShowDescriptionsChange={handleShowDescriptionsChange}
+        onCollapseAll={handleCollapseAll}
       >
         <Outlet />
       </WikiLayout>

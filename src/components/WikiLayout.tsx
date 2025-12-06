@@ -31,6 +31,7 @@ interface WikiLayoutProps {
   onExpandDepthChange?: (depth: number) => void;
   showDescriptions?: 'on' | 'off' | 'mixed';
   onShowDescriptionsChange?: (mode: 'on' | 'off') => void;
+  onCollapseAll?: () => void;
 }
 
 export const WikiLayout = ({ 
@@ -51,7 +52,8 @@ export const WikiLayout = ({
   expandMode,
   onExpandDepthChange,
   showDescriptions,
-  onShowDescriptionsChange
+  onShowDescriptionsChange,
+  onCollapseAll
 }: WikiLayoutProps) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -106,6 +108,7 @@ export const WikiLayout = ({
           showDescriptions={showDescriptions}
           onShowDescriptionsChange={onShowDescriptionsChange}
           onSearchOpen={() => setIsSearchOpen(true)}
+          onCollapseAll={onCollapseAll}
         />
       </div>
     </>
