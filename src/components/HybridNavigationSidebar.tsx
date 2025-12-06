@@ -655,7 +655,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         <div className="mt-3 pt-1 pb-0 border-t border-sidebar-border/50">
           <button
             onClick={onSearchOpen}
-            className="w-full flex items-center gap-2 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors"
+            className="w-full flex items-center gap-2 px-2 pt-1 pb-0 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors"
           >
             <Search className="w-3 h-3" />
             <span>Search...</span>
