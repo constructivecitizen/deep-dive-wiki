@@ -13,8 +13,11 @@ import {
   Search,
   Filter,
   ExternalLink,
-  Home
+  Home,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useTheme } from '@/hooks/use-theme';
 import { useNavigate } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '../services/contentService';
 import { Button } from '@/components/ui/button';
@@ -368,6 +371,27 @@ interface HybridNavigationSidebarProps {
   );
 };
 
+// Theme toggle button component
+const ThemeToggleButton: React.FC = () => {
+  const { theme, toggleTheme } = useTheme();
+  
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggleTheme}
+      className="w-8 h-8 p-0 flex-shrink-0"
+      title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+    >
+      {theme === 'light' ? (
+        <Moon className="w-4 h-4" />
+      ) : (
+        <Sun className="w-4 h-4" />
+      )}
+    </Button>
+  );
+};
+
 export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = ({
   structure,
   contentNodes = [],
@@ -674,6 +698,9 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           >
             <Home className="w-4 h-4" />
           </Button>
+          
+          {/* Theme Toggle Button */}
+          <ThemeToggleButton />
           
           {/* Plus Button */}
           <div className="flex-shrink-0">
