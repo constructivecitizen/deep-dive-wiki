@@ -1,7 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { X, FileText, Hash, Type, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { SearchService, SearchResult } from '@/services/searchService';
+import { useNavigate } from 'react-router-dom';
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -9,24 +12,81 @@ interface SearchOverlayProps {
 
 export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   // Auto-focus input when overlay opens
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Close on Escape key
+  // Close on Escape key, navigate with arrows
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(i => Math.min(i + 1, results.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(i => Math.max(i - 1, 0));
+      } else if (e.key === 'Enter' && results.length > 0) {
+        e.preventDefault();
+        handleResultClick(results[selectedIndex]);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, results, selectedIndex]);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (searchTerm.trim().length >= 2) {
+        setIsLoading(true);
+        const searchResults = await SearchService.search(searchTerm);
+        setResults(searchResults);
+        setSelectedIndex(0);
+        setIsLoading(false);
+      } else {
+        setResults([]);
+      }
+    }, 200);
+    
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const handleResultClick = useCallback((result: SearchResult) => {
+    const path = result.sectionId 
+      ? `${result.documentPath}#${result.sectionId}`
+      : result.documentPath;
+    navigate(path);
+    onClose();
+  }, [navigate, onClose]);
+
+  const getMatchTypeIcon = (type: SearchResult['matchType']) => {
+    switch (type) {
+      case 'title': return <FileText className="h-4 w-4 text-primary" />;
+      case 'section-title': return <Hash className="h-4 w-4 text-accent-foreground" />;
+      case 'content': return <Type className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const renderHighlightedText = (text: string) => {
+    const parts = text.split(/\*\*(.*?)\*\*/g);
+    return parts.map((part, i) => 
+      i % 2 === 1 
+        ? <mark key={i} className="bg-primary/20 text-foreground px-0.5 rounded">{part}</mark>
+        : part
+    );
+  };
 
   return (
-    <div className="absolute inset-x-0 top-0 h-1/2 z-50 bg-background/70 backdrop-blur-[2px] flex flex-col items-center pt-20">
+    <div className="absolute inset-x-0 top-0 z-50 bg-background/80 backdrop-blur-sm flex flex-col items-center pt-16 pb-8" style={{ height: 'auto', maxHeight: '70%' }}>
       {/* Close button */}
       <Button 
         variant="ghost" 
@@ -38,14 +98,70 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
       </Button>
       
       {/* Search container */}
-      <div className="w-full max-w-xl px-6">
-        <Input
-          ref={inputRef}
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="h-14 px-4 text-lg rounded-xl border-2 focus-visible:ring-2"
-        />
+      <div className="w-full max-w-xl px-6 flex flex-col gap-3">
+        <div className="relative">
+          <Input
+            ref={inputRef}
+            type="text"
+            placeholder="Search documents..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-12 px-4 text-base rounded-lg border-2 focus-visible:ring-2 pr-10"
+          />
+          {isLoading && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />
+          )}
+        </div>
+        
+        {/* Results */}
+        {results.length > 0 && (
+          <ScrollArea className="max-h-80 rounded-lg border bg-card shadow-lg">
+            <div className="p-2">
+              {results.map((result, index) => (
+                <button
+                  key={result.id}
+                  onClick={() => handleResultClick(result)}
+                  className={`w-full text-left px-3 py-2.5 rounded-md flex items-start gap-3 transition-colors ${
+                    index === selectedIndex 
+                      ? 'bg-accent text-accent-foreground' 
+                      : 'hover:bg-muted'
+                  }`}
+                >
+                  <div className="mt-0.5 shrink-0">
+                    {getMatchTypeIcon(result.matchType)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm truncate">
+                        {result.sectionTitle || result.documentTitle}
+                      </span>
+                      {result.matchType === 'content' && result.sectionTitle && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          in {result.documentTitle}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                      {renderHighlightedText(result.matchedText)}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        )}
+        
+        {searchTerm.length >= 2 && !isLoading && results.length === 0 && (
+          <div className="text-center py-6 text-muted-foreground text-sm">
+            No results found for "{searchTerm}"
+          </div>
+        )}
+        
+        {searchTerm.length > 0 && searchTerm.length < 2 && (
+          <div className="text-center py-4 text-muted-foreground text-xs">
+            Type at least 2 characters to search
+          </div>
+        )}
       </div>
     </div>
   );
