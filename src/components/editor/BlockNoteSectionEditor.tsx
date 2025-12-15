@@ -35,7 +35,7 @@ export function BlockNoteSectionEditor({
   readOnly = false,
 }: BlockNoteSectionEditorProps) {
   const editorRef = useRef<any>(null);
-  const [editorMode, setEditorMode] = useState<'blocknote' | 'markdown'>('blocknote');
+  const [editorMode, setEditorMode] = useState<'blocknote' | 'markdown'>('markdown');
   const [markdownContent, setMarkdownContent] = useState('');
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasChangesRef = useRef(false);
