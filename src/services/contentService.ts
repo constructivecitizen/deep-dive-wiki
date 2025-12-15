@@ -132,10 +132,20 @@ export class ContentService {
   }
 
   static async searchDocuments(query: string): Promise<WikiDocument[]> {
+    // Input validation
+    if (!query || typeof query !== 'string') return [];
+    if (query.length > 100) {
+      console.warn('Search query too long');
+      return [];
+    }
+
+    // Sanitize input: escape special SQL pattern characters to prevent injection
+    const sanitizedQuery = query.replace(/[%_\\]/g, '\\$&');
+
     const { data, error } = await supabase
       .from('content_items')
       .select('*')
-      .or(`title.ilike.%${query}%,content_json::text.ilike.%${query}%`)
+      .or(`title.ilike.%${sanitizedQuery}%,content_json::text.ilike.%${sanitizedQuery}%`)
       .order('title');
 
     if (error) {
