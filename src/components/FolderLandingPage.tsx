@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { NavigationNode, WikiDocument } from '@/services/contentService';
 import { FolderIcon, FileTextIcon, PlusIcon, FileEdit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import { renderMarkdown } from '@/lib/markdownRenderer';
 interface FolderLandingPageProps {
   folder: NavigationNode;
   children: NavigationNode[];
@@ -116,7 +116,7 @@ export const FolderLandingPage: React.FC<FolderLandingPageProps> = ({
                           )}
                           {section.content && (
                             <div className="text-foreground leading-relaxed"
-                                 dangerouslySetInnerHTML={{ __html: section.content }} />
+                                 dangerouslySetInnerHTML={{ __html: renderMarkdown(section.content) }} />
                           )}
                         </div>
                       ))}

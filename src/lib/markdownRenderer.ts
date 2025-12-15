@@ -1,4 +1,5 @@
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 // Configure marked for safe HTML rendering
 marked.setOptions({
@@ -8,14 +9,25 @@ marked.setOptions({
 
 export const renderMarkdown = (content: string): string => {
   try {
-    console.log('renderMarkdown input:', content.substring(0, 200));
-    // Use marked directly without custom renderer for now to test
-    const result = marked.parse(content);
-    console.log('renderMarkdown output:', typeof result === 'string' ? result.substring(0, 200) : result);
-    return typeof result === 'string' ? result : content;
+    // Parse markdown to HTML
+    const rawHtml = marked.parse(content);
+    const htmlString = typeof rawHtml === 'string' ? rawHtml : content;
+    
+    // Sanitize HTML to remove malicious content (XSS protection)
+    const cleanHtml = DOMPurify.sanitize(htmlString, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+                     'ul', 'ol', 'li', 'a', 'code', 'pre', 'blockquote', 'hr', 'table', 
+                     'thead', 'tbody', 'tr', 'th', 'td', 'img', 'del', 'ins', 'span', 'div'],
+      ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'class'],
+      ALLOW_DATA_ATTR: false,
+      ALLOW_UNKNOWN_PROTOCOLS: false
+    });
+    
+    return cleanHtml;
   } catch (error) {
     console.warn('Markdown rendering error:', error);
-    return content; // Return original content if parsing fails
+    // Return escaped plain text on error
+    return content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 };
 
