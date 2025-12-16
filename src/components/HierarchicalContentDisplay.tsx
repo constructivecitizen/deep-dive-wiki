@@ -207,24 +207,54 @@ const ContentSectionComponent: React.FC<{
     return `text-foreground ${getFontSizeClass(depth)}`;
   };
 
-  // Helper to render title with rubric/slug styling for text before colon
+  // Helper to get stamp color based on rubric text
+  const getStampColors = (rubric: string): { bg: string; text: string; border: string } => {
+    const normalized = rubric.toLowerCase().replace(':', '').trim();
+    
+    // Group 1: Background, Main Goal, Main Work - blue/primary
+    if (['background', 'main goal', 'main work'].includes(normalized)) {
+      return { bg: 'bg-primary/15', text: 'text-primary', border: 'border-primary/30' };
+    }
+    // Group 2: Critical - red/destructive
+    if (normalized === 'critical') {
+      return { bg: 'bg-destructive/15', text: 'text-destructive', border: 'border-destructive/30' };
+    }
+    // Group 3: Minor Tip - amber/warning
+    if (normalized === 'minor tip') {
+      return { bg: 'bg-amber-500/15', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30' };
+    }
+    // Group 4: Tip, Note - green
+    if (['tip', 'note'].includes(normalized)) {
+      return { bg: 'bg-emerald-500/15', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30' };
+    }
+    // Group 5: Goal, Goals - purple
+    if (['goal', 'goals'].includes(normalized)) {
+      return { bg: 'bg-violet-500/15', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-500/30' };
+    }
+    // Default: muted styling
+    return { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border' };
+  };
+
+  // Helper to render title with rubric/slug styling as stamps
   const renderTitleWithRubric = (title: string) => {
     const colonIndex = title.indexOf(':');
     if (colonIndex === -1 || colonIndex > 20) {
-      // No colon or colon is too far in (not a rubric pattern)
       return <>{title}</>;
     }
     
-    const rubric = title.substring(0, colonIndex + 1);
-    const rest = title.substring(colonIndex + 1);
+    const rubric = title.substring(0, colonIndex);
+    const rest = title.substring(colonIndex + 1).trim();
+    const colors = getStampColors(rubric);
     
     return (
-      <>
-        <span className="text-primary/80 font-semibold uppercase text-[0.85em] tracking-wide mr-1.5">
+      <span className="inline-flex items-center gap-2">
+        <span 
+          className={`inline-flex items-center justify-center min-w-[90px] px-2.5 py-0.5 rounded-md border text-[0.7em] font-semibold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
+        >
           {rubric}
         </span>
-        {rest}
-      </>
+        <span>{rest}</span>
+      </span>
     );
   };
 
