@@ -209,40 +209,25 @@ const ContentSectionComponent: React.FC<{
   };
 
   // Helper to render title with rubric/slug styling as stamps
-  const renderTitleWithRubric = (title: string, isDocTitle: boolean = false) => {
+  const renderTitleWithRubric = (title: string) => {
     const colonIndex = title.indexOf(':');
     if (colonIndex === -1 || colonIndex > 20) {
-      return <span>{title}</span>;
+      return <>{title}</>;
     }
     
     const rubric = title.substring(0, colonIndex);
     const rest = title.substring(colonIndex + 1).trim();
     const colors = getStampColors(rubric);
     
-    // For document titles (no chevron), simpler layout
-    if (isDocTitle) {
-      return (
-        <span className="inline-flex items-center gap-2 flex-wrap">
-          <span 
-            className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider flex-shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}
-          >
-            {rubric}
-          </span>
-          <span>{rest}</span>
-        </span>
-      );
-    }
-    
-    // For regular headers with chevron: stamp and text wrap together, aligned under stamp
     return (
-      <>
+      <span className="inline-flex items-center gap-2">
         <span 
-          className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider flex-shrink-0 align-middle ${colors.bg} ${colors.text} ${colors.border}`}
+          className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
         >
           {rubric}
         </span>
-        <span className="ml-2">{rest}</span>
-      </>
+        <span>{rest}</span>
+      </span>
     );
   };
 
@@ -277,7 +262,7 @@ const ContentSectionComponent: React.FC<{
     return (
       <div id={section.id}>
         <h1 className="text-3xl font-bold text-foreground mb-6">
-          {renderTitleWithRubric(section.title, true)}
+          {renderTitleWithRubric(section.title)}
         </h1>
         
         {hasContent && (
@@ -327,12 +312,12 @@ const ContentSectionComponent: React.FC<{
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <div 
-            className="flex items-start group"
+            className="flex items-center group"
             style={{ marginLeft: `${indentationPx}px`, gap: '9px' }}
           >
             <button
               onClick={handleToggle}
-              className="flex-shrink-0 w-4 h-4 flex items-center justify-start mt-[3px]"
+              className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
               aria-label={isExpanded ? "Collapse section" : "Expand section"}
             >
               {isExpanded ? (
@@ -344,7 +329,6 @@ const ContentSectionComponent: React.FC<{
             
             <div className="flex-1 min-w-0">
               <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
-                  style={{ paddingLeft: '98px', textIndent: '-98px' }}
                   onClick={() => {
                     if (onSectionClick) {
                       onSectionClick(section.title);
