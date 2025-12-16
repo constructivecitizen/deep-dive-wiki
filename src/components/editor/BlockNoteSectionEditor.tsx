@@ -219,71 +219,75 @@ export function BlockNoteSectionEditor({
         aria-labelledby="editor-title"
       >
         {/* Header Toolbar */}
-        <header className="border-b border-border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              <h1 id="editor-title" className="text-xl font-semibold">Document Editor</h1>
-              <span className="text-sm text-muted-foreground">
-                ({sections.length} sections)
+        <header className="border-b border-border bg-card px-3 py-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <FileText className="h-4 w-4 shrink-0" />
+              <h1 id="editor-title" className="text-sm font-semibold truncate">Document Editor</h1>
+              <span className="text-xs text-muted-foreground hidden sm:inline">
+                ({sections.length})
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 flex-wrap">
               {/* Mode Toggle */}
               <Button
                 onClick={toggleEditorMode}
                 variant="outline"
                 size="sm"
-                className="mr-4"
+                className="h-7 px-2 text-xs"
                 title={editorMode === 'blocknote' ? 'Switch to Markdown' : 'Switch to Visual Editor'}
               >
                 {editorMode === 'blocknote' ? (
                   <>
-                    <Code className="h-4 w-4 mr-2" />
-                    Markdown
+                    <Code className="h-3.5 w-3.5 sm:mr-1" />
+                    <span className="hidden sm:inline">Markdown</span>
                   </>
                 ) : (
                   <>
-                    <Edit3 className="h-4 w-4 mr-2" />
-                    Visual
+                    <Edit3 className="h-3.5 w-3.5 sm:mr-1" />
+                    <span className="hidden sm:inline">Visual</span>
                   </>
                 )}
               </Button>
 
               {/* Markdown Formatting Toolbar */}
               {editorMode === 'markdown' && (
-                <div className="flex items-center gap-1 mr-4 border-r border-border pr-4">
+                <div className="flex items-center gap-0.5 border-l border-border pl-1 ml-1">
                   <Button 
                     onClick={() => insertMarkdown('bold')} 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm"
+                    className="h-7 w-7 p-0"
                     title="Bold"
                   >
-                    <Bold className="h-4 w-4" />
+                    <Bold className="h-3.5 w-3.5" />
                   </Button>
                   <Button 
                     onClick={() => insertMarkdown('italic')} 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm"
+                    className="h-7 w-7 p-0"
                     title="Italic"
                   >
-                    <Italic className="h-4 w-4" />
+                    <Italic className="h-3.5 w-3.5" />
                   </Button>
                   <Button 
                     onClick={() => insertMarkdown('list')} 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm"
+                    className="h-7 w-7 p-0"
                     title="List"
                   >
-                    <List className="h-4 w-4" />
+                    <List className="h-3.5 w-3.5" />
                   </Button>
                   <Button 
                     onClick={() => insertMarkdown('link')} 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm"
+                    className="h-7 w-7 p-0"
                     title="Link"
                   >
-                    <Link2 className="h-4 w-4" />
+                    <Link2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               )}
@@ -291,16 +295,17 @@ export function BlockNoteSectionEditor({
               {/* Markup Guide Toggle */}
               <Button
                 onClick={() => setShowMarkupGuide(!showMarkupGuide)}
-                variant={showMarkupGuide ? "secondary" : "outline"}
+                variant={showMarkupGuide ? "secondary" : "ghost"}
                 size="sm"
+                className="h-7 w-7 p-0"
                 title={showMarkupGuide ? "Hide Markup Guide" : "Show Markup Guide"}
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-3.5 w-3.5" />
               </Button>
 
               {/* Cancel and Save buttons */}
               {onClose && (
-                <>
+                <div className="flex items-center gap-1 border-l border-border pl-1 ml-1">
                   <Button 
                     onClick={() => {
                       if (autoSaveTimerRef.current) {
@@ -308,16 +313,18 @@ export function BlockNoteSectionEditor({
                       }
                       onClose();
                     }} 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm"
+                    className="h-7 px-2 text-xs"
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleSaveAndClose} size="sm">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Save & Close
+                  <Button onClick={handleSaveAndClose} size="sm" className="h-7 px-2 text-xs">
+                    <Eye className="h-3.5 w-3.5 sm:mr-1" />
+                    <span className="hidden sm:inline">Save & Close</span>
+                    <span className="sm:hidden">Save</span>
                   </Button>
-                </>
+                </div>
               )}
             </div>
           </div>
