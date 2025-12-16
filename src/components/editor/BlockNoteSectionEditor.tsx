@@ -8,7 +8,7 @@ import { useEffect, useCallback, useRef, useState, lazy, Suspense } from "react"
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  FileText, Eye, Bold, Italic, List, Link2, Code, Edit3 
+  FileText, Eye, Bold, Italic, List, Link2, Code, Edit3, BookOpen, X 
 } from "lucide-react";
 import { HierarchyParser } from "@/lib/hierarchyParser";
 
@@ -37,6 +37,7 @@ export function BlockNoteSectionEditor({
   const editorRef = useRef<any>(null);
   const [editorMode, setEditorMode] = useState<'blocknote' | 'markdown'>('markdown');
   const [markdownContent, setMarkdownContent] = useState('');
+  const [showMarkupGuide, setShowMarkupGuide] = useState(false);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasChangesRef = useRef(false);
   
@@ -287,6 +288,16 @@ export function BlockNoteSectionEditor({
                 </div>
               )}
 
+              {/* Markup Guide Toggle */}
+              <Button
+                onClick={() => setShowMarkupGuide(!showMarkupGuide)}
+                variant={showMarkupGuide ? "secondary" : "outline"}
+                size="sm"
+                title={showMarkupGuide ? "Hide Markup Guide" : "Show Markup Guide"}
+              >
+                <BookOpen className="h-4 w-4" />
+              </Button>
+
               {/* Close button */}
               {onClose && (
                 <Button onClick={handleSaveAndClose} size="sm">
@@ -336,8 +347,19 @@ More detailed content with \`code\`.`}
           </div>
 
           {/* Markup Guide Sidebar */}
+          {showMarkupGuide && (
           <div className="w-80 border-l border-border bg-muted/50 p-4 overflow-y-auto">
-            <h3 className="font-semibold mb-4">Markup Guide</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold">Markup Guide</h3>
+              <Button
+                onClick={() => setShowMarkupGuide(false)}
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
             <div className="space-y-4 text-sm">
               <div>
                 <h4 className="font-medium mb-2">Headers & Hierarchy</h4>
@@ -394,6 +416,7 @@ More detailed content with \`code\`.`}
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
