@@ -41,11 +41,12 @@ export const rubricColorMap: Record<string, keyof typeof stampColorTreatments> =
   'main goal': 'blue',
   'main work': 'blue',
   'critical': 'red',
-  'minor tip': 'amber',
+  'important': 'amber',
+  'minor tip': 'green'
   'tip': 'green',
   'note': 'green',
-  'goal': 'purple',
-  'goals': 'purple',
+  'goal': 'blue',
+  'goals': 'blue',
 };
 
 // Get the color classes for a rubric stamp
