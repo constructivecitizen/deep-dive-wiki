@@ -189,7 +189,7 @@ export const WikiLayout = ({
             <SearchOverlay onClose={() => setIsSearchOpen(false)} />
           )}
           <ScrollArea className="h-full">
-            <main className="pl-20 pr-6 py-8 max-w-4xl">
+            <main className="px-8 py-8 max-w-4xl mx-auto">
               {children}
             </main>
           </ScrollArea>
