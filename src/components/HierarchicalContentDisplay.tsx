@@ -220,7 +220,7 @@ const ContentSectionComponent: React.FC<{
     const colors = getStampColors(rubric);
     
     return (
-      <span className="flex flex-col gap-0.5">
+      <span className="inline-flex items-center gap-2">
         <span 
           className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
         >
@@ -312,12 +312,12 @@ const ContentSectionComponent: React.FC<{
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <div 
-            className="flex items-start group"
+            className="flex items-center group"
             style={{ marginLeft: `${indentationPx}px`, gap: '9px' }}
           >
             <button
               onClick={handleToggle}
-              className="flex-shrink-0 w-4 h-4 flex items-center justify-start mt-[0.35em]"
+              className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
               aria-label={isExpanded ? "Collapse section" : "Expand section"}
             >
               {isExpanded ? (
