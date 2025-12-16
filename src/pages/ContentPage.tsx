@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer } from "react";
+import React, { useEffect, useState, useReducer, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PageBreadcrumb } from "@/components/PageBreadcrumb";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
@@ -263,10 +263,50 @@ const ContentPage: React.FC = () => {
     }
   };
 
-  // Load current page on mount and path change - always refresh to ensure clean state
+  // Track pending hash navigation to handle after page load
+  const pendingHashRef = useRef<string | null>(null);
+
+  // Core navigation logic - pure function that operates on provided page data
+  const navigateToSection = useCallback((sectionTitle: string, pageData: PageData | null) => {
+    if (!pageData || pageData.type !== 'document') return;
+    
+    const targetSection = pageData.sections.find(
+      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
+    );
+    
+    if (targetSection) {
+      const { content, title, level, parentPath, sectionHierarchy } = 
+        extractSectionFullContent(targetSection, pageData.sections);
+      
+      dispatch({
+        type: 'SET_SECTION_VIEW',
+        payload: { content, title, level, parentPath, sectionHierarchy }
+      });
+      dispatch({ type: 'SET_CURRENT_SECTION', payload: targetSection.id });
+      setActiveSectionId(targetSection.id);
+      setActiveDocumentPath(pageData.document.path);
+    }
+  }, [setActiveSectionId, setActiveDocumentPath]);
+
+  // Handle section navigation - uses current state.pageData directly without reloading
+  const handleSectionNavigate = useCallback((sectionTitle: string) => {
+    // Guard: prevent re-navigation to the same section
+    if (state.sectionView?.title?.toLowerCase() === sectionTitle.toLowerCase()) {
+      return;
+    }
+    
+    navigateToSection(sectionTitle, state.pageData);
+  }, [state.pageData, state.sectionView?.title, navigateToSection]);
+
+  // Load current page on mount and path change only
   useEffect(() => {
     const initializePage = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
+      
+      // Store hash for processing after load
+      if (location.hash) {
+        pendingHashRef.current = location.hash.slice(1);
+      }
       
       try {
         // Always reload page data - this naturally clears section views and ensures fresh state
@@ -283,14 +323,16 @@ const ContentPage: React.FC = () => {
     };
 
     initializePage();
-  }, [location.pathname, location.hash]);
+  }, [location.pathname]); // Remove location.hash from dependencies
 
-  // Handle URL hash for section navigation on initial load
+  // Handle URL hash for section navigation after page data loads
   useEffect(() => {
-    if (!state.pageData || state.pageData.type !== 'document' || !location.hash) return;
+    if (!state.pageData || state.pageData.type !== 'document' || !pendingHashRef.current) return;
     
-    const hash = location.hash.slice(1); // Remove the # symbol
-    if (!hash) return;
+    const hash = pendingHashRef.current;
+    pendingHashRef.current = null; // Clear pending hash
+    
+    if (!hash || hash === 'root') return;
 
     // Find section by hash (could be section ID or generated from title)
     const targetSection = state.pageData.sections.find(s => {
@@ -304,79 +346,40 @@ const ContentPage: React.FC = () => {
     });
 
     if (targetSection) {
-      // Navigate to the section
-      handleSectionNavigate(targetSection.title);
+      // Navigate to the section using the stable function
+      navigateToSection(targetSection.title, state.pageData);
       // Clear the hash from URL since we're using state-based navigation now
       window.history.replaceState(null, '', location.pathname);
     }
-  }, [state.pageData, location.hash]);
+  }, [state.pageData, state.isLoading, navigateToSection, location.pathname]);
 
-  // Handle section navigation - always refresh data first to ensure clean state
-  const handleSectionNavigate = async (sectionTitle: string) => {
-    console.log('handleSectionNavigate called with:', sectionTitle);
-    
-    // Always reload page data first for fresh state
-    await loadCurrentPageData(location.pathname);
-    
-    if (!state.pageData || state.pageData.type !== 'document') return;
-    
-    const targetSection = state.pageData.sections.find(
-      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
-    );
-    
-    console.log('Found section:', targetSection);
-    
-    if (targetSection) {
-      const { content, title, level, parentPath, sectionHierarchy } = 
-        extractSectionFullContent(targetSection, state.pageData.sections);
-      
-      console.log('Setting section view and active section:', targetSection.id);
-      
-      dispatch({
-        type: 'SET_SECTION_VIEW',
-        payload: {
-          content,
-          title,
-          level,
-          parentPath,
-          sectionHierarchy
-        }
-      });
-      dispatch({ type: 'SET_CURRENT_SECTION', payload: targetSection.id });
-      setActiveSectionId(targetSection.id);
-      setActiveDocumentPath(state.pageData.document.path);
-    }
-  };
-
-  const handleClearSection = () => {
+  const handleClearSection = useCallback(() => {
     dispatch({ type: 'SET_SECTION_VIEW', payload: null });
     dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
     setActiveSectionId(null);
     setActiveDocumentPath(null);
-  };
+  }, [setActiveSectionId, setActiveDocumentPath]);
 
   // Handle manual section toggle
-  const handleSectionToggle = (sectionId: string, currentlyExpanded: boolean) => {
+  const handleSectionToggle = useCallback((sectionId: string, currentlyExpanded: boolean) => {
     const newExpanded = !currentlyExpanded;
     setManualOverride(sectionId, newExpanded);
-  };
+  }, [setManualOverride]);
 
   // Handle description toggle
-  const handleDescriptionToggle = (sectionId: string, currentlyVisible: boolean) => {
+  const handleDescriptionToggle = useCallback((sectionId: string, currentlyVisible: boolean) => {
     const newVisible = !currentlyVisible;
     setDescriptionOverride(sectionId, newVisible);
-  };
+  }, [setDescriptionOverride]);
 
-  // Provide section navigation function to layout context
+  // Provide section navigation function to layout context - use stable ref pattern
   useEffect(() => {
-    console.log('Setting up sectionNavigateRef');
     sectionNavigateRef.current = handleSectionNavigate;
     
-    // Return cleanup
     return () => {
       sectionNavigateRef.current = null;
     };
-  }, [sectionNavigateRef, state.pageData]);
+  }, [handleSectionNavigate, sectionNavigateRef]);
 
   // Update active section ID in layout context
   useEffect(() => {
