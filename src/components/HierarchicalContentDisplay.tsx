@@ -207,6 +207,27 @@ const ContentSectionComponent: React.FC<{
     return `text-foreground ${getFontSizeClass(depth)}`;
   };
 
+  // Helper to render title with rubric/slug styling for text before colon
+  const renderTitleWithRubric = (title: string) => {
+    const colonIndex = title.indexOf(':');
+    if (colonIndex === -1 || colonIndex > 20) {
+      // No colon or colon is too far in (not a rubric pattern)
+      return <>{title}</>;
+    }
+    
+    const rubric = title.substring(0, colonIndex + 1);
+    const rest = title.substring(colonIndex + 1);
+    
+    return (
+      <>
+        <span className="text-primary/80 font-semibold uppercase text-[0.85em] tracking-wide mr-1.5">
+          {rubric}
+        </span>
+        {rest}
+      </>
+    );
+  };
+
   // Calculate indentation: children align with parent's text (after the chevron + gap)
   const chevronAndGapWidth = 25; // 16px chevron + 9px gap
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
@@ -238,7 +259,7 @@ const ContentSectionComponent: React.FC<{
     return (
       <div id={section.id}>
         <h1 className="text-3xl font-bold text-foreground mb-6">
-          {section.title}
+          {renderTitleWithRubric(section.title)}
         </h1>
         
         {hasContent && (
@@ -310,7 +331,7 @@ const ContentSectionComponent: React.FC<{
                       onSectionClick(section.title);
                     }
                   }}>
-                {section.title}
+                {renderTitleWithRubric(section.title)}
               </h1>
             </div>
           </div>
