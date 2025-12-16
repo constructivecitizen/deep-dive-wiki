@@ -219,40 +219,40 @@ export function BlockNoteSectionEditor({
         aria-labelledby="editor-title"
       >
         {/* Header Toolbar */}
-        <header className="border-b border-border bg-card px-3 py-2">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5 min-w-0">
+        <header className="border-b border-border bg-card px-3 py-2 overflow-x-auto">
+          <div className="flex items-center gap-2 min-w-max">
+            <div className="flex items-center gap-1.5 shrink-0">
               <FileText className="h-4 w-4 shrink-0" />
-              <h1 id="editor-title" className="text-sm font-semibold truncate">Document Editor</h1>
-              <span className="text-xs text-muted-foreground hidden sm:inline">
+              <h1 id="editor-title" className="text-sm font-semibold whitespace-nowrap">Document Editor</h1>
+              <span className="text-xs text-muted-foreground">
                 ({sections.length})
               </span>
             </div>
-            <div className="flex items-center gap-1 flex-wrap">
+            <div className="flex items-center gap-1 shrink-0 ml-auto">
               {/* Mode Toggle */}
               <Button
                 onClick={toggleEditorMode}
                 variant="outline"
                 size="sm"
-                className="h-7 px-2 text-xs"
+                className="h-7 px-2 text-xs shrink-0"
                 title={editorMode === 'blocknote' ? 'Switch to Markdown' : 'Switch to Visual Editor'}
               >
                 {editorMode === 'blocknote' ? (
                   <>
-                    <Code className="h-3.5 w-3.5 sm:mr-1" />
-                    <span className="hidden sm:inline">Markdown</span>
+                    <Code className="h-3.5 w-3.5 mr-1" />
+                    <span>Markdown</span>
                   </>
                 ) : (
                   <>
-                    <Edit3 className="h-3.5 w-3.5 sm:mr-1" />
-                    <span className="hidden sm:inline">Visual</span>
+                    <Edit3 className="h-3.5 w-3.5 mr-1" />
+                    <span>Visual</span>
                   </>
                 )}
               </Button>
 
               {/* Markdown Formatting Toolbar */}
               {editorMode === 'markdown' && (
-                <div className="flex items-center gap-0.5 border-l border-border pl-1 ml-1">
+                <div className="flex items-center gap-0.5 border-l border-border pl-1 ml-1 shrink-0">
                   <Button 
                     onClick={() => insertMarkdown('bold')} 
                     variant="ghost" 
@@ -297,7 +297,7 @@ export function BlockNoteSectionEditor({
                 onClick={() => setShowMarkupGuide(!showMarkupGuide)}
                 variant={showMarkupGuide ? "secondary" : "ghost"}
                 size="sm"
-                className="h-7 w-7 p-0"
+                className="h-7 w-7 p-0 shrink-0"
                 title={showMarkupGuide ? "Hide Markup Guide" : "Show Markup Guide"}
               >
                 <BookOpen className="h-3.5 w-3.5" />
@@ -305,7 +305,7 @@ export function BlockNoteSectionEditor({
 
               {/* Cancel and Save buttons */}
               {onClose && (
-                <div className="flex items-center gap-1 border-l border-border pl-1 ml-1">
+                <div className="flex items-center gap-1 border-l border-border pl-1 ml-1 shrink-0">
                   <Button 
                     onClick={() => {
                       if (autoSaveTimerRef.current) {
@@ -320,9 +320,8 @@ export function BlockNoteSectionEditor({
                     Cancel
                   </Button>
                   <Button onClick={handleSaveAndClose} size="sm" className="h-7 px-2 text-xs">
-                    <Eye className="h-3.5 w-3.5 sm:mr-1" />
-                    <span className="hidden sm:inline">Save & Close</span>
-                    <span className="sm:hidden">Save</span>
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    <span>Save & Close</span>
                   </Button>
                 </div>
               )}
