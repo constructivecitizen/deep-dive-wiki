@@ -298,12 +298,26 @@ export function BlockNoteSectionEditor({
                 <BookOpen className="h-4 w-4" />
               </Button>
 
-              {/* Close button */}
+              {/* Cancel and Save buttons */}
               {onClose && (
-                <Button onClick={handleSaveAndClose} size="sm">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Save & Close
-                </Button>
+                <>
+                  <Button 
+                    onClick={() => {
+                      if (autoSaveTimerRef.current) {
+                        clearTimeout(autoSaveTimerRef.current);
+                      }
+                      onClose();
+                    }} 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveAndClose} size="sm">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Save & Close
+                  </Button>
+                </>
               )}
             </div>
           </div>
