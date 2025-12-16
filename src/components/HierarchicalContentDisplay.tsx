@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdownRenderer';
+import { getStampColors } from '@/lib/rubricConfig';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -205,34 +206,6 @@ const ContentSectionComponent: React.FC<{
     };
     
     return `text-foreground ${getFontSizeClass(depth)}`;
-  };
-
-  // Helper to get stamp color based on rubric text
-  const getStampColors = (rubric: string): { bg: string; text: string; border: string } => {
-    const normalized = rubric.toLowerCase().replace(':', '').trim();
-    
-    // Group 1: Background, Main Goal, Main Work - blue/primary
-    if (['background', 'main goal', 'main work'].includes(normalized)) {
-      return { bg: 'bg-primary/15', text: 'text-primary', border: 'border-primary/30' };
-    }
-    // Group 2: Critical - red/destructive
-    if (normalized === 'critical') {
-      return { bg: 'bg-destructive/15', text: 'text-destructive', border: 'border-destructive/30' };
-    }
-    // Group 3: Minor Tip - amber/warning
-    if (normalized === 'minor tip') {
-      return { bg: 'bg-amber-500/15', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30' };
-    }
-    // Group 4: Tip, Note - green
-    if (['tip', 'note'].includes(normalized)) {
-      return { bg: 'bg-emerald-500/15', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30' };
-    }
-    // Group 5: Goal, Goals - purple
-    if (['goal', 'goals'].includes(normalized)) {
-      return { bg: 'bg-violet-500/15', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-500/30' };
-    }
-    // Default: muted styling
-    return { bg: 'bg-muted', text: 'text-muted-foreground', border: 'border-border' };
   };
 
   // Helper to render title with rubric/slug styling as stamps
