@@ -220,13 +220,13 @@ const ContentSectionComponent: React.FC<{
     const colors = getStampColors(rubric);
     
     return (
-      <span className="inline-flex items-start gap-2">
+      <span className="inline-flex items-center gap-2">
         <span 
-          className={`inline-flex items-center justify-center w-[90px] flex-shrink-0 px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
+          className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
         >
           {rubric}
         </span>
-        <span className="flex-1">{rest}</span>
+        <span>{rest}</span>
       </span>
     );
   };
