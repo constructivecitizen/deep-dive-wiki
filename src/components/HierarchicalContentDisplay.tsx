@@ -312,12 +312,12 @@ const ContentSectionComponent: React.FC<{
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <div 
-            className="flex items-start group"
+            className="flex items-center group"
             style={{ marginLeft: `${indentationPx}px`, gap: '9px' }}
           >
             <button
               onClick={handleToggle}
-              className="flex-shrink-0 w-4 h-4 flex items-center justify-start mt-[3px]"
+              className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
               aria-label={isExpanded ? "Collapse section" : "Expand section"}
             >
               {isExpanded ? (
