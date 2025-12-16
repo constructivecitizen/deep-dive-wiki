@@ -317,7 +317,7 @@ const ContentSectionComponent: React.FC<{
           >
             <button
               onClick={handleToggle}
-              className="flex-shrink-0 w-4 h-4 flex items-center justify-start mt-1"
+              className="flex-shrink-0 w-4 h-4 flex items-center justify-start mt-[3px]"
               aria-label={isExpanded ? "Collapse section" : "Expand section"}
             >
               {isExpanded ? (
