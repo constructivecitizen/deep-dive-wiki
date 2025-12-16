@@ -208,25 +208,40 @@ const ContentSectionComponent: React.FC<{
     return `text-foreground ${getFontSizeClass(depth)}`;
   };
 
-  // Helper to render title with rubric/slug styling as stamps
-  const renderTitleWithRubric = (title: string) => {
+  // Helper to parse title and extract rubric if present
+  const parseRubric = (title: string): { rubric: string | null; text: string } => {
     const colonIndex = title.indexOf(':');
     if (colonIndex === -1 || colonIndex > 20) {
+      return { rubric: null, text: title };
+    }
+    return {
+      rubric: title.substring(0, colonIndex),
+      text: title.substring(colonIndex + 1).trim()
+    };
+  };
+
+  // Render just the rubric stamp
+  const renderRubricStamp = (rubric: string) => {
+    const colors = getStampColors(rubric);
+    return (
+      <span 
+        className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider flex-shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}
+      >
+        {rubric}
+      </span>
+    );
+  };
+
+  // Legacy helper for document title
+  const renderTitleWithRubric = (title: string) => {
+    const { rubric, text } = parseRubric(title);
+    if (!rubric) {
       return <>{title}</>;
     }
-    
-    const rubric = title.substring(0, colonIndex);
-    const rest = title.substring(colonIndex + 1).trim();
-    const colors = getStampColors(rubric);
-    
     return (
       <span className="inline-flex items-center gap-2">
-        <span 
-          className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
-        >
-          {rubric}
-        </span>
-        <span>{rest}</span>
+        <span>{text}</span>
+        {renderRubricStamp(rubric)}
       </span>
     );
   };
@@ -312,12 +327,12 @@ const ContentSectionComponent: React.FC<{
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <div 
-            className="flex items-center group"
+            className="flex items-start group"
             style={{ marginLeft: `${indentationPx}px`, gap: '9px' }}
           >
             <button
               onClick={handleToggle}
-              className="flex-shrink-0 w-4 h-4 flex items-center justify-start"
+              className="flex-shrink-0 w-4 h-4 flex items-center justify-start mt-[3px]"
               aria-label={isExpanded ? "Collapse section" : "Expand section"}
             >
               {isExpanded ? (
@@ -327,15 +342,20 @@ const ContentSectionComponent: React.FC<{
               )}
             </button>
             
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
               <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
                   onClick={() => {
                     if (onSectionClick) {
                       onSectionClick(section.title);
                     }
                   }}>
-                {renderTitleWithRubric(section.title)}
+                {parseRubric(section.title).text}
               </h1>
+              {parseRubric(section.title).rubric && (
+                <div className="flex-shrink-0 mt-[2px]">
+                  {renderRubricStamp(parseRubric(section.title).rubric!)}
+                </div>
+              )}
             </div>
           </div>
         </ContextMenuTrigger>
