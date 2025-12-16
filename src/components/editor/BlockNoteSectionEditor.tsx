@@ -7,9 +7,7 @@ import { DocumentSection } from "@/services/contentService";
 import { useEffect, useCallback, useRef, useState, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  FileText, Eye, Bold, Italic, List, Link2, Code, Edit3, BookOpen, X 
-} from "lucide-react";
+import { Bold, Italic, List, Link2, BookOpen, X } from "lucide-react";
 import { HierarchyParser } from "@/lib/hierarchyParser";
 
 // Lazy load the JSX wrapper to isolate BlockNote types
@@ -222,8 +220,7 @@ export function BlockNoteSectionEditor({
         <header className="border-b border-border bg-card px-3 py-2 overflow-x-auto">
           <div className="flex items-center gap-2 min-w-max">
             <div className="flex items-center gap-1.5 shrink-0">
-              <FileText className="h-4 w-4 shrink-0" />
-              <h1 id="editor-title" className="text-sm font-semibold whitespace-nowrap">Document Editor</h1>
+              <h1 id="editor-title" className="text-sm font-semibold whitespace-nowrap">Doc Editor</h1>
               <span className="text-xs text-muted-foreground">
                 ({sections.length})
               </span>
@@ -234,20 +231,10 @@ export function BlockNoteSectionEditor({
                 onClick={toggleEditorMode}
                 variant="outline"
                 size="sm"
-                className="h-7 px-2 text-xs shrink-0"
+                className="h-7 px-1.5 text-xs shrink-0"
                 title={editorMode === 'blocknote' ? 'Switch to Markdown' : 'Switch to Visual Editor'}
               >
-                {editorMode === 'blocknote' ? (
-                  <>
-                    <Code className="h-3.5 w-3.5 mr-1" />
-                    <span>Markdown</span>
-                  </>
-                ) : (
-                  <>
-                    <Edit3 className="h-3.5 w-3.5 mr-1" />
-                    <span>Visual</span>
-                  </>
-                )}
+                {editorMode === 'blocknote' ? 'Markdown' : 'Visual'}
               </Button>
 
               {/* Markdown Formatting Toolbar */}
@@ -319,9 +306,8 @@ export function BlockNoteSectionEditor({
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleSaveAndClose} size="sm" className="h-7 px-2 text-xs">
-                    <Eye className="h-3.5 w-3.5 mr-1" />
-                    <span>Save & Close</span>
+                  <Button onClick={handleSaveAndClose} size="sm" className="h-7 px-1.5 text-xs">
+                    Save & Close
                   </Button>
                 </div>
               )}
