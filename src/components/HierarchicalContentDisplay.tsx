@@ -221,12 +221,12 @@ const ContentSectionComponent: React.FC<{
     
     return (
       <span className="inline">
+        <span>{rest}</span>
         <span 
-          className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider align-middle mr-2 ${colors.bg} ${colors.text} ${colors.border}`}
+          className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider align-middle ml-2 ${colors.bg} ${colors.text} ${colors.border}`}
         >
           {rubric}
         </span>
-        <span>{rest}</span>
       </span>
     );
   };
