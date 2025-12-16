@@ -332,7 +332,17 @@ const ContentPage: React.FC = () => {
     const hash = pendingHashRef.current;
     pendingHashRef.current = null; // Clear pending hash
     
-    if (!hash || hash === 'root') return;
+    if (!hash) return;
+    
+    // Special case: #root means navigate to root level (clear section view)
+    if (hash === 'root') {
+      dispatch({ type: 'SET_SECTION_VIEW', payload: null });
+      dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
+      setActiveSectionId(null);
+      setActiveDocumentPath(state.pageData.document.path);
+      window.history.replaceState(null, '', location.pathname);
+      return;
+    }
 
     // Find section by hash (could be section ID or generated from title)
     const targetSection = state.pageData.sections.find(s => {
@@ -351,7 +361,18 @@ const ContentPage: React.FC = () => {
       // Clear the hash from URL since we're using state-based navigation now
       window.history.replaceState(null, '', location.pathname);
     }
-  }, [state.pageData, state.isLoading, navigateToSection, location.pathname]);
+  }, [state.pageData, state.isLoading, navigateToSection, location.pathname, setActiveSectionId, setActiveDocumentPath]);
+
+  // Handle #root hash for same-path navigation (when clicking root folder while viewing a section)
+  useEffect(() => {
+    if (location.hash === '#root' && state.sectionView && state.pageData?.type === 'document') {
+      dispatch({ type: 'SET_SECTION_VIEW', payload: null });
+      dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
+      setActiveSectionId(null);
+      setActiveDocumentPath(state.pageData.document.path);
+      window.history.replaceState(null, '', location.pathname);
+    }
+  }, [location.hash, location.pathname, state.sectionView, state.pageData, setActiveSectionId, setActiveDocumentPath]);
 
   const handleClearSection = useCallback(() => {
     dispatch({ type: 'SET_SECTION_VIEW', payload: null });
