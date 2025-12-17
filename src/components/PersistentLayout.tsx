@@ -1,27 +1,44 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { WikiLayout } from './WikiLayout';
-
 import { NavigationNode, WikiDocument, ContentService } from '@/services/contentService';
+import { useNavigationState, NavigationContextValue, SectionViewData } from '@/hooks/useNavigationState';
 
-// Context for sharing editor/filter state between layout and pages
+/**
+ * Layout Context - provides shared state between layout and content pages
+ * 
+ * Key changes from previous implementation:
+ * 1. Navigation state is now managed by useNavigationState hook
+ * 2. Removed separate activeSectionId/activeDocumentPath - now atomic in navigation state
+ * 3. Added navigationVersion to force re-renders when navigation changes
+ */
+
 interface LayoutContextType {
+  // Editor/Filter UI state
   showEditor: boolean;
   showFilters: boolean;
   setShowEditor: (show: boolean) => void;
   setShowFilters: (show: boolean) => void;
+  
+  // Navigation structure data
   navigationStructure: NavigationNode[];
-  sectionNavigateRef: React.MutableRefObject<((sectionTitle: string) => void) | null>;
-  activeSectionId: string | null;
-  activeDocumentPath: string | null; // Track which document the active section belongs to
-  setActiveSectionId: (id: string | null) => void;
-  setActiveDocumentPath: (path: string | null) => void;
   onStructureUpdate: () => void;
+  
+  // Centralized navigation state and actions
+  navigation: NavigationContextValue;
+  
+  // Section navigation helper - allows ContentPage to provide navigation implementation
+  handleSectionNavigate: (sectionTitle: string) => void;
+  setSectionNavigateHandler: (handler: ((title: string) => void) | null) => void;
+  
+  // Expand/collapse state for content display
   expandDepth: number;
   expandMode: 'depth' | 'mixed';
   manualOverrides: Record<string, boolean>;
   setExpandDepth: (depth: number) => void;
   setManualOverride: (sectionId: string, isExpanded: boolean) => void;
+  
+  // Description visibility state
   showDescriptions: 'on' | 'off' | 'mixed';
   descriptionOverrides: Record<string, boolean>;
   setShowDescriptions: (mode: 'on' | 'off') => void;
@@ -41,24 +58,46 @@ export const useLayoutContext = () => {
 export const PersistentLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Navigation state - centralized and atomic
+  const navigation = useNavigationState();
+  
+  // Navigation structure data
   const [navigationStructure, setNavigationStructure] = useState<NavigationNode[]>([]);
   const [contentNodes, setContentNodes] = useState<WikiDocument[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [hasInitialNavigation, setHasInitialNavigation] = useState(false);
+  
+  // UI state
   const [showEditor, setShowEditor] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [hasInitialNavigation, setHasInitialNavigation] = useState(false);
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [activeDocumentPath, setActiveDocumentPath] = useState<string | null>(null);
+  
+  // Expand/collapse state
   const [expandDepth, setExpandDepth] = useState(1);
   const [expandMode, setExpandMode] = useState<'depth' | 'mixed'>('depth');
   const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>({});
+  
+  // Description visibility state
   const [showDescriptions, setShowDescriptionsState] = useState<'on' | 'off' | 'mixed'>('on');
   const [descriptionOverrides, setDescriptionOverrides] = useState<Record<string, boolean>>({});
+  
+  // Sidebar collapse trigger
   const [sidebarCollapseKey, setSidebarCollapseKey] = useState(0);
   
-  // Ref for section navigation function - will be set by ContentPage
-  const sectionNavigateRef = React.useRef<((sectionTitle: string) => void) | null>(null);
+  // Section navigation handler - set by ContentPage
+  const sectionNavigateHandlerRef = React.useRef<((title: string) => void) | null>(null);
 
+  const setSectionNavigateHandler = useCallback((handler: ((title: string) => void) | null) => {
+    sectionNavigateHandlerRef.current = handler;
+  }, []);
+
+  const handleSectionNavigate = useCallback((sectionTitle: string) => {
+    if (sectionNavigateHandlerRef.current) {
+      sectionNavigateHandlerRef.current(sectionTitle);
+    }
+  }, []);
+
+  // Load navigation data
   const loadNavigationData = async (isInitial = false) => {
     try {
       if (isInitial) {
@@ -95,39 +134,40 @@ export const PersistentLayout: React.FC = () => {
     }
   }, [navigationStructure, hasInitialNavigation, location.pathname, navigate]);
 
-  const handleStructureUpdate = () => {
+  const handleStructureUpdate = useCallback(() => {
     loadNavigationData();
-  };
+  }, []);
 
-  const handleSetManualOverride = (sectionId: string, isExpanded: boolean) => {
+  // Expand depth handlers
+  const handleSetManualOverride = useCallback((sectionId: string, isExpanded: boolean) => {
     setManualOverrides(prev => ({ ...prev, [sectionId]: isExpanded }));
     setExpandMode('mixed');
-  };
+  }, []);
 
-  const handleExpandDepthChange = (depth: number) => {
+  const handleExpandDepthChange = useCallback((depth: number) => {
     setExpandDepth(depth);
     setExpandMode('depth');
     setManualOverrides({});
-  };
+  }, []);
 
-  const handleSetDescriptionOverride = (sectionId: string, isVisible: boolean) => {
+  // Description visibility handlers
+  const handleSetDescriptionOverride = useCallback((sectionId: string, isVisible: boolean) => {
     setDescriptionOverrides(prev => ({ ...prev, [sectionId]: isVisible }));
     setShowDescriptionsState('mixed');
-  };
+  }, []);
 
-  const handleShowDescriptionsChange = (mode: 'on' | 'off') => {
+  const handleShowDescriptionsChange = useCallback((mode: 'on' | 'off') => {
     setShowDescriptionsState(mode);
     setDescriptionOverrides({});
-  };
+  }, []);
 
-  const handleCollapseAll = () => {
-    // Set expand depth to 0 (which displays as "1" in UI but means no auto-expansion)
+  // Collapse all handler
+  const handleCollapseAll = useCallback(() => {
     setExpandDepth(0);
     setExpandMode('depth');
     setManualOverrides({});
-    // Increment collapse key to trigger sidebar reset
     setSidebarCollapseKey(prev => prev + 1);
-  };
+  }, []);
 
   if (isInitialLoading) {
     return (
@@ -144,12 +184,10 @@ export const PersistentLayout: React.FC = () => {
       setShowEditor, 
       setShowFilters,
       navigationStructure,
-      sectionNavigateRef,
-      activeSectionId,
-      activeDocumentPath,
-      setActiveSectionId,
-      setActiveDocumentPath,
       onStructureUpdate: handleStructureUpdate,
+      navigation,
+      handleSectionNavigate,
+      setSectionNavigateHandler,
       expandDepth,
       expandMode,
       manualOverrides,
@@ -166,13 +204,8 @@ export const PersistentLayout: React.FC = () => {
         onStructureUpdate={handleStructureUpdate}
         setShowEditor={setShowEditor}
         currentPath={location.pathname + location.hash}
-        onSectionNavigate={(title) => {
-          console.log('WikiLayout calling sectionNavigateRef with:', title);
-          sectionNavigateRef.current?.(title);
-        }}
-        activeSectionId={activeSectionId}
-        activeDocumentPath={activeDocumentPath}
-        setActiveSectionId={setActiveSectionId}
+        onSectionNavigate={handleSectionNavigate}
+        navigation={navigation}
         expandDepth={expandDepth}
         expandMode={expandMode}
         onExpandDepthChange={handleExpandDepthChange}

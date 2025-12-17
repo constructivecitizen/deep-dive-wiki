@@ -3,15 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { SearchOverlay } from "./SearchOverlay";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
+import { NavigationContextValue } from "@/hooks/useNavigationState";
 import BetterProdLogoB from "@/assets/BetterProd-logo-3A-3.png";
 import BetterProdLogoText from "@/assets/BetterProd-logo-3B.png";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, LogOut } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
+
 interface WikiLayoutProps {
   children: React.ReactNode;
   navigationStructure?: NavigationNode[];
@@ -23,9 +25,10 @@ interface WikiLayoutProps {
   setShowEditor?: (show: boolean) => void;
   currentPath?: string;
   onSectionNavigate?: (sectionTitle: string) => void;
-  activeSectionId?: string | null;
-  activeDocumentPath?: string | null;
-  setActiveSectionId?: (id: string | null) => void;
+  
+  // Centralized navigation state
+  navigation: NavigationContextValue;
+  
   expandDepth?: number;
   expandMode?: 'depth' | 'mixed';
   onExpandDepthChange?: (depth: number) => void;
@@ -46,9 +49,7 @@ export const WikiLayout = ({
   setShowEditor,
   currentPath,
   onSectionNavigate,
-  activeSectionId,
-  activeDocumentPath,
-  setActiveSectionId,
+  navigation,
   expandDepth,
   expandMode,
   onExpandDepthChange,
@@ -116,9 +117,7 @@ export const WikiLayout = ({
             onSectionNavigate?.(sectionTitle);
             if (isMobile) setIsMobileSidebarOpen(false);
           }}
-          activeSectionId={activeSectionId}
-          activeDocumentPath={activeDocumentPath}
-          setActiveSectionId={setActiveSectionId}
+          navigation={navigation}
           expandDepth={expandDepth}
           expandMode={expandMode}
           onExpandDepthChange={onExpandDepthChange}
