@@ -319,6 +319,47 @@
     padding-bottom: 0 !important;
   }
 
+  /* Prose styling for content blocks - lists */
+  .prose ul {
+    @apply list-disc pl-5 mb-3 mt-2;
+  }
+
+  .prose ol {
+    @apply list-decimal pl-5 mb-3 mt-2;
+  }
+
+  .prose li {
+    @apply mb-1 text-foreground;
+  }
+
+  /* Nested lists */
+  .prose ul ul,
+  .prose ol ul {
+    @apply list-[circle] mt-1 mb-1;
+  }
+
+  .prose ol ol,
+  .prose ul ol {
+    @apply list-[lower-alpha] mt-1 mb-1;
+  }
+
+  /* Prose typography - bold, italic, code */
+  .prose strong {
+    @apply font-bold text-foreground;
+  }
+
+  .prose em {
+    @apply italic text-foreground;
+  }
+
+  .prose code {
+    @apply bg-muted px-1 py-0.5 rounded text-sm font-mono text-foreground;
+  }
+
+  .prose p {
+    @apply mb-2 text-foreground;
+  }
+
   /* Inline markdown styles for rendered content */
   .inline-code {
     @apply bg-muted text-muted-foreground px-1 py-0.5 rounded text-sm font-mono;
