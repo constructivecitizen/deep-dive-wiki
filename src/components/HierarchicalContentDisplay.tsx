@@ -181,7 +181,7 @@ const RubricSlug: React.FC<{ rubric: string; indentationPx: number }> = ({ rubri
   const colors = getStampColors(rubric);
   return (
     <div 
-      className={`inline-flex items-center px-3 py-1 rounded-t-md border-b-2 text-xs font-semibold uppercase tracking-wider mb-1 ${colors.bg} ${colors.text} ${colors.border}`}
+      className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-1 ${colors.bg} ${colors.text} ${colors.border}`}
       style={{ marginLeft: `${indentationPx}px` }}
     >
       {rubric}
@@ -452,7 +452,8 @@ const renderGroupedChildren = (
 ) => {
   const groups = groupChildrenByRubric(children);
   const chevronAndGapWidth = 25;
-  const indentationPx = depth === 0 ? 0 : (depth - 1) * chevronAndGapWidth;
+  // Align slug with the chevrons of items at this depth
+  const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   
   return groups.map((group, groupIndex) => (
     <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
