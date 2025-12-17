@@ -366,9 +366,9 @@ const ContentSectionComponent: React.FC<{
         </h1>
         
         {hasContent && (
-          <div className="mb-6 py-4 border-y-2 border-border/50 flex items-start gap-2">
-            <div 
-              className="prose prose-slate dark:prose-invert max-w-none prose-sm text-muted-foreground italic flex-1"
+          <div className="mb-6 py-4 border-y-2 border-border/50">
+            <span 
+              className="prose prose-slate dark:prose-invert max-w-none prose-sm text-muted-foreground italic [&>p]:inline"
               onClick={handleContentClick}
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(section.content.trim()) 
@@ -456,11 +456,11 @@ const ContentSectionComponent: React.FC<{
         <div className="mt-2">
           {hasContent && isContentVisible && (
             <div 
-              className={`flex items-start gap-2 mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
+              className={`mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
               style={{ marginLeft: `${contentIndentationPx}px` }}
             >
-              <div 
-                className="prose prose-slate dark:prose-invert max-w-none prose-sm flex-1"
+              <span 
+                className="prose prose-slate dark:prose-invert max-w-none prose-sm [&>p]:inline"
                 onClick={handleContentClick}
                 dangerouslySetInnerHTML={{ 
                   __html: renderMarkdown(section.content.trim()) 
