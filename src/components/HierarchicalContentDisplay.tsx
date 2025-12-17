@@ -286,7 +286,7 @@ const ContentSectionComponent: React.FC<{
   // Calculate indentation: children align with parent's text (after the chevron + gap)
   const chevronAndGapWidth = 17; // 16px chevron + 1px gap
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  const contentIndentationPx = indentationPx + chevronAndGapWidth; // Reduced gap between line and content
+  const contentIndentationPx = indentationPx + chevronAndGapWidth + 3; // Reduced gap between line and content
   
   // Calculate color based on depth level (cycling through 6 colors)
   const getContentColorClass = (depth: number) => {
@@ -376,7 +376,7 @@ const ContentSectionComponent: React.FC<{
               )}
             </button>
             
-            <div className="flex-1 min-w-0 pl-[10px]">
+            <div className="flex-1 min-w-0">
               <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
                   onClick={() => {
                     if (onSectionClick) {
