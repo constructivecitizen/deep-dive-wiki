@@ -286,7 +286,7 @@ const ContentSectionComponent: React.FC<{
   // Calculate indentation: children align with parent's text (after the chevron + gap)
   const chevronAndGapWidth = 17; // 16px chevron + 1px gap
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  const contentIndentationPx = indentationPx + chevronAndGapWidth + 3; // +3px for better alignment
+  const contentIndentationPx = indentationPx + chevronAndGapWidth + 10; // +10px to align bubble left edge with node text (pl-[10px])
   
   // Calculate color based on depth level (cycling through 6 colors)
   const getContentColorClass = (depth: number) => {
@@ -401,7 +401,7 @@ const ContentSectionComponent: React.FC<{
         <div className="mt-2">
           {hasContent && isContentVisible && (
             <div 
-              className={`prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] pl-[16px] pr-[9px] rounded-md ${contentColorClass}`}
+              className={`prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
               style={{ marginLeft: `${contentIndentationPx}px` }}
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(section.content.trim()) 
