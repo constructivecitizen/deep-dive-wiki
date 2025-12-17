@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { X, FileText, Hash, Type, Loader2 } from 'lucide-react';
+import { X, FileText, Hash, Type, Loader2, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -115,13 +115,13 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
         
         {/* Results */}
         {results.length > 0 && (
-          <ScrollArea className="max-h-80 rounded-lg border bg-card shadow-lg">
-            <div className="p-2">
+          <ScrollArea className="max-h-96 rounded-lg border bg-card shadow-lg">
+            <div className="p-2 space-y-1">
               {results.map((result, index) => (
                 <button
                   key={result.id}
                   onClick={() => handleResultClick(result)}
-                  className={`w-full text-left px-3 py-2.5 rounded-md flex items-start gap-3 transition-colors ${
+                  className={`w-full text-left px-3 py-3 rounded-md flex items-start gap-3 transition-colors ${
                     index === selectedIndex 
                       ? 'bg-accent text-accent-foreground' 
                       : 'hover:bg-muted'
@@ -130,19 +130,25 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
                   <div className="mt-0.5 shrink-0">
                     {getMatchTypeIcon(result.matchType)}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm truncate">
-                        {result.sectionTitle || result.documentTitle}
-                      </span>
-                      {result.matchType === 'content' && result.sectionTitle && (
-                        <span className="text-xs text-muted-foreground shrink-0">
-                          in {result.documentTitle}
-                        </span>
-                      )}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    {/* Breadcrumb path */}
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground flex-wrap">
+                      {result.breadcrumbPath.map((segment, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <ChevronRight className="h-2.5 w-2.5 shrink-0" />}
+                          <span className="truncate max-w-[120px]">{segment}</span>
+                        </React.Fragment>
+                      ))}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                      {renderHighlightedText(result.matchedText)}
+                    {/* Title */}
+                    <div className="font-medium text-sm">
+                      {renderHighlightedText(result.sectionTitle || result.documentTitle)}
+                    </div>
+                    {/* Full content preview */}
+                    <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                      {renderHighlightedText(result.fullContent.length > 300 
+                        ? result.matchedText 
+                        : result.fullContent)}
                     </p>
                   </div>
                 </button>

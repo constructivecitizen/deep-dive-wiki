@@ -9,6 +9,8 @@ export interface SearchResult {
   sectionId?: string;
   sectionTitle?: string;
   matchedText: string;
+  fullContent: string;
+  breadcrumbPath: string[];
   matchType: 'title' | 'section-title' | 'content';
   relevanceScore: number;
 }
@@ -41,6 +43,9 @@ export class SearchService {
       const docPath = item.path || '';
       const sections = this.normalizeContentJson(item.content_json);
       
+      // Build section hierarchy map for breadcrumbs
+      const sectionHierarchy = this.buildSectionHierarchy(sections || []);
+      
       // Check document title match
       if (docTitle.toLowerCase().includes(normalizedQuery)) {
         const isExactMatch = docTitle.toLowerCase() === normalizedQuery;
@@ -50,6 +55,8 @@ export class SearchService {
           documentTitle: docTitle,
           documentPath: docPath,
           matchedText: this.highlightMatch(docTitle, query),
+          fullContent: docTitle,
+          breadcrumbPath: [docTitle],
           matchType: 'title',
           relevanceScore: isExactMatch ? 100 : 80 + this.calculateProximityScore(docTitle, normalizedQuery)
         });
@@ -60,6 +67,7 @@ export class SearchService {
         for (const section of sections) {
           const sectionTitle = section.title || '';
           const sectionContent = section.content || '';
+          const breadcrumb = this.getBreadcrumbPath(section.id, sectionHierarchy, docTitle);
           
           // Section title match
           if (sectionTitle.toLowerCase().includes(normalizedQuery)) {
@@ -72,6 +80,8 @@ export class SearchService {
               sectionId: section.id,
               sectionTitle: sectionTitle,
               matchedText: this.highlightMatch(sectionTitle, query),
+              fullContent: sectionContent || sectionTitle,
+              breadcrumbPath: breadcrumb,
               matchType: 'section-title',
               relevanceScore: isExactMatch ? 70 : 50 + this.calculateProximityScore(sectionTitle, normalizedQuery)
             });
@@ -88,6 +98,8 @@ export class SearchService {
               sectionId: section.id,
               sectionTitle: sectionTitle,
               matchedText: this.highlightMatch(snippet, query),
+              fullContent: sectionContent,
+              breadcrumbPath: breadcrumb,
               matchType: 'content',
               relevanceScore: 30 + this.calculateProximityScore(sectionContent, normalizedQuery)
             });
@@ -159,5 +171,56 @@ export class SearchService {
       return contentJson.sections || [];
     }
     return null;
+  }
+  
+  /**
+   * Build a map of section IDs to their parent IDs for breadcrumb generation
+   */
+  private static buildSectionHierarchy(sections: DocumentSection[]): Map<string, { title: string; parentId: string | null; level: number }> {
+    const hierarchy = new Map<string, { title: string; parentId: string | null; level: number }>();
+    const parentStack: { id: string; level: number }[] = [];
+    
+    for (const section of sections) {
+      const level = section.level || 1;
+      
+      // Pop from stack until we find a parent with lower level
+      while (parentStack.length > 0 && parentStack[parentStack.length - 1].level >= level) {
+        parentStack.pop();
+      }
+      
+      const parentId = parentStack.length > 0 ? parentStack[parentStack.length - 1].id : null;
+      hierarchy.set(section.id, { title: section.title || '', parentId, level });
+      
+      parentStack.push({ id: section.id, level });
+    }
+    
+    return hierarchy;
+  }
+  
+  /**
+   * Get the full breadcrumb path for a section
+   */
+  private static getBreadcrumbPath(
+    sectionId: string, 
+    hierarchy: Map<string, { title: string; parentId: string | null; level: number }>,
+    docTitle: string
+  ): string[] {
+    const path: string[] = [docTitle];
+    const visited = new Set<string>();
+    let currentId: string | null = sectionId;
+    const sectionTitles: string[] = [];
+    
+    while (currentId && !visited.has(currentId)) {
+      visited.add(currentId);
+      const info = hierarchy.get(currentId);
+      if (info) {
+        sectionTitles.unshift(info.title);
+        currentId = info.parentId;
+      } else {
+        break;
+      }
+    }
+    
+    return [...path, ...sectionTitles];
   }
 }
