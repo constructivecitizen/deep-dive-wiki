@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer, useCallback, useRef } from "react";
+import React, { useEffect, useReducer, useCallback, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PageBreadcrumb } from "@/components/PageBreadcrumb";
 import { SimpleFilterPanel } from "@/components/SimpleFilterPanel";
@@ -8,15 +8,19 @@ import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { useLayoutContext } from "@/components/PersistentLayout";
 import { NavigationNode, WikiDocument, ContentService, DocumentSection } from "@/services/contentService";
 import { extractSectionFullContent } from '@/lib/sectionContentExtractor';
+import { SectionViewData } from '@/hooks/useNavigationState';
 
-// Constants
-const PAGE_TYPES = {
-  LOADING: 'loading',
-  CONTENT: 'content',
-  FOLDER: 'folder'
-} as const;
+/**
+ * ContentPage - Main content display component
+ * 
+ * Key architectural changes:
+ * 1. Uses centralized navigation state from useLayoutContext
+ * 2. Section navigation is handled via navigation.navigateToSection() - atomic updates
+ * 3. Hash-based navigation only used for initial page load, not for in-page navigation
+ * 4. No more pendingHashRef - cleaner flow with single source of truth
+ */
 
-// Interfaces
+// Page data types
 interface PageDataDocument {
   type: 'document';
   document: WikiDocument;
@@ -31,51 +35,26 @@ interface PageDataFolder {
 
 type PageData = PageDataDocument | PageDataFolder;
 
-// State for managing content and UI
+// Reduced state - navigation state is now in context
 interface ContentPageState {
-  // Current page data
   pageData: PageData | null;
   filteredDocuments: WikiDocument[];
-  
-  // Section view data (when viewing a specific section)
-  sectionView: {
-    content: string;
-    title: string;
-    level: number;
-    parentPath: string;
-    sectionHierarchy: Array<{ title: string; level: number }>;
-  } | null;
-  
-  // Current section ID for navigation
-  currentSectionId: string | null;
-  
-  // Filter state
   filters: {
     searchTerm: string;
     selectedTags: string[];
   };
-  
-  // UI states
   isLoading: boolean;
 }
 
-// Actions for state management
 type ContentPageAction =  
-  // Page data actions
   | { type: 'SET_PAGE_DATA'; payload: PageData | null }
   | { type: 'SET_FILTERED_DOCUMENTS'; payload: WikiDocument[] }
-  | { type: 'SET_SECTION_VIEW'; payload: ContentPageState['sectionView'] }
-  | { type: 'SET_CURRENT_SECTION'; payload: string | null }
   | { type: 'SET_FILTERS'; payload: Partial<ContentPageState['filters']> }
-  // UI actions
   | { type: 'SET_LOADING'; payload: boolean };
 
-// Initial state
 const initialState: ContentPageState = {
   pageData: null,
   filteredDocuments: [],
-  sectionView: null,
-  currentSectionId: null,
   filters: {
     searchTerm: '',
     selectedTags: []
@@ -83,17 +62,12 @@ const initialState: ContentPageState = {
   isLoading: true,
 };
 
-// Reducer function
 const contentPageReducer = (state: ContentPageState, action: ContentPageAction): ContentPageState => {
   switch (action.type) {
     case 'SET_PAGE_DATA':
-      return { ...state, pageData: action.payload, sectionView: null, currentSectionId: null }; // Clear section view when loading new page
+      return { ...state, pageData: action.payload };
     case 'SET_FILTERED_DOCUMENTS':
       return { ...state, filteredDocuments: action.payload };
-    case 'SET_SECTION_VIEW':
-      return { ...state, sectionView: action.payload };
-    case 'SET_CURRENT_SECTION':
-      return { ...state, currentSectionId: action.payload };
     case 'SET_FILTERS':
       return { ...state, filters: { ...state.filters, ...action.payload } };
     case 'SET_LOADING':
@@ -101,6 +75,17 @@ const contentPageReducer = (state: ContentPageState, action: ContentPageAction):
     default:
       return state;
   }
+};
+
+// Helper: Convert sections to markdown
+const convertSectionsToMarkdown = (sections: DocumentSection[]): string => {
+  if (!sections || sections.length === 0) return '';
+  
+  return sections.map(section => {
+    const headerLevel = '#'.repeat(Math.max(1, section.level));
+    const tags = section.tags?.length > 0 ? ` [${section.tags.join(', ')}]` : '';
+    return `${headerLevel} ${section.title}${tags}\n\n${section.content || ''}\n\n`;
+  }).join('').trim();
 };
 
 const ContentPage: React.FC = () => {
@@ -111,10 +96,9 @@ const ContentPage: React.FC = () => {
     setShowEditor, 
     setShowFilters, 
     navigationStructure,
-    setActiveSectionId,
-    setActiveDocumentPath,
-    sectionNavigateRef,
     onStructureUpdate,
+    navigation,
+    setSectionNavigateHandler,
     expandDepth,
     expandMode,
     manualOverrides,
@@ -123,31 +107,22 @@ const ContentPage: React.FC = () => {
     descriptionOverrides,
     setDescriptionOverride
   } = useLayoutContext();
+  
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Track if initial hash has been processed for this path
+  const processedHashRef = useRef<string | null>(null);
 
-  // Helper function to convert DocumentSection[] to markdown string
-  const convertSectionsToMarkdown = (sections: DocumentSection[]): string => {
-    if (!sections || sections.length === 0) return '';
-    
-    return sections.map(section => {
-      const headerLevel = '#'.repeat(Math.max(1, section.level));
-      const tags = section.tags?.length > 0 ? ` [${section.tags.join(', ')}]` : '';
-      return `${headerLevel} ${section.title}${tags}\n\n${section.content || ''}\n\n`;
-    }).join('').trim();
-  };
-
+  // Load page data
   const loadPageData = async (currentPath: string): Promise<PageData | null> => {
     try {
-      // Get the content item (works for both documents and folders)
       const contentItem = await ContentService.getContentItemByPath(currentPath);
       
       if (!contentItem) {
         return null;
       }
       
-      // If it has content_json (even if empty array), treat it as a document
-      // This includes folders that have been initialized with empty content
       if (contentItem.content_json !== null && contentItem.content_json !== undefined) {
         return {
           type: 'document',
@@ -159,8 +134,6 @@ const ContentPage: React.FC = () => {
         };
       }
       
-      // If no content_json at all, also treat as document with empty sections
-      // This ensures clicking a folder always shows document view
       return {
         type: 'document',
         document: {
@@ -179,9 +152,11 @@ const ContentPage: React.FC = () => {
     try {
       const pageData = await loadPageData(path);
       dispatch({ type: 'SET_PAGE_DATA', payload: pageData });
+      return pageData;
     } catch (error) {
       console.error('Error loading current page data:', error);
       dispatch({ type: 'SET_PAGE_DATA', payload: null });
+      return null;
     }
   };
 
@@ -194,6 +169,194 @@ const ContentPage: React.FC = () => {
     }
   };
 
+  /**
+   * Navigate to a section within the current document
+   * This is the core section navigation logic, called by both:
+   * 1. Sidebar section clicks (via setSectionNavigateHandler)
+   * 2. Main content section clicks
+   * 
+   * Uses centralized navigation state for atomic updates
+   */
+  const navigateToSectionByTitle = useCallback((sectionTitle: string) => {
+    if (!state.pageData || state.pageData.type !== 'document') return;
+    
+    // Avoid re-navigating to the same section (check against centralized state)
+    if (navigation.sectionTitle?.toLowerCase() === sectionTitle.toLowerCase()) {
+      return;
+    }
+    
+    const targetSection = state.pageData.sections.find(
+      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
+    );
+    
+    if (targetSection) {
+      const { content, title, level, parentPath, sectionHierarchy } = 
+        extractSectionFullContent(targetSection, state.pageData.sections);
+      
+      const viewData: SectionViewData = {
+        content,
+        title,
+        level,
+        parentPath,
+        sectionHierarchy
+      };
+      
+      // Atomic state update - no race conditions
+      navigation.navigateToSection(
+        state.pageData.document.path,
+        targetSection.id,
+        targetSection.title,
+        viewData
+      );
+    }
+  }, [state.pageData, navigation]);
+
+  /**
+   * Navigate to a section by ID (used for hash-based initial load)
+   */
+  const navigateToSectionById = useCallback((sectionId: string) => {
+    if (!state.pageData || state.pageData.type !== 'document') return false;
+    
+    const targetSection = state.pageData.sections.find(s => {
+      // Match by ID directly or by generated slug from title
+      const generatedId = s.title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/--+/g, '-')
+        .trim();
+      return s.id === sectionId || generatedId === sectionId;
+    });
+    
+    if (targetSection) {
+      const { content, title, level, parentPath, sectionHierarchy } = 
+        extractSectionFullContent(targetSection, state.pageData.sections);
+      
+      const viewData: SectionViewData = {
+        content,
+        title,
+        level,
+        parentPath,
+        sectionHierarchy
+      };
+      
+      navigation.navigateToSection(
+        state.pageData.document.path,
+        targetSection.id,
+        targetSection.title,
+        viewData
+      );
+      
+      return true;
+    }
+    
+    return false;
+  }, [state.pageData, navigation]);
+
+  // Register section navigation handler with layout context
+  useEffect(() => {
+    setSectionNavigateHandler(navigateToSectionByTitle);
+    
+    return () => {
+      setSectionNavigateHandler(null);
+    };
+  }, [navigateToSectionByTitle, setSectionNavigateHandler]);
+
+  /**
+   * Main page load effect - triggered by pathname changes
+   * 
+   * This effect:
+   * 1. Loads page data for the new path
+   * 2. Updates navigation state to reflect the new document
+   * 3. Stores any hash for processing after data loads
+   */
+  useEffect(() => {
+    const initializePage = async () => {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
+      // Reset processed hash when path changes
+      processedHashRef.current = null;
+      
+      try {
+        const pageData = await loadCurrentPageData(location.pathname);
+        await loadAllDocuments();
+        
+        // Update navigation state to this document
+        if (pageData?.type === 'document') {
+          // If there's a hash and we haven't processed it, let the hash effect handle it
+          // Otherwise, navigate to document root
+          if (!location.hash) {
+            navigation.navigateToDocument(pageData.document.path);
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing page:', error);
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    };
+
+    initializePage();
+  }, [location.pathname]); // Only pathname, not hash
+
+  /**
+   * Hash navigation effect - handles initial section navigation from URL
+   * 
+   * Only processes hash ONCE per path change to avoid loops
+   */
+  useEffect(() => {
+    // Don't process if:
+    // 1. Still loading
+    // 2. No hash
+    // 3. Already processed this hash for this path
+    // 4. No page data
+    if (state.isLoading || !location.hash || !state.pageData) return;
+    
+    const hash = location.hash.slice(1);
+    const pathWithHash = `${location.pathname}#${hash}`;
+    
+    // Skip if already processed this exact path+hash combo
+    if (processedHashRef.current === pathWithHash) return;
+    
+    processedHashRef.current = pathWithHash;
+    
+    if (state.pageData.type !== 'document') return;
+    
+    // Handle #root - clear section view
+    if (hash === 'root') {
+      navigation.navigateToDocument(state.pageData.document.path);
+      // Clean URL
+      window.history.replaceState(null, '', location.pathname);
+      return;
+    }
+    
+    // Try to navigate to section by ID
+    const success = navigateToSectionById(hash);
+    
+    if (success) {
+      // Clean URL after successful navigation
+      window.history.replaceState(null, '', location.pathname);
+    }
+  }, [state.isLoading, state.pageData, location.hash, location.pathname, navigation, navigateToSectionById]);
+
+  /**
+   * Clear section view - returns to document root
+   */
+  const handleClearSection = useCallback(() => {
+    navigation.clearSection();
+  }, [navigation]);
+
+  // Handle manual section toggle for expand/collapse
+  const handleSectionToggle = useCallback((sectionId: string, currentlyExpanded: boolean) => {
+    setManualOverride(sectionId, !currentlyExpanded);
+  }, [setManualOverride]);
+
+  // Handle description toggle
+  const handleDescriptionToggle = useCallback((sectionId: string, currentlyVisible: boolean) => {
+    setDescriptionOverride(sectionId, !currentlyVisible);
+  }, [setDescriptionOverride]);
+
+  // Filter handler
   const handleFilter = async (filters: { 
     searchTerm: string; 
     selectedTags: string[];
@@ -223,203 +386,34 @@ const ContentPage: React.FC = () => {
     }
   };
 
-  const handleStructureUpdate = async () => {
-    // Reload current page data to reflect any changes
-    if (location.pathname) {
-      await loadCurrentPageData(location.pathname);
-    }
-  };
-
-  // BlockNote editor save handler - receives DocumentSection[] directly
-  // skipReload: when true, don't reload page data (used for auto-save to keep editor open)
+  // Editor save handler
   const handleEditorSave = async (sections: DocumentSection[], skipReload = false) => {
-    console.log('handleEditorSave called, skipReload:', skipReload, 'sections:', sections.length);
-    if (!state.pageData || state.pageData.type !== 'document') {
-      console.log('handleEditorSave: No document page data, returning');
-      return;
-    }
+    if (!state.pageData || state.pageData.type !== 'document') return;
     
     try {
-      // Save the document content directly (sections already parsed by BlockNote)
-      console.log('Calling ContentService.saveDocumentContent...');
       await ContentService.saveDocumentContent(state.pageData.document.path, sections);
-      console.log('ContentService.saveDocumentContent completed');
-      
-      // Refresh the sidebar to reflect changes (always do this)
-      console.log('Calling onStructureUpdate...');
       onStructureUpdate();
       
-      // Only reload page data when explicitly closing the editor
       if (!skipReload) {
-        console.log('Reloading page data (skipReload=false)...');
         await loadCurrentPageData(state.pageData.document.path);
-      } else {
-        console.log('Skipping page data reload (skipReload=true)');
       }
-      
-      console.log('Document saved successfully');
     } catch (error) {
       console.error('Error saving document:', error);
     }
   };
 
-  // Track pending hash navigation to handle after page load
-  const pendingHashRef = useRef<string | null>(null);
-
-  // Core navigation logic - pure function that operates on provided page data
-  const navigateToSection = useCallback((sectionTitle: string, pageData: PageData | null) => {
-    if (!pageData || pageData.type !== 'document') return;
-    
-    const targetSection = pageData.sections.find(
-      s => s.title.toLowerCase() === sectionTitle.toLowerCase()
-    );
-    
-    if (targetSection) {
-      const { content, title, level, parentPath, sectionHierarchy } = 
-        extractSectionFullContent(targetSection, pageData.sections);
-      
-      dispatch({
-        type: 'SET_SECTION_VIEW',
-        payload: { content, title, level, parentPath, sectionHierarchy }
-      });
-      dispatch({ type: 'SET_CURRENT_SECTION', payload: targetSection.id });
-      setActiveSectionId(targetSection.id);
-      setActiveDocumentPath(pageData.document.path);
-    }
-  }, [setActiveSectionId, setActiveDocumentPath]);
-
-  // Handle section navigation - uses current state.pageData directly without reloading
-  const handleSectionNavigate = useCallback((sectionTitle: string) => {
-    // Guard: prevent re-navigation to the same section
-    if (state.sectionView?.title?.toLowerCase() === sectionTitle.toLowerCase()) {
-      return;
-    }
-    
-    navigateToSection(sectionTitle, state.pageData);
-  }, [state.pageData, state.sectionView?.title, navigateToSection]);
-
-  // Load current page on mount and path change only
-  useEffect(() => {
-    const initializePage = async () => {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      
-      // Store hash for processing after load
-      if (location.hash) {
-        pendingHashRef.current = location.hash.slice(1);
-      }
-      
-      try {
-        // Always reload page data - this naturally clears section views and ensures fresh state
-        await loadCurrentPageData(location.pathname);
-        
-        // Load documents for filtering
-        await loadAllDocuments();
-        
-      } catch (error) {
-        console.error('Error initializing page:', error);
-      } finally {
-        dispatch({ type: 'SET_LOADING', payload: false });
-      }
-    };
-
-    initializePage();
-  }, [location.pathname]); // Remove location.hash from dependencies
-
-  // Handle URL hash for section navigation after page data loads
-  useEffect(() => {
-    if (!state.pageData || state.pageData.type !== 'document' || !pendingHashRef.current) return;
-    
-    const hash = pendingHashRef.current;
-    pendingHashRef.current = null; // Clear pending hash
-    
-    if (!hash) return;
-    
-    // Special case: #root means navigate to root level (clear section view)
-    if (hash === 'root') {
-      dispatch({ type: 'SET_SECTION_VIEW', payload: null });
-      dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
-      setActiveSectionId(null);
-      setActiveDocumentPath(state.pageData.document.path);
-      window.history.replaceState(null, '', location.pathname);
-      return;
-    }
-
-    // Find section by hash (could be section ID or generated from title)
-    const targetSection = state.pageData.sections.find(s => {
-      const generatedId = s.title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/--+/g, '-')
-        .trim();
-      return s.id === hash || generatedId === hash;
-    });
-
-    if (targetSection) {
-      // Navigate to the section using the stable function
-      navigateToSection(targetSection.title, state.pageData);
-      // Clear the hash from URL since we're using state-based navigation now
-      window.history.replaceState(null, '', location.pathname);
-    }
-  }, [state.pageData, state.isLoading, navigateToSection, location.pathname, setActiveSectionId, setActiveDocumentPath]);
-
-  // Handle #root hash for same-path navigation (when clicking root folder while viewing a section)
-  useEffect(() => {
-    if (location.hash === '#root' && state.sectionView && state.pageData?.type === 'document') {
-      dispatch({ type: 'SET_SECTION_VIEW', payload: null });
-      dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
-      setActiveSectionId(null);
-      setActiveDocumentPath(state.pageData.document.path);
-      window.history.replaceState(null, '', location.pathname);
-    }
-  }, [location.hash, location.pathname, state.sectionView, state.pageData, setActiveSectionId, setActiveDocumentPath]);
-
-  const handleClearSection = useCallback(() => {
-    dispatch({ type: 'SET_SECTION_VIEW', payload: null });
-    dispatch({ type: 'SET_CURRENT_SECTION', payload: null });
-    setActiveSectionId(null);
-    setActiveDocumentPath(null);
-  }, [setActiveSectionId, setActiveDocumentPath]);
-
-  // Handle manual section toggle
-  const handleSectionToggle = useCallback((sectionId: string, currentlyExpanded: boolean) => {
-    const newExpanded = !currentlyExpanded;
-    setManualOverride(sectionId, newExpanded);
-  }, [setManualOverride]);
-
-  // Handle description toggle
-  const handleDescriptionToggle = useCallback((sectionId: string, currentlyVisible: boolean) => {
-    const newVisible = !currentlyVisible;
-    setDescriptionOverride(sectionId, newVisible);
-  }, [setDescriptionOverride]);
-
-  // Provide section navigation function to layout context - use stable ref pattern
-  useEffect(() => {
-    sectionNavigateRef.current = handleSectionNavigate;
-    
-    return () => {
-      sectionNavigateRef.current = null;
-    };
-  }, [handleSectionNavigate, sectionNavigateRef]);
-
-  // Update active section ID in layout context
-  useEffect(() => {
-    setActiveSectionId(state.currentSectionId);
-  }, [state.currentSectionId, setActiveSectionId]);
-
+  // Create document handler
   const handleCreateDocument = async () => {
     if (!state.pageData || state.pageData.type !== 'folder') return;
     
-    const folderData = state.pageData; // Type narrowed to PageDataFolder
+    const folderData = state.pageData;
     
     try {
-      // Create a unique document name within the folder
       const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
       const documentPath = folderData.folder.path === '/' 
         ? `/new-document-${timestamp}` 
         : `${folderData.folder.path}/new-document-${timestamp}`;
       
-      // Create a new document with initial content
       const initialSections = [{
         id: '1',
         title: 'New Document',
@@ -428,21 +422,18 @@ const ContentPage: React.FC = () => {
         tags: []
       }];
       
-      // Save the new document
       const success = await ContentService.saveDocumentContent(documentPath, initialSections);
       
       if (success) {
-        // Navigate to the new document and open editor
         navigate(documentPath);
         setShowEditor(true);
-      } else {
-        console.error('Failed to create new document');
       }
     } catch (error) {
       console.error('Error creating new document:', error);
     }
   };
 
+  // Render page content
   const renderPageContent = () => {
     if (!state.pageData) {
       return (
@@ -453,9 +444,7 @@ const ContentPage: React.FC = () => {
     }
 
     if (state.pageData.type === 'folder') {
-      const folderData = state.pageData; // Type narrowed to PageDataFolder
-      
-      // Get child folders for this folder
+      const folderData = state.pageData;
       const childFolders = navigationStructure.filter(node => 
         node.parent_id === folderData.folder.id
       );
@@ -473,12 +462,6 @@ const ContentPage: React.FC = () => {
 
     // Document page
     const { document, sections } = state.pageData;
-    
-    // Check if first section is pre-header content (matches document title)
-    const firstSection = sections[0];
-    const hasPreHeaderContent = firstSection && 
-      firstSection.title === document.title && 
-      firstSection.level === 1;
 
     return (
       <div className="space-y-6">
@@ -487,10 +470,10 @@ const ContentPage: React.FC = () => {
           currentPath={location.pathname} 
           navigationStructure={navigationStructure}
           pageTitle={document.title}
-          sectionTitle={state.sectionView?.title}
-          sectionHierarchy={state.sectionView?.sectionHierarchy}
+          sectionTitle={navigation.sectionView?.title}
+          sectionHierarchy={navigation.sectionView?.sectionHierarchy}
           onSectionBack={handleClearSection}
-          onSectionNavigate={handleSectionNavigate}
+          onSectionNavigate={navigateToSectionByTitle}
         />
         
         {showEditor ? (
@@ -499,15 +482,15 @@ const ContentPage: React.FC = () => {
             onSave={handleEditorSave}
             onClose={() => setShowEditor(false)}
           />
-        ) : state.sectionView ? (
+        ) : navigation.sectionView ? (
           // Showing a specific section
           <div className="space-y-4">
-            <h1 className="text-3xl font-bold mb-1">{state.sectionView.title}</h1>
+            <h1 className="text-3xl font-bold mb-1">{navigation.sectionView.title}</h1>
             <HierarchicalContentDisplay
-              content={state.sectionView.content}
-              onSectionClick={handleSectionNavigate}
-              activeNodeId={state.currentSectionId || undefined}
-              documentTitle={state.sectionView.title}
+              content={navigation.sectionView.content}
+              onSectionClick={navigateToSectionByTitle}
+              activeNodeId={navigation.sectionId || undefined}
+              documentTitle={navigation.sectionView.title}
               expandedSections={expandMode === 'mixed' ? manualOverrides : undefined}
               defaultExpandDepth={expandMode === 'depth' ? expandDepth : undefined}
               onToggleSection={handleSectionToggle}
@@ -521,8 +504,8 @@ const ContentPage: React.FC = () => {
           <div className="space-y-6">
             <HierarchicalContentDisplay
               content={convertSectionsToMarkdown(sections)}
-              onSectionClick={handleSectionNavigate}
-              activeNodeId={state.currentSectionId || undefined}
+              onSectionClick={navigateToSectionByTitle}
+              activeNodeId={navigation.sectionId || undefined}
               documentTitle={document.title}
               expandedSections={expandMode === 'mixed' ? manualOverrides : undefined}
               defaultExpandDepth={expandMode === 'depth' ? expandDepth : undefined}
@@ -537,7 +520,7 @@ const ContentPage: React.FC = () => {
     );
   };
 
-  // Get all unique tags from filtered documents
+  // Get all unique tags
   const allTags = [...new Set(state.filteredDocuments.flatMap(doc => doc.tags || []))];
 
   if (state.isLoading) {
@@ -561,7 +544,6 @@ const ContentPage: React.FC = () => {
         </div>
       )}
 
-      {/* Content based on page type */}
       {renderPageContent()}
     </>
   );
