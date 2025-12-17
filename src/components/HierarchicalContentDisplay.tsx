@@ -454,8 +454,8 @@ const renderGroupedChildren = (
   const chevronAndGapWidth = 17;
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  // Vertical line positioned to abut the left edge of content bubbles
-  const linePositionPx = indentationPx + chevronAndGapWidth + 3; // Same as contentIndentationPx
+  // Vertical line positioned 1px from chevron point
+  const linePositionPx = indentationPx + chevronAndGapWidth; // chevron (16px) + 1px gap
   
   return groups.map((group, groupIndex) => {
     if (group.rubric) {
