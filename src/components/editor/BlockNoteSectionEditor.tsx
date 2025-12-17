@@ -195,15 +195,18 @@ export function BlockNoteSectionEditor({
     
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
+    const scrollTop = textarea.scrollTop; // Preserve scroll position
     const newContent = markdownContent.substring(0, start) + text + markdownContent.substring(end);
     setMarkdownContent(newContent);
     triggerAutoSave();
     
-    setTimeout(() => {
+    // Use requestAnimationFrame to ensure DOM has updated
+    requestAnimationFrame(() => {
       textarea.focus();
       const newPos = start + text.length;
       textarea.setSelectionRange(newPos, newPos);
-    }, 0);
+      textarea.scrollTop = scrollTop; // Restore scroll position
+    });
   }, [markdownContent, triggerAutoSave]);
 
   // Keyboard shortcuts
