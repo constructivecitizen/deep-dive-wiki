@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Eye, FileText, Save, Bold, Italic, List, Link2, Edit3, Code } from 'lucide-react';
-import { ContentNode } from '@/components/HierarchicalContent';
-import { HierarchyParser } from '@/lib/hierarchyParser';
+import { Eye, FileText, Save, Bold, Italic, List, Link2, Edit3, Code, FileSymlink } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
+import { LinkPicker } from './editor/LinkPicker';
 
 export interface EditorData {
   type: 'document';
@@ -18,12 +16,15 @@ interface UnifiedEditorProps {
   editorData: EditorData | null;
   onSave: (content: string) => void;
   onClose: () => void;
+  currentDocumentPath?: string;
 }
 
-export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProps) => {
+export const UnifiedEditor = ({ editorData, onSave, onClose, currentDocumentPath }: UnifiedEditorProps) => {
   const [content, setContent] = useState('');
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
+  const [showLinkPicker, setShowLinkPicker] = useState(false);
   const hasInitializedRef = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -162,7 +163,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
   };
 
   const insertMarkdown = (type: string) => {
-    const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+    const textarea = textareaRef.current;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
@@ -198,10 +199,48 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
     }, 0);
   };
 
+  // Insert text at cursor position (for link picker)
+  const insertTextAtCursor = (text: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    const newContent = content.substring(0, start) + text + content.substring(end);
+    setContent(newContent);
+
+    // Position cursor after inserted text
+    setTimeout(() => {
+      textarea.focus();
+      const newPos = start + text.length;
+      textarea.setSelectionRange(newPos, newPos);
+    }, 0);
+  };
+
+  // Handle link picker selection
+  const handleLinkSelect = (linkSyntax: string) => {
+    insertTextAtCursor(linkSyntax);
+    setShowLinkPicker(false);
+  };
+
+  // Keyboard shortcut for link picker (Ctrl+K in markdown mode)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k' && editorMode === 'markdown') {
+        e.preventDefault();
+        setShowLinkPicker(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editorMode]);
+
   if (!editorData) return null;
 
   // Fullscreen document editor
   return (
+    <>
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
         <div 
           className="bg-background h-full w-full flex flex-col" 
@@ -272,6 +311,14 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
                     >
                       <Link2 className="h-4 w-4" />
                     </Button>
+                    <Button 
+                      onClick={() => setShowLinkPicker(true)} 
+                      variant="outline" 
+                      size="sm"
+                      title="Insert Internal Link (Ctrl+K)"
+                    >
+                      <FileSymlink className="h-4 w-4" />
+                    </Button>
                   </div>
                 )}
                 <Button 
@@ -304,6 +351,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose }: UnifiedEditorProp
                 </div>
               ) : (
                 <Textarea
+                  ref={textareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={`Start typing or paste your content...
@@ -396,6 +444,7 @@ More detailed content with \`code\`.`}
                     <li>• Headers create the hierarchy</li>
                     <li>• [[Title]] links within doc</li>
                     <li>• [[/path#Title]] cross-doc links</li>
+                    <li>• Ctrl+K to search & insert links</li>
                   </ul>
                 </div>
               </div>
@@ -403,5 +452,15 @@ More detailed content with \`code\`.`}
           </div>
         </div>
       </div>
-    );
+
+      {/* Link Picker Overlay */}
+      {showLinkPicker && (
+        <LinkPicker
+          currentDocumentPath={currentDocumentPath}
+          onSelect={handleLinkSelect}
+          onClose={() => setShowLinkPicker(false)}
+        />
+      )}
+    </>
+  );
 };
