@@ -181,7 +181,7 @@ const RubricSlug: React.FC<{ rubric: string; linePositionPx: number }> = ({ rubr
   const colors = getStampColors(rubric);
   return (
     <div 
-      className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-1 ${colors.bg} ${colors.text} ${colors.border}`}
+      className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-2.5 ${colors.bg} ${colors.text} ${colors.border}`}
       style={{ marginLeft: `${linePositionPx}px` }}
     >
       {rubric}
