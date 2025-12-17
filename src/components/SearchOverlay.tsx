@@ -115,7 +115,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
         
         {/* Results */}
         {results.length > 0 && (
-          <ScrollArea className="max-h-96 rounded-lg border bg-card shadow-lg">
+          <div className="max-h-[60vh] overflow-y-auto rounded-lg border bg-card shadow-lg">
             <div className="p-2 space-y-1">
               {results.map((result, index) => (
                 <button
@@ -131,12 +131,12 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
                     {getMatchTypeIcon(result.matchType)}
                   </div>
                   <div className="flex-1 min-w-0 space-y-1">
-                    {/* Breadcrumb path */}
+                    {/* Breadcrumb path - full names */}
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground flex-wrap">
                       {result.breadcrumbPath.map((segment, i) => (
                         <React.Fragment key={i}>
                           {i > 0 && <ChevronRight className="h-2.5 w-2.5 shrink-0" />}
-                          <span className="truncate max-w-[120px]">{segment}</span>
+                          <span>{segment}</span>
                         </React.Fragment>
                       ))}
                     </div>
@@ -154,7 +154,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ onClose }) => {
                 </button>
               ))}
             </div>
-          </ScrollArea>
+          </div>
         )}
         
         {searchTerm.length >= 2 && !isLoading && results.length === 0 && (
