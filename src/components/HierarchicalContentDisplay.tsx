@@ -177,12 +177,12 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
 };
 
 // Render a rubric slug header
-const RubricSlug: React.FC<{ rubric: string; indentationPx: number }> = ({ rubric, indentationPx }) => {
+const RubricSlug: React.FC<{ rubric: string; linePositionPx: number }> = ({ rubric, linePositionPx }) => {
   const colors = getStampColors(rubric);
   return (
     <div 
       className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-1 ${colors.bg} ${colors.text} ${colors.border}`}
-      style={{ marginLeft: `${indentationPx}px` }}
+      style={{ marginLeft: `${linePositionPx}px` }}
     >
       {rubric}
     </div>
@@ -465,7 +465,7 @@ const renderGroupedChildren = (
       return (
         <div key={`group-${groupIndex}-${group.rubric}`} className="relative">
           {/* Render rubric slug header */}
-          <RubricSlug rubric={group.rubric} indentationPx={indentationPx} />
+          <RubricSlug rubric={group.rubric} linePositionPx={linePositionPx} />
           
           {/* Vertical line container */}
           <div className="relative">
