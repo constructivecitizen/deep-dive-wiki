@@ -48,8 +48,8 @@ export const rubricColorMap: Record<string, keyof typeof stampColorTreatments> =
   "main work": "blue",
   critical: "red",
   important: "amber",
-  "minor tip": "green",
-  tip: "green",
+  "minor tips": "green",
+  tips: "green",
   note: "green",
   goal: "purple",
   goals: "purple",
@@ -66,9 +66,9 @@ export const rubricOrder: string[] = [
   "goal",
   "critical",
   "important",
-  "tip",
+  "tips",
   "note",
-  "minor tip",
+  "minor tips",
 ];
 
 // Get the sort order index for a rubric (lower = earlier in display)
