@@ -286,7 +286,7 @@ const ContentSectionComponent: React.FC<{
   // Calculate indentation: children align with parent's text (after the chevron + gap)
   const chevronAndGapWidth = 17; // 16px chevron + 1px gap
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  const contentIndentationPx = indentationPx + chevronAndGapWidth + 20; // Original content position
+  const contentIndentationPx = indentationPx + chevronAndGapWidth + 9; // Maintains distance from line
   
   // Calculate color based on depth level (cycling through 6 colors)
   const getContentColorClass = (depth: number) => {
@@ -455,7 +455,7 @@ const renderGroupedChildren = (
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   // Vertical line positioned to abut the left edge of content bubbles
-  const linePositionPx = indentationPx + chevronAndGapWidth - 10; // 1px from chevron tip
+  const linePositionPx = indentationPx + chevronAndGapWidth - 8; // Abuts chevron tip
   
   return groups.map((group, groupIndex) => {
     if (group.rubric) {
