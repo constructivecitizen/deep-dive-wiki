@@ -401,7 +401,7 @@ const ContentSectionComponent: React.FC<{
         <div className="mt-2">
           {hasContent && isContentVisible && (
             <div 
-              className={`prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
+              className={`prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] pl-[12px] pr-[9px] rounded-md ${contentColorClass}`}
               style={{ marginLeft: `${contentIndentationPx}px` }}
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(section.content.trim()) 
