@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { HierarchicalDocumentSection } from '../lib/sectionHierarchy';
+import { NavigationContextValue } from '@/hooks/useNavigationState';
 import { useNavigate } from 'react-router-dom';
 import {
   ContextMenu,
@@ -8,6 +9,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+
 interface EnhancedSectionItemProps {
   section: HierarchicalDocumentSection;
   depth: number;
@@ -16,11 +18,21 @@ interface EnhancedSectionItemProps {
   flatSections: any[];
   currentPath?: string;
   onSectionNavigate?: (sectionTitle: string) => void;
-  activeSectionId?: string | null;
-  activeDocumentPath?: string | null;
+  
+  // Centralized navigation state
+  navigation: NavigationContextValue;
+  
   collapseKey?: number;
 }
 
+/**
+ * EnhancedSectionItem - represents a section within a document in the sidebar
+ * 
+ * Key changes:
+ * 1. Uses navigation.isAtSection() for highlighting
+ * 2. Properly distinguishes between same-document and cross-document navigation
+ * 3. No stale closure issues since we use the navigation context directly
+ */
 export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   section,
   depth,
@@ -29,8 +41,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   flatSections,
   currentPath,
   onSectionNavigate,
-  activeSectionId,
-  activeDocumentPath,
+  navigation,
   collapseKey
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -43,36 +54,37 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
     }
   }, [collapseKey]);
 
+  /**
+   * Handle clicking a section
+   * 
+   * Key logic:
+   * 1. If already on the same document, just call onSectionNavigate
+   * 2. If on a different document, navigate with hash to trigger URL-based loading
+   */
   const handleSectionClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    console.log('Section clicked:', section.title, 'Current path:', currentPath, 'Folder path:', folderPath);
-    
-    // Check if we're already on the correct document
+    // Check if we're on the same document (compare without hash)
     const currentPathOnly = currentPath?.split('#')[0];
     const isOnSameDocument = currentPathOnly === folderPath;
     
-    console.log('Is on same document:', isOnSameDocument);
-    
-    if (isOnSameDocument) {
-      // Already on the document, just navigate to the section
-      console.log('Calling onSectionNavigate with:', section.title);
-      if (onSectionNavigate) {
-        onSectionNavigate(section.title);
-      }
+    if (isOnSameDocument && onSectionNavigate) {
+      // Same document - use direct section navigation (no URL change needed)
+      onSectionNavigate(section.title);
     } else {
-      // Navigate to the document first, then the section will be handled by URL hash
-      console.log('Navigating to document with hash:', `${folderPath}#${section.id}`);
+      // Different document - navigate with hash for initial load
       navigate(`${folderPath}#${section.id}`);
     }
   };
 
   const hasChildren = section.children && section.children.length > 0;
-  // Set specific indentation: depth 0 = 16px, depth 1 = 31px, deeper levels = 31 + (depth-1)*16
+  
+  // Indentation: depth 0 = 16px, depth 1 = 31px, deeper = 31 + (depth-1)*16
   const indentationPx = depth === 0 ? 16 : depth === 1 ? 31 : 31 + (depth - 1) * 16;
   
-  // Check if this section is currently active - must match BOTH section ID AND document path
-  const isActive = activeSectionId === section.id && activeDocumentPath === folderPath;
+  // Use centralized navigation for active state
+  // Section is active when both document path AND section ID match
+  const isActive = navigation.isAtSection(folderPath, section.id);
 
   const handleOpenInNewTab = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -137,8 +149,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
               flatSections={flatSections}
               currentPath={currentPath}
               onSectionNavigate={onSectionNavigate}
-              activeSectionId={activeSectionId}
-              activeDocumentPath={activeDocumentPath}
+              navigation={navigation}
               collapseKey={collapseKey}
             />
           ))}
