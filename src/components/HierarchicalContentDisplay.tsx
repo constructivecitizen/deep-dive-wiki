@@ -396,8 +396,8 @@ const ContentSectionComponent: React.FC<{
         </ContextMenuContent>
       </ContextMenu>
 
-      {/* Show content area when expanded OR when at boundary depth with descriptions on */}
-      {(isExpanded || (defaultExpandDepth !== undefined && depth === defaultExpandDepth && isContentVisible && hasContent)) && (
+      {/* Show content area when expanded OR when content is visible (descriptions on) and has content */}
+      {(isExpanded || (isContentVisible && hasContent)) && (
         <div className="mt-2">
           {hasContent && isContentVisible && (
             <div 
