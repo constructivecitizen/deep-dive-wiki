@@ -471,7 +471,7 @@ const renderGroupedChildren = (
           <div className="relative">
             {/* Subtle vertical line matching rubric color */}
             <div 
-              className={`absolute top-0 bottom-1 w-[2px] rounded-b-full opacity-50 ${borderColorClass}`}
+              className={`absolute -top-2.5 bottom-1 w-[2px] rounded-b-full opacity-50 ${borderColorClass}`}
               style={{ left: `${linePositionPx}px` }}
             />
             
