@@ -454,12 +454,14 @@ const renderGroupedChildren = (
   const chevronAndGapWidth = 25;
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  // Vertical line positioned between chevron and text (at chevron center + offset)
-  const linePositionPx = indentationPx + 8; // 8px = middle of 16px chevron
+  // Vertical line positioned inside the gap, close to text (chevron=16px + small offset)
+  const linePositionPx = indentationPx + 19; // 16px chevron + 3px into the 9px gap
   
   return groups.map((group, groupIndex) => {
     if (group.rubric) {
       const colors = getStampColors(group.rubric);
+      // Extract border color class (e.g., "border-blue-300" -> use for background)
+      const borderColorClass = colors.border.replace('border-', 'bg-');
       return (
         <div key={`group-${groupIndex}-${group.rubric}`} className="relative">
           {/* Render rubric slug header */}
@@ -467,13 +469,10 @@ const renderGroupedChildren = (
           
           {/* Vertical line container */}
           <div className="relative">
-            {/* Subtle vertical line */}
+            {/* Subtle vertical line matching rubric color */}
             <div 
-              className={`absolute top-0 bottom-1 w-[2px] rounded-b-full opacity-40 ${colors.bg.replace('bg-', 'bg-')}`}
-              style={{ 
-                left: `${linePositionPx}px`,
-                backgroundColor: `hsl(var(--content-border-${(depth % 6) + 1}))` 
-              }}
+              className={`absolute top-0 bottom-1 w-[2px] rounded-b-full opacity-50 ${borderColorClass}`}
+              style={{ left: `${linePositionPx}px` }}
             />
             
             {/* Render all items in this group */}
