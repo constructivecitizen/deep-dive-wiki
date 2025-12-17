@@ -45,9 +45,39 @@ export const rubricColorMap: Record<string, keyof typeof stampColorTreatments> =
   "minor tip": "green",
   tip: "green",
   note: "green",
-  goal: "blue",
-  goals: "blue",
+  goal: "purple",
+  goals: "purple",
 };
+
+// Defines the display order of rubrics when grouping siblings
+// Rubrics not in this list will appear after all listed rubrics, in document order
+// Items without any rubric will appear last
+export const rubricOrder: string[] = [
+  "background",
+  "main goal",
+  "main work",
+  "goals",
+  "goal",
+  "critical",
+  "important",
+  "tip",
+  "note",
+  "minor tip",
+];
+
+// Get the sort order index for a rubric (lower = earlier in display)
+// Returns a high number for unknown rubrics so they sort after known ones
+export function getRubricOrderIndex(rubric: string | null): number {
+  if (rubric === null) {
+    return Number.MAX_SAFE_INTEGER; // No rubric = show last
+  }
+  const normalizedRubric = rubric.toLowerCase().trim();
+  const index = rubricOrder.indexOf(normalizedRubric);
+  if (index === -1) {
+    return rubricOrder.length; // Unknown rubrics appear after known ones
+  }
+  return index;
+}
 
 // Get the color classes for a rubric stamp
 export function getStampColors(rubric: string): (typeof stampColorTreatments)[keyof typeof stampColorTreatments] {

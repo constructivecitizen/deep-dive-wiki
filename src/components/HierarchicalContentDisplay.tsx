@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdownRenderer';
-import { getStampColors } from '@/lib/rubricConfig';
+import { getStampColors, getRubricOrderIndex } from '@/lib/rubricConfig';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -32,6 +32,49 @@ interface HierarchicalContentDisplayProps {
   descriptionOverrides?: Record<string, boolean>;
   onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void;
 }
+
+// Helper to parse title and extract rubric if present
+const parseRubric = (title: string): { rubric: string | null; text: string } => {
+  const colonIndex = title.indexOf(':');
+  if (colonIndex === -1 || colonIndex > 20) {
+    return { rubric: null, text: title };
+  }
+  return {
+    rubric: title.substring(0, colonIndex),
+    text: title.substring(colonIndex + 1).trim()
+  };
+};
+
+// Group children by rubric and sort by rubric order
+interface RubricGroup {
+  rubric: string | null;
+  items: ContentSection[];
+}
+
+const groupChildrenByRubric = (children: ContentSection[]): RubricGroup[] => {
+  const groups: Map<string | null, ContentSection[]> = new Map();
+  
+  // Group items by their rubric
+  for (const child of children) {
+    const { rubric } = parseRubric(child.title);
+    const normalizedRubric = rubric?.toLowerCase().trim() || null;
+    
+    if (!groups.has(normalizedRubric)) {
+      groups.set(normalizedRubric, []);
+    }
+    groups.get(normalizedRubric)!.push(child);
+  }
+  
+  // Convert to array and sort by rubric order
+  const result: RubricGroup[] = [];
+  for (const [rubric, items] of groups.entries()) {
+    result.push({ rubric, items });
+  }
+  
+  result.sort((a, b) => getRubricOrderIndex(a.rubric) - getRubricOrderIndex(b.rubric));
+  
+  return result;
+};
 
 // Helper function to extract full hierarchical content for a section
 const extractSectionFullContent = (targetSection: ContentSection): string => {
@@ -133,6 +176,19 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
   return { preContent, sections };
 };
 
+// Render a rubric slug header
+const RubricSlug: React.FC<{ rubric: string; indentationPx: number }> = ({ rubric, indentationPx }) => {
+  const colors = getStampColors(rubric);
+  return (
+    <div 
+      className={`inline-flex items-center px-3 py-1 rounded-t-md border-b-2 text-xs font-semibold uppercase tracking-wider mb-1 ${colors.bg} ${colors.text} ${colors.border}`}
+      style={{ marginLeft: `${indentationPx}px` }}
+    >
+      {rubric}
+    </div>
+  );
+};
+
 const ContentSectionComponent: React.FC<{
   section: ContentSection;
   depth: number;
@@ -208,40 +264,21 @@ const ContentSectionComponent: React.FC<{
     return `text-foreground ${getFontSizeClass(depth)}`;
   };
 
-  // Helper to parse title and extract rubric if present
-  const parseRubric = (title: string): { rubric: string | null; text: string } => {
-    const colonIndex = title.indexOf(':');
-    if (colonIndex === -1 || colonIndex > 20) {
-      return { rubric: null, text: title };
-    }
-    return {
-      rubric: title.substring(0, colonIndex),
-      text: title.substring(colonIndex + 1).trim()
-    };
-  };
-
-  // Render just the rubric stamp
-  const renderRubricStamp = (rubric: string) => {
-    const colors = getStampColors(rubric);
-    return (
-      <span 
-        className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider flex-shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}
-      >
-        {rubric}
-      </span>
-    );
-  };
-
   // Legacy helper for document title
   const renderTitleWithRubric = (title: string) => {
     const { rubric, text } = parseRubric(title);
     if (!rubric) {
       return <>{title}</>;
     }
+    const colors = getStampColors(rubric);
     return (
       <span className="inline-flex items-center gap-2">
         <span>{text}</span>
-        {renderRubricStamp(rubric)}
+        <span 
+          className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider flex-shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}
+        >
+          {rubric}
+        </span>
       </span>
     );
   };
@@ -291,24 +328,21 @@ const ContentSectionComponent: React.FC<{
         
         {hasChildren && (
           <div className="space-y-2">
-            {section.children.map((child, index) => (
-              <ContentSectionComponent
-                key={child.id}
-                section={child}
-                depth={depth + 1}
-                onSectionClick={onSectionClick}
-                activeNodeId={activeNodeId}
-                documentPath={documentPath}
-                documentTitle={documentTitle}
-                siblingIndex={index}
-                expandedSections={expandedSections}
-                defaultExpandDepth={defaultExpandDepth}
-                onToggleSection={onToggleSection}
-                showDescriptions={showDescriptions}
-                descriptionOverrides={descriptionOverrides}
-                onToggleDescription={onToggleDescription}
-              />
-            ))}
+            {renderGroupedChildren(
+              section.children, 
+              depth + 1, 
+              onSectionClick, 
+              activeNodeId, 
+              documentPath, 
+              documentTitle, 
+              expandedSections, 
+              defaultExpandDepth, 
+              onToggleSection, 
+              showDescriptions, 
+              descriptionOverrides, 
+              onToggleDescription, 
+              false
+            )}
           </div>
         )}
       </div>
@@ -342,7 +376,7 @@ const ContentSectionComponent: React.FC<{
               )}
             </button>
             
-            <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
               <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
                   onClick={() => {
                     if (onSectionClick) {
@@ -351,11 +385,6 @@ const ContentSectionComponent: React.FC<{
                   }}>
                 {parseRubric(section.title).text}
               </h1>
-              {parseRubric(section.title).rubric && (
-                <div className="flex-shrink-0 mt-[2px]">
-                  {renderRubricStamp(parseRubric(section.title).rubric!)}
-                </div>
-              )}
             </div>
           </div>
         </ContextMenuTrigger>
@@ -382,25 +411,21 @@ const ContentSectionComponent: React.FC<{
           
           {hasChildren && isExpanded && (
             <div className="space-y-2">
-              {section.children.map((child, index) => (
-                <ContentSectionComponent
-                  key={child.id}
-                  section={child}
-                  depth={depth + 1}
-                  onSectionClick={onSectionClick}
-                  activeNodeId={activeNodeId}
-                  documentPath={documentPath}
-                  documentTitle={documentTitle}
-                  siblingIndex={index}
-                  expandedSections={expandedSections}
-                  defaultExpandDepth={defaultExpandDepth}
-                  onToggleSection={onToggleSection}
-                  showDescriptions={showDescriptions}
-                  descriptionOverrides={descriptionOverrides}
-                  onToggleDescription={onToggleDescription}
-                  parentWasManuallyExpanded={wasManuallyExpanded}
-                />
-              ))}
+              {renderGroupedChildren(
+                section.children, 
+                depth + 1, 
+                onSectionClick, 
+                activeNodeId, 
+                documentPath, 
+                documentTitle, 
+                expandedSections, 
+                defaultExpandDepth, 
+                onToggleSection, 
+                showDescriptions, 
+                descriptionOverrides, 
+                onToggleDescription, 
+                wasManuallyExpanded
+              )}
             </div>
           )}
         </div>
@@ -409,6 +434,56 @@ const ContentSectionComponent: React.FC<{
   );
 };
 
+// Helper function to render children grouped by rubric
+const renderGroupedChildren = (
+  children: ContentSection[],
+  depth: number,
+  onSectionClick?: (sectionTitle: string) => void,
+  activeNodeId?: string,
+  documentPath?: string,
+  documentTitle?: string,
+  expandedSections?: Record<string, boolean>,
+  defaultExpandDepth?: number,
+  onToggleSection?: (sectionId: string, currentlyExpanded: boolean) => void,
+  showDescriptions?: 'on' | 'off' | 'mixed',
+  descriptionOverrides?: Record<string, boolean>,
+  onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void,
+  parentWasManuallyExpanded?: boolean
+) => {
+  const groups = groupChildrenByRubric(children);
+  const chevronAndGapWidth = 25;
+  const indentationPx = depth === 0 ? 0 : (depth - 1) * chevronAndGapWidth;
+  
+  return groups.map((group, groupIndex) => (
+    <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
+      {/* Render rubric slug header if this group has a rubric */}
+      {group.rubric && (
+        <RubricSlug rubric={group.rubric} indentationPx={indentationPx} />
+      )}
+      
+      {/* Render all items in this group */}
+      {group.items.map((child, index) => (
+        <ContentSectionComponent
+          key={child.id}
+          section={child}
+          depth={depth}
+          onSectionClick={onSectionClick}
+          activeNodeId={activeNodeId}
+          documentPath={documentPath}
+          documentTitle={documentTitle}
+          siblingIndex={index}
+          expandedSections={expandedSections}
+          defaultExpandDepth={defaultExpandDepth}
+          onToggleSection={onToggleSection}
+          showDescriptions={showDescriptions}
+          descriptionOverrides={descriptionOverrides}
+          onToggleDescription={onToggleDescription}
+          parentWasManuallyExpanded={parentWasManuallyExpanded}
+        />
+      ))}
+    </div>
+  ));
+};
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
   content, 
   onSectionClick, 
@@ -437,32 +512,29 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
     );
   }
 
-    return (
-      <div className="space-y-4">
-        {preContent && (
-          <div 
-            className="prose prose-slate dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
-          />
-        )}
-        {sections.map((section, index) => (
-          <ContentSectionComponent
-            key={section.id}
-            section={section}
-            depth={0}
-            onSectionClick={onSectionClick}
-            activeNodeId={activeNodeId}
-            documentPath={documentPath}
-            documentTitle={documentTitle}
-            siblingIndex={index}
-            expandedSections={expandedSections}
-            defaultExpandDepth={defaultExpandDepth}
-            onToggleSection={onToggleSection}
-            showDescriptions={showDescriptions}
-            descriptionOverrides={descriptionOverrides}
-            onToggleDescription={onToggleDescription}
-          />
-        ))}
-      </div>
-    );
+  return (
+    <div className="space-y-4">
+      {preContent && (
+        <div 
+          className="prose prose-slate dark:prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
+        />
+      )}
+      {renderGroupedChildren(
+        sections,
+        0,
+        onSectionClick,
+        activeNodeId,
+        documentPath,
+        documentTitle,
+        expandedSections,
+        defaultExpandDepth,
+        onToggleSection,
+        showDescriptions,
+        descriptionOverrides,
+        onToggleDescription,
+        false
+      )}
+    </div>
+  );
 };
