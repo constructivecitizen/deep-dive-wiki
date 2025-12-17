@@ -321,26 +321,26 @@
 
   /* Prose styling for content blocks - lists */
   .prose ul {
-    @apply list-disc pl-5 mb-3 mt-2;
+    @apply list-disc pl-5 mb-2 mt-1;
   }
 
   .prose ol {
-    @apply list-decimal pl-5 mb-3 mt-2;
+    @apply list-decimal pl-5 mb-2 mt-1;
   }
 
   .prose li {
-    @apply mb-1 text-foreground;
+    @apply mb-0.5 text-foreground leading-snug;
   }
 
   /* Nested lists */
   .prose ul ul,
   .prose ol ul {
-    @apply list-[circle] mt-1 mb-1;
+    @apply list-[circle] mt-0.5 mb-0.5;
   }
 
   .prose ol ol,
   .prose ul ol {
-    @apply list-[lower-alpha] mt-1 mb-1;
+    @apply list-[lower-alpha] mt-0.5 mb-0.5;
   }
 
   /* Prose typography - bold, italic, code */
