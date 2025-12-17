@@ -176,29 +176,12 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
   return { preContent, sections };
 };
 
-// Get border color class for rubric groups
-const getRubricBorderColor = (rubric: string): string => {
-  const colorMap: Record<string, string> = {
-    'background': 'border-blue-300/60',
-    'main goal': 'border-blue-300/60',
-    'main work': 'border-blue-300/60',
-    'critical': 'border-red-300/60',
-    'important': 'border-orange-300/60',
-    'tip': 'border-green-300/60',
-    'note': 'border-green-300/60',
-    'minor tip': 'border-amber-300/60',
-    'goal': 'border-purple-300/60',
-    'goals': 'border-purple-300/60',
-  };
-  return colorMap[rubric.toLowerCase()] || 'border-muted-foreground/40';
-};
-
 // Render a rubric slug header
 const RubricSlug: React.FC<{ rubric: string; indentationPx: number }> = ({ rubric, indentationPx }) => {
   const colors = getStampColors(rubric);
   return (
     <div 
-      className={`inline-flex items-center px-1.5 py-0.5 rounded-t-sm text-[10px] font-semibold uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}
+      className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-1 ${colors.bg} ${colors.text} ${colors.border}`}
       style={{ marginLeft: `${indentationPx}px` }}
     >
       {rubric}
@@ -472,46 +455,35 @@ const renderGroupedChildren = (
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   
-  return groups.map((group, groupIndex) => {
-    const hasRubric = !!group.rubric;
-    const borderColor = hasRubric ? getRubricBorderColor(group.rubric!) : '';
-    
-    return (
-      <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
-        {/* Render rubric slug header if this group has a rubric */}
-        {hasRubric && (
-          <RubricSlug rubric={group.rubric!} indentationPx={indentationPx} />
-        )}
-        
-        {/* Wrap items in a container with left border if rubric exists */}
-        <div 
-          className={hasRubric ? `border-l-2 ${borderColor}` : ''}
-          style={hasRubric ? { marginLeft: `${indentationPx + 4}px`, paddingLeft: '8px' } : {}}
-        >
-          {/* Render all items in this group */}
-          {group.items.map((child, index) => (
-            <ContentSectionComponent
-              key={child.id}
-              section={child}
-              depth={hasRubric ? depth : depth}
-              onSectionClick={onSectionClick}
-              activeNodeId={activeNodeId}
-              documentPath={documentPath}
-              documentTitle={documentTitle}
-              siblingIndex={index}
-              expandedSections={expandedSections}
-              defaultExpandDepth={defaultExpandDepth}
-              onToggleSection={onToggleSection}
-              showDescriptions={showDescriptions}
-              descriptionOverrides={descriptionOverrides}
-              onToggleDescription={onToggleDescription}
-              parentWasManuallyExpanded={parentWasManuallyExpanded}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  });
+  return groups.map((group, groupIndex) => (
+    <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
+      {/* Render rubric slug header if this group has a rubric */}
+      {group.rubric && (
+        <RubricSlug rubric={group.rubric} indentationPx={indentationPx} />
+      )}
+      
+      {/* Render all items in this group */}
+      {group.items.map((child, index) => (
+        <ContentSectionComponent
+          key={child.id}
+          section={child}
+          depth={depth}
+          onSectionClick={onSectionClick}
+          activeNodeId={activeNodeId}
+          documentPath={documentPath}
+          documentTitle={documentTitle}
+          siblingIndex={index}
+          expandedSections={expandedSections}
+          defaultExpandDepth={defaultExpandDepth}
+          onToggleSection={onToggleSection}
+          showDescriptions={showDescriptions}
+          descriptionOverrides={descriptionOverrides}
+          onToggleDescription={onToggleDescription}
+          parentWasManuallyExpanded={parentWasManuallyExpanded}
+        />
+      ))}
+    </div>
+  ));
 };
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
   content, 
