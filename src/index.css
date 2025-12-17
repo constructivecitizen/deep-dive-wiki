@@ -322,10 +322,12 @@
   /* Prose styling for content blocks - lists */
   .prose ul {
     @apply list-disc pl-5 mb-2 mt-1;
+    color: hsl(var(--foreground));
   }
 
   .prose ol {
     @apply list-decimal pl-5 mb-2 mt-1;
+    color: hsl(var(--foreground));
   }
 
   .prose li {
