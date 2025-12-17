@@ -460,8 +460,6 @@ const renderGroupedChildren = (
   return groups.map((group, groupIndex) => {
     if (group.rubric) {
       const colors = getStampColors(group.rubric);
-      // Extract border color class (e.g., "border-blue-300" -> use for background)
-      const borderColorClass = colors.border.replace('border-', 'bg-');
       return (
         <div key={`group-${groupIndex}-${group.rubric}`} className="relative">
           {/* Render rubric slug header */}
@@ -471,7 +469,7 @@ const renderGroupedChildren = (
           <div className="relative">
             {/* Subtle vertical line matching rubric color */}
             <div 
-              className={`absolute -top-2.5 bottom-1 w-[2px] rounded-b-full opacity-50 ${borderColorClass}`}
+              className={`absolute -top-2.5 bottom-1 w-[2px] rounded-b-full opacity-50 ${colors.line}`}
               style={{ left: `${linePositionPx}px` }}
             />
             
