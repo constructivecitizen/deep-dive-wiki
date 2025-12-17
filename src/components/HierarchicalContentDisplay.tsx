@@ -454,36 +454,78 @@ const renderGroupedChildren = (
   const chevronAndGapWidth = 25;
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
+  // Vertical line positioned between chevron and text (at chevron center + offset)
+  const linePositionPx = indentationPx + 8; // 8px = middle of 16px chevron
   
-  return groups.map((group, groupIndex) => (
-    <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
-      {/* Render rubric slug header if this group has a rubric */}
-      {group.rubric && (
-        <RubricSlug rubric={group.rubric} indentationPx={indentationPx} />
-      )}
-      
-      {/* Render all items in this group */}
-      {group.items.map((child, index) => (
-        <ContentSectionComponent
-          key={child.id}
-          section={child}
-          depth={depth}
-          onSectionClick={onSectionClick}
-          activeNodeId={activeNodeId}
-          documentPath={documentPath}
-          documentTitle={documentTitle}
-          siblingIndex={index}
-          expandedSections={expandedSections}
-          defaultExpandDepth={defaultExpandDepth}
-          onToggleSection={onToggleSection}
-          showDescriptions={showDescriptions}
-          descriptionOverrides={descriptionOverrides}
-          onToggleDescription={onToggleDescription}
-          parentWasManuallyExpanded={parentWasManuallyExpanded}
-        />
-      ))}
-    </div>
-  ));
+  return groups.map((group, groupIndex) => {
+    if (group.rubric) {
+      const colors = getStampColors(group.rubric);
+      return (
+        <div key={`group-${groupIndex}-${group.rubric}`} className="relative">
+          {/* Render rubric slug header */}
+          <RubricSlug rubric={group.rubric} indentationPx={indentationPx} />
+          
+          {/* Vertical line container */}
+          <div className="relative">
+            {/* Subtle vertical line */}
+            <div 
+              className={`absolute top-0 bottom-1 w-[2px] rounded-b-full opacity-40 ${colors.bg.replace('bg-', 'bg-')}`}
+              style={{ 
+                left: `${linePositionPx}px`,
+                backgroundColor: `hsl(var(--content-border-${(depth % 6) + 1}))` 
+              }}
+            />
+            
+            {/* Render all items in this group */}
+            {group.items.map((child, index) => (
+              <ContentSectionComponent
+                key={child.id}
+                section={child}
+                depth={depth}
+                onSectionClick={onSectionClick}
+                activeNodeId={activeNodeId}
+                documentPath={documentPath}
+                documentTitle={documentTitle}
+                siblingIndex={index}
+                expandedSections={expandedSections}
+                defaultExpandDepth={defaultExpandDepth}
+                onToggleSection={onToggleSection}
+                showDescriptions={showDescriptions}
+                descriptionOverrides={descriptionOverrides}
+                onToggleDescription={onToggleDescription}
+                parentWasManuallyExpanded={parentWasManuallyExpanded}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+    
+    // No rubric - render items directly without wrapper
+    return (
+      <div key={`group-${groupIndex}-none`}>
+        {group.items.map((child, index) => (
+          <ContentSectionComponent
+            key={child.id}
+            section={child}
+            depth={depth}
+            onSectionClick={onSectionClick}
+            activeNodeId={activeNodeId}
+            documentPath={documentPath}
+            documentTitle={documentTitle}
+            siblingIndex={index}
+            expandedSections={expandedSections}
+            defaultExpandDepth={defaultExpandDepth}
+            onToggleSection={onToggleSection}
+            showDescriptions={showDescriptions}
+            descriptionOverrides={descriptionOverrides}
+            onToggleDescription={onToggleDescription}
+            parentWasManuallyExpanded={parentWasManuallyExpanded}
+          />
+        ))}
+      </div>
+    );
+  });
 };
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
   content, 

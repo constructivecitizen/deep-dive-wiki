@@ -175,12 +175,12 @@
   .section-bg-4 { @apply bg-[hsl(var(--section-bg-4))]; }
 
   /* Content level backgrounds and borders */
-  .content-level-1 { @apply bg-[hsl(var(--content-level-1))] border-l-2 border-l-[hsl(var(--content-border-1))]; }
-  .content-level-2 { @apply bg-[hsl(var(--content-level-2))] border-l-2 border-l-[hsl(var(--content-border-2))]; }
-  .content-level-3 { @apply bg-[hsl(var(--content-level-3))] border-l-2 border-l-[hsl(var(--content-border-3))]; }
-  .content-level-4 { @apply bg-[hsl(var(--content-level-4))] border-l-2 border-l-[hsl(var(--content-border-4))]; }
-  .content-level-5 { @apply bg-[hsl(var(--content-level-5))] border-l-2 border-l-[hsl(var(--content-border-5))]; }
-  .content-level-6 { @apply bg-[hsl(var(--content-level-6))] border-l-2 border-l-[hsl(var(--content-border-6))]; }
+  .content-level-1 { @apply bg-[hsl(var(--content-level-1))]; }
+  .content-level-2 { @apply bg-[hsl(var(--content-level-2))]; }
+  .content-level-3 { @apply bg-[hsl(var(--content-level-3))]; }
+  .content-level-4 { @apply bg-[hsl(var(--content-level-4))]; }
+  .content-level-5 { @apply bg-[hsl(var(--content-level-5))]; }
+  .content-level-6 { @apply bg-[hsl(var(--content-level-6))]; }
 
   /* Tag variants */
   .tag-blue { @apply bg-[hsl(var(--tag-blue)/0.15)] text-[hsl(var(--tag-blue))] border-[hsl(var(--tag-blue)/0.3)]; }
