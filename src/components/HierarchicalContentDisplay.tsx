@@ -376,7 +376,7 @@ const ContentSectionComponent: React.FC<{
               )}
             </button>
             
-            <div className="flex-1 min-w-0 pl-[12px]">
+            <div className="flex-1 min-w-0 pl-[10px]">
               <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
                   onClick={() => {
                     if (onSectionClick) {
