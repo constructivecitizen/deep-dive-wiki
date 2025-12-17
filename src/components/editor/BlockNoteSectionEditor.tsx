@@ -7,8 +7,9 @@ import { DocumentSection } from "@/services/contentService";
 import { useEffect, useCallback, useRef, useState, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bold, Italic, List, Link2, BookOpen, X } from "lucide-react";
+import { Bold, Italic, List, Link2, BookOpen, X, FileSymlink } from "lucide-react";
 import { HierarchyParser } from "@/lib/hierarchyParser";
+import { LinkPicker } from "./LinkPicker";
 
 // Lazy load the JSX wrapper to isolate BlockNote types
 const BlockNoteWrapper = lazy(() => import("./BlockNoteWrapper"));
@@ -33,9 +34,11 @@ export function BlockNoteSectionEditor({
   readOnly = false,
 }: BlockNoteSectionEditorProps) {
   const editorRef = useRef<any>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editorMode, setEditorMode] = useState<'blocknote' | 'markdown'>('markdown');
   const [markdownContent, setMarkdownContent] = useState('');
   const [showMarkupGuide, setShowMarkupGuide] = useState(false);
+  const [showLinkPicker, setShowLinkPicker] = useState(false);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasChangesRef = useRef(false);
   
@@ -185,6 +188,24 @@ export function BlockNoteSectionEditor({
     }, 0);
   }, [markdownContent]);
 
+  // Insert text at cursor position (for link picker)
+  const insertTextAtCursor = useCallback((text: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const newContent = markdownContent.substring(0, start) + text + markdownContent.substring(end);
+    setMarkdownContent(newContent);
+    triggerAutoSave();
+    
+    setTimeout(() => {
+      textarea.focus();
+      const newPos = start + text.length;
+      textarea.setSelectionRange(newPos, newPos);
+    }, 0);
+  }, [markdownContent, triggerAutoSave]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -272,9 +293,18 @@ export function BlockNoteSectionEditor({
                     variant="ghost" 
                     size="sm"
                     className="h-7 w-7 p-0"
-                    title="Link"
+                    title="External Link"
                   >
                     <Link2 className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button 
+                    onClick={() => setShowLinkPicker(true)} 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    title="Internal Link (Search)"
+                  >
+                    <FileSymlink className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               )}
@@ -330,6 +360,7 @@ export function BlockNoteSectionEditor({
               </Suspense>
             ) : (
               <Textarea
+                ref={textareaRef}
                 value={markdownContent}
                 onChange={(e) => {
                   setMarkdownContent(e.target.value);
@@ -451,6 +482,17 @@ More detailed content with \`code\`.`}
           )}
         </div>
       </div>
+      
+      {/* Link Picker Overlay */}
+      {showLinkPicker && (
+        <LinkPicker
+          onSelect={(linkSyntax) => {
+            insertTextAtCursor(linkSyntax);
+            setShowLinkPicker(false);
+          }}
+          onClose={() => setShowLinkPicker(false)}
+        />
+      )}
     </div>
   );
 }
