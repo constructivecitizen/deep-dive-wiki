@@ -8,6 +8,7 @@ import { FolderLandingPage } from "@/components/FolderLandingPage";
 import { useLayoutContext } from "@/components/PersistentLayout";
 import { NavigationNode, WikiDocument, ContentService, DocumentSection } from "@/services/contentService";
 import { extractSectionFullContent } from "@/lib/sectionContentExtractor";
+import { resolveInternalLink } from "@/lib/internalLinkResolver";
 import { SectionViewData } from "@/hooks/useNavigationState";
 
 /**
@@ -250,6 +251,35 @@ const ContentPage: React.FC = () => {
       return false;
     },
     [navigateToSection],
+  );
+
+  /**
+   * Handle clicks on internal links within content
+   * Supports same-document links (#section) and cross-document links (/path#section)
+   */
+  const handleInternalLinkClick = useCallback(
+    (target: string) => {
+      if (!state.pageData || state.pageData.type !== "document") return;
+
+      const resolved = resolveInternalLink(target, state.pageData.sections);
+
+      if (!resolved) {
+        console.warn("Could not resolve internal link:", target);
+        return;
+      }
+
+      if (resolved.type === "same-document" && resolved.sectionTitle) {
+        // Navigate to section in current document
+        navigateToSectionByTitle(resolved.sectionTitle);
+      } else if (resolved.type === "cross-document") {
+        // Navigate to different document
+        const url = resolved.sectionTitle
+          ? `${resolved.documentPath}#${encodeURIComponent(resolved.sectionTitle)}`
+          : resolved.documentPath;
+        navigate(url || "/");
+      }
+    },
+    [state.pageData, navigateToSectionByTitle, navigate],
   );
 
   // Register section navigation handler with layout context
@@ -495,6 +525,7 @@ const ContentPage: React.FC = () => {
             <HierarchicalContentDisplay
               content={navigation.sectionView.content}
               onSectionClick={navigateToSectionByTitle}
+              onInternalLinkClick={handleInternalLinkClick}
               activeNodeId={navigation.sectionId || undefined}
               documentTitle={navigation.sectionView.title}
               expandedSections={expandMode === "mixed" ? manualOverrides : undefined}
@@ -511,6 +542,7 @@ const ContentPage: React.FC = () => {
             <HierarchicalContentDisplay
               content={convertSectionsToMarkdown(sections)}
               onSectionClick={navigateToSectionByTitle}
+              onInternalLinkClick={handleInternalLinkClick}
               activeNodeId={navigation.sectionId || undefined}
               documentTitle={document.title}
               expandedSections={expandMode === "mixed" ? manualOverrides : undefined}

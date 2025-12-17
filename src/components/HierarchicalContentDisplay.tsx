@@ -21,6 +21,7 @@ interface ContentSection {
 interface HierarchicalContentDisplayProps {
   content: string;
   onSectionClick?: (sectionTitle: string) => void;
+  onInternalLinkClick?: (target: string) => void;
   activeNodeId?: string;
   currentSectionId?: string;
   documentPath?: string;
@@ -193,6 +194,7 @@ const ContentSectionComponent: React.FC<{
   section: ContentSection;
   depth: number;
   onSectionClick?: (sectionTitle: string) => void;
+  onInternalLinkClick?: (target: string) => void;
   activeNodeId?: string;
   documentPath?: string;
   siblingIndex?: number;
@@ -204,7 +206,7 @@ const ContentSectionComponent: React.FC<{
   descriptionOverrides?: Record<string, boolean>;
   onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void;
   parentWasManuallyExpanded?: boolean;
-}> = ({ section, depth, onSectionClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions = 'on', descriptionOverrides, onToggleDescription, parentWasManuallyExpanded = false }) => {
+}> = ({ section, depth, onSectionClick, onInternalLinkClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions = 'on', descriptionOverrides, onToggleDescription, parentWasManuallyExpanded = false }) => {
   // Determine initial expanded state
   const getInitialExpandedState = () => {
     // If parent was manually expanded, children start collapsed
@@ -309,6 +311,20 @@ const ContentSectionComponent: React.FC<{
 
   const isContentVisible = getContentVisibility();
 
+  // Handle clicks on internal links within content
+  const handleContentClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest('a[data-internal-link]');
+    
+    if (link) {
+      e.preventDefault();
+      const linkTarget = link.getAttribute('data-internal-link');
+      if (linkTarget && onInternalLinkClick) {
+        onInternalLinkClick(linkTarget);
+      }
+    }
+  };
+
   // If this is the document title section, render as page title
   if (isDocumentTitle) {
     return (
@@ -320,6 +336,7 @@ const ContentSectionComponent: React.FC<{
         {hasContent && (
           <div 
             className="prose prose-slate dark:prose-invert max-w-none mb-6"
+            onClick={handleContentClick}
             dangerouslySetInnerHTML={{ 
               __html: renderMarkdown(section.content.trim()) 
             }}
@@ -332,6 +349,7 @@ const ContentSectionComponent: React.FC<{
               section.children, 
               depth + 1, 
               onSectionClick, 
+              onInternalLinkClick,
               activeNodeId, 
               documentPath, 
               documentTitle, 
@@ -403,6 +421,7 @@ const ContentSectionComponent: React.FC<{
             <div 
               className={`prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
               style={{ marginLeft: `${contentIndentationPx}px` }}
+              onClick={handleContentClick}
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(section.content.trim()) 
               }}
@@ -415,6 +434,7 @@ const ContentSectionComponent: React.FC<{
                 section.children, 
                 depth + 1, 
                 onSectionClick, 
+                onInternalLinkClick,
                 activeNodeId, 
                 documentPath, 
                 documentTitle, 
@@ -439,6 +459,7 @@ const renderGroupedChildren = (
   children: ContentSection[],
   depth: number,
   onSectionClick?: (sectionTitle: string) => void,
+  onInternalLinkClick?: (target: string) => void,
   activeNodeId?: string,
   documentPath?: string,
   documentTitle?: string,
@@ -480,6 +501,7 @@ const renderGroupedChildren = (
                 section={child}
                 depth={depth}
                 onSectionClick={onSectionClick}
+                onInternalLinkClick={onInternalLinkClick}
                 activeNodeId={activeNodeId}
                 documentPath={documentPath}
                 documentTitle={documentTitle}
@@ -507,6 +529,7 @@ const renderGroupedChildren = (
             section={child}
             depth={depth}
             onSectionClick={onSectionClick}
+            onInternalLinkClick={onInternalLinkClick}
             activeNodeId={activeNodeId}
             documentPath={documentPath}
             documentTitle={documentTitle}
@@ -526,7 +549,8 @@ const renderGroupedChildren = (
 };
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
   content, 
-  onSectionClick, 
+  onSectionClick,
+  onInternalLinkClick,
   activeNodeId, 
   currentSectionId, 
   documentPath,
@@ -543,10 +567,25 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
   const { preContent, sections } = parseHierarchicalContent(content); // Use original content with tags for parsing
 
+  // Handle clicks on internal links within pre-content
+  const handlePreContentClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest('a[data-internal-link]');
+    
+    if (link) {
+      e.preventDefault();
+      const linkTarget = link.getAttribute('data-internal-link');
+      if (linkTarget && onInternalLinkClick) {
+        onInternalLinkClick(linkTarget);
+      }
+    }
+  };
+
   if (sections.length === 0) {
     return (
       <div 
         className="prose prose-slate dark:prose-invert max-w-none"
+        onClick={handlePreContentClick}
         dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanedContent) }}
       />
     );
@@ -557,6 +596,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
       {preContent && (
         <div 
           className="prose prose-slate dark:prose-invert max-w-none"
+          onClick={handlePreContentClick}
           dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
         />
       )}
@@ -564,6 +604,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
         sections,
         0,
         onSectionClick,
+        onInternalLinkClick,
         activeNodeId,
         documentPath,
         documentTitle,
