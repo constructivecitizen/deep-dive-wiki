@@ -454,10 +454,8 @@ const renderGroupedChildren = (
   const chevronAndGapWidth = 25;
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  // Vertical line positioned to abut the left edge of content bubbles
-  const linePositionPx = indentationPx + 25; // chevron(16) + gap(9) = bubble left edge
-  // Slug text aligned with text inside bubbles (bubble has 9px left padding)
-  const slugIndentPx = indentationPx + 34; // line position + 9px bubble padding
+  // Vertical line positioned inside the gap, close to text (chevron=16px + small offset)
+  const linePositionPx = indentationPx + 19; // 16px chevron + 3px into the 9px gap
   
   return groups.map((group, groupIndex) => {
     if (group.rubric) {
@@ -467,7 +465,7 @@ const renderGroupedChildren = (
       return (
         <div key={`group-${groupIndex}-${group.rubric}`} className="relative">
           {/* Render rubric slug header */}
-          <RubricSlug rubric={group.rubric} indentationPx={slugIndentPx} />
+          <RubricSlug rubric={group.rubric} indentationPx={indentationPx} />
           
           {/* Vertical line container */}
           <div className="relative">
