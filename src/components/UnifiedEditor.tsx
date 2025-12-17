@@ -362,14 +362,27 @@ More detailed content with \`code\`.`}
                   </div>
                 </div>
 
+                <div>
+                  <h4 className="font-medium mb-2">Internal Links</h4>
+                  <p className="text-muted-foreground mb-2">
+                    Link to other sections using wiki-style or markdown syntax:
+                  </p>
+                  <div className="bg-background p-2 rounded border font-mono text-xs">
+                    [[Section Title]]<br/>
+                    [[#Section Title]]<br/>
+                    [[/path#Section]]<br/>
+                    [text](#section-id)
+                  </div>
+                </div>
+
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-2">Tips</h4>
                   <ul className="text-muted-foreground space-y-1 text-xs">
                     <li>• Tags are hidden in display mode</li>
                     <li>• Use consistent tag names</li>
                     <li>• Headers create the hierarchy</li>
-                    <li>• Paste large documents easily</li>
-                    <li>• Save frequently</li>
+                    <li>• [[Title]] links within doc</li>
+                    <li>• [[/path#Title]] cross-doc links</li>
                   </ul>
                 </div>
               </div>
