@@ -327,7 +327,7 @@ const ContentSectionComponent: React.FC<{
         )}
         
         {hasChildren && (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {renderGroupedChildren(
               section.children, 
               depth + 1, 
@@ -410,7 +410,7 @@ const ContentSectionComponent: React.FC<{
           )}
           
           {hasChildren && isExpanded && (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {renderGroupedChildren(
                 section.children, 
                 depth + 1, 
