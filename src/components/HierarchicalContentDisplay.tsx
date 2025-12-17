@@ -176,26 +176,15 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
   return { preContent, sections };
 };
 
-// Rubric group container with colored background
-const RubricGroupContainer: React.FC<{ 
-  rubric: string; 
-  indentationPx: number;
-  children: React.ReactNode;
-}> = ({ rubric, indentationPx, children }) => {
+// Render a rubric slug header
+const RubricSlug: React.FC<{ rubric: string; indentationPx: number }> = ({ rubric, indentationPx }) => {
   const colors = getStampColors(rubric);
   return (
     <div 
-      className={`rounded-md ${colors.bg} border ${colors.border} mb-2`}
+      className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-1 ${colors.bg} ${colors.text} ${colors.border}`}
       style={{ marginLeft: `${indentationPx}px` }}
     >
-      <div className="px-2 py-1 border-b border-inherit">
-        <span className={`text-[10px] font-semibold uppercase tracking-wider ${colors.text}`}>
-          {rubric}
-        </span>
-      </div>
-      <div className="py-1">
-        {children}
-      </div>
+      {rubric}
     </div>
   );
 };
@@ -466,46 +455,35 @@ const renderGroupedChildren = (
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   
-  return groups.map((group, groupIndex) => {
-    const groupContent = group.items.map((child, index) => (
-      <ContentSectionComponent
-        key={child.id}
-        section={child}
-        depth={group.rubric ? 0 : depth} // Reset depth for items inside container
-        onSectionClick={onSectionClick}
-        activeNodeId={activeNodeId}
-        documentPath={documentPath}
-        documentTitle={documentTitle}
-        siblingIndex={index}
-        expandedSections={expandedSections}
-        defaultExpandDepth={defaultExpandDepth}
-        onToggleSection={onToggleSection}
-        showDescriptions={showDescriptions}
-        descriptionOverrides={descriptionOverrides}
-        onToggleDescription={onToggleDescription}
-        parentWasManuallyExpanded={parentWasManuallyExpanded}
-      />
-    ));
-
-    // Wrap in colored container if has rubric, otherwise render directly
-    if (group.rubric) {
-      return (
-        <RubricGroupContainer 
-          key={`group-${groupIndex}-${group.rubric}`}
-          rubric={group.rubric} 
-          indentationPx={indentationPx}
-        >
-          {groupContent}
-        </RubricGroupContainer>
-      );
-    }
-
-    return (
-      <div key={`group-${groupIndex}-none`}>
-        {groupContent}
-      </div>
-    );
-  });
+  return groups.map((group, groupIndex) => (
+    <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
+      {/* Render rubric slug header if this group has a rubric */}
+      {group.rubric && (
+        <RubricSlug rubric={group.rubric} indentationPx={indentationPx} />
+      )}
+      
+      {/* Render all items in this group */}
+      {group.items.map((child, index) => (
+        <ContentSectionComponent
+          key={child.id}
+          section={child}
+          depth={depth}
+          onSectionClick={onSectionClick}
+          activeNodeId={activeNodeId}
+          documentPath={documentPath}
+          documentTitle={documentTitle}
+          siblingIndex={index}
+          expandedSections={expandedSections}
+          defaultExpandDepth={defaultExpandDepth}
+          onToggleSection={onToggleSection}
+          showDescriptions={showDescriptions}
+          descriptionOverrides={descriptionOverrides}
+          onToggleDescription={onToggleDescription}
+          parentWasManuallyExpanded={parentWasManuallyExpanded}
+        />
+      ))}
+    </div>
+  ));
 };
 export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
   content, 
