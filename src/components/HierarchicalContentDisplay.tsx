@@ -376,7 +376,7 @@ const ContentSectionComponent: React.FC<{
               )}
             </button>
             
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 pl-[12px]">
               <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
                   onClick={() => {
                     if (onSectionClick) {
@@ -454,8 +454,8 @@ const renderGroupedChildren = (
   const chevronAndGapWidth = 25;
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  // Vertical line positioned inside the gap, close to text (chevron=16px + small offset)
-  const linePositionPx = indentationPx + 19; // 16px chevron + 3px into the 9px gap
+  // Vertical line positioned to abut the left edge of content bubbles
+  const linePositionPx = indentationPx + chevronAndGapWidth + 3; // Same as contentIndentationPx
   
   return groups.map((group, groupIndex) => {
     if (group.rubric) {
