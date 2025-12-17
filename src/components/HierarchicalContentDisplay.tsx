@@ -334,13 +334,15 @@ const ContentSectionComponent: React.FC<{
         </h1>
         
         {hasContent && (
-          <div 
-            className="prose prose-slate dark:prose-invert max-w-none prose-sm mb-6 py-[7px] px-[9px] rounded-md content-level-0"
-            onClick={handleContentClick}
-            dangerouslySetInnerHTML={{ 
-              __html: renderMarkdown(section.content.trim()) 
-            }}
-          />
+          <div className="mb-6 py-4 border-y border-border/50">
+            <div 
+              className="prose prose-slate dark:prose-invert max-w-none prose-sm text-muted-foreground italic"
+              onClick={handleContentClick}
+              dangerouslySetInnerHTML={{ 
+                __html: renderMarkdown(section.content.trim()) 
+              }}
+            />
+          </div>
         )}
         
         {hasChildren && (
