@@ -452,8 +452,8 @@ const renderGroupedChildren = (
 ) => {
   const groups = groupChildrenByRubric(children);
   const chevronAndGapWidth = 25;
-  // Align slug with the start of titles (after chevron + gap)
-  const indentationPx = depth === 0 ? chevronAndGapWidth : (depth + 1) * chevronAndGapWidth;
+  // Align slug with the chevrons of items at this depth
+  const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   
   return groups.map((group, groupIndex) => (
     <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
