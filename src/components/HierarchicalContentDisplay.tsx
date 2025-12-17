@@ -176,17 +176,21 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
   return { preContent, sections };
 };
 
-// Render a rubric slug header
-const RubricSlug: React.FC<{ rubric: string; indentationPx: number }> = ({ rubric, indentationPx }) => {
-  const colors = getStampColors(rubric);
-  return (
-    <div 
-      className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-1 ${colors.bg} ${colors.text} ${colors.border}`}
-      style={{ marginLeft: `${indentationPx}px` }}
-    >
-      {rubric}
-    </div>
-  );
+// Get border color for rubric groups
+const getRubricBorderColor = (rubric: string): string => {
+  const colorMap: Record<string, string> = {
+    'background': 'border-l-blue-400',
+    'main goal': 'border-l-blue-400',
+    'main work': 'border-l-blue-400',
+    'critical': 'border-l-red-400',
+    'important': 'border-l-orange-400',
+    'tip': 'border-l-green-400',
+    'note': 'border-l-green-400',
+    'minor tip': 'border-l-amber-400',
+    'goal': 'border-l-purple-400',
+    'goals': 'border-l-purple-400',
+  };
+  return colorMap[rubric.toLowerCase()] || 'border-l-muted-foreground/40';
 };
 
 const ContentSectionComponent: React.FC<{
@@ -456,18 +460,17 @@ const renderGroupedChildren = (
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   
   return groups.map((group, groupIndex) => (
-    <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
-      {/* Render rubric slug header if this group has a rubric */}
-      {group.rubric && (
-        <RubricSlug rubric={group.rubric} indentationPx={indentationPx} />
-      )}
-      
+    <div 
+      key={`group-${groupIndex}-${group.rubric || 'none'}`}
+      className={group.rubric ? `border-l-2 ${getRubricBorderColor(group.rubric)} pl-2` : ''}
+      style={group.rubric ? { marginLeft: `${indentationPx}px` } : undefined}
+    >
       {/* Render all items in this group */}
       {group.items.map((child, index) => (
         <ContentSectionComponent
           key={child.id}
           section={child}
-          depth={depth}
+          depth={group.rubric ? 0 : depth}
           onSectionClick={onSectionClick}
           activeNodeId={activeNodeId}
           documentPath={documentPath}
