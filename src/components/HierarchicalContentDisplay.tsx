@@ -334,7 +334,7 @@ const ContentSectionComponent: React.FC<{
         </h1>
         
         {hasContent && (
-          <div className="mb-6 py-4 border-y border-border/50">
+          <div className="mb-6 py-4 border-y-2 border-border/50">
             <div 
               className="prose prose-slate dark:prose-invert max-w-none prose-sm text-muted-foreground italic"
               onClick={handleContentClick}
