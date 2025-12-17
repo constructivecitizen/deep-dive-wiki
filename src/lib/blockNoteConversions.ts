@@ -59,6 +59,7 @@ function createSectionBlock(section: DocumentSection): SimpleBlock {
     props: {
       level: Math.min(section.level, 3), // BlockNote visual display (1-3)
       originalLevel: section.level, // Preserve actual level (1-99) for round-trip
+      sources: section.sources || undefined, // Preserve sources for round-trip
     },
     content: [{ type: "text", text: section.title, styles: {} }],
     children,
@@ -185,12 +186,16 @@ function blockToSection(block: SimpleBlock, level: number): DocumentSection {
   // Use originalLevel from props if available (preserves levels 4-99)
   const actualLevel = (block.props?.originalLevel as number) || level;
   
+  // Preserve sources if stored in block props
+  const sources = (block.props?.sources as string[]) || undefined;
+  
   return {
     id: block.id,
     title,
     level: actualLevel,
     content: "",
     tags: [],
+    sources,
   };
 }
 

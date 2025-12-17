@@ -376,6 +376,19 @@ More detailed content with \`code\`.`}
                 </div>
 
                 <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">Sources / References</h4>
+                  <p className="text-muted-foreground mb-2 text-xs">
+                    Add source URLs using HTML comments:
+                  </p>
+                  <div className="bg-background p-2 rounded border font-mono text-xs">
+                    {'<!-- sources: url1, url2 -->'}
+                  </div>
+                  <p className="text-muted-foreground/70 text-xs mt-1">
+                    Sources appear as a clickable icon after the text block.
+                  </p>
+                </div>
+
+                <div className="border-t pt-4">
                   <h4 className="font-medium mb-2">Tips</h4>
                   <ul className="text-muted-foreground space-y-1 text-xs">
                     <li>• Tags are hidden in display mode</li>
