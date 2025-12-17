@@ -84,6 +84,7 @@
     --section-bg-4: 340 55% 94%;  /* Deeper rose */
 
     /* Content hierarchy color sequence */
+    --content-level-0: 45 50% 95%;   /* Warm gold for root */
     --content-level-1: 155 40% 96%;  /* Soft emerald */
     --content-level-2: 210 50% 96%;  /* Gentle blue */
     --content-level-3: 265 45% 96%;  /* Soft purple */
@@ -144,6 +145,7 @@
     --section-bg-4: 340 25% 12%;  /* Deeper rose */
 
     /* Dark mode content hierarchy */
+    --content-level-0: 45 30% 12%;
     --content-level-1: 155 25% 8%;
     --content-level-2: 210 30% 8%;
     --content-level-3: 265 25% 8%;
@@ -175,6 +177,7 @@
   .section-bg-4 { @apply bg-[hsl(var(--section-bg-4))]; }
 
   /* Content level backgrounds and borders */
+  .content-level-0 { @apply bg-[hsl(var(--content-level-0))]; }
   .content-level-1 { @apply bg-[hsl(var(--content-level-1))]; }
   .content-level-2 { @apply bg-[hsl(var(--content-level-2))]; }
   .content-level-3 { @apply bg-[hsl(var(--content-level-3))]; }

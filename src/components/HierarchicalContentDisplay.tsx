@@ -335,7 +335,7 @@ const ContentSectionComponent: React.FC<{
         
         {hasContent && (
           <div 
-            className="prose prose-slate dark:prose-invert max-w-none mb-6"
+            className="prose prose-slate dark:prose-invert max-w-none prose-sm mb-6 py-[7px] px-[9px] rounded-md content-level-0"
             onClick={handleContentClick}
             dangerouslySetInnerHTML={{ 
               __html: renderMarkdown(section.content.trim()) 
