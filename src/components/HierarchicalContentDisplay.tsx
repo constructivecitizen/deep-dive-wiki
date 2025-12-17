@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 import { getStampColors, getRubricOrderIndex } from '@/lib/rubricConfig';
+import { SourcesIndicator } from './SourcesIndicator';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -16,6 +17,7 @@ interface ContentSection {
   tags: string[];
   children: ContentSection[];
   id: string;
+  sources?: string[];
 }
 
 interface HierarchicalContentDisplayProps {
@@ -107,6 +109,21 @@ const extractSectionFullContent = (targetSection: ContentSection): string => {
   return fullContent.trim();
 };
 
+// Helper to extract sources from content
+const extractSources = (content: string): { cleanContent: string; sources: string[] } => {
+  const sourcesRegex = /<!--\s*sources:\s*(.+?)\s*-->/gi;
+  const sources: string[] = [];
+  
+  let cleanContent = content.replace(sourcesRegex, (match, urlList) => {
+    // Split by comma and clean up each URL
+    const urls = urlList.split(',').map((url: string) => url.trim()).filter(Boolean);
+    sources.push(...urls);
+    return ''; // Remove the comment from content
+  });
+  
+  return { cleanContent: cleanContent.trim(), sources };
+};
+
 const parseHierarchicalContent = (content: string): { preContent: string; sections: ContentSection[] } => {
   const lines = content.split('\n');
   const sections: ContentSection[] = [];
@@ -128,8 +145,15 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
           // This is content before the first header
           preContent = currentContent.trim();
         } else if (stack.length > 0) {
-          // This is content for the previous section
-          stack[stack.length - 1].content += currentContent;
+          // This is content for the previous section - extract sources
+          const { cleanContent, sources } = extractSources(currentContent);
+          stack[stack.length - 1].content += cleanContent;
+          if (sources.length > 0) {
+            stack[stack.length - 1].sources = [
+              ...(stack[stack.length - 1].sources || []),
+              ...sources
+            ];
+          }
         }
       }
       currentContent = '';
@@ -145,7 +169,8 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
         content: '',
         tags,
         children: [],
-        id: `section-${++sectionId}`
+        id: `section-${++sectionId}`,
+        sources: []
       };
 
       // Find the right parent level
@@ -170,7 +195,14 @@ const parseHierarchicalContent = (content: string): { preContent: string; sectio
     if (!hasSeenHeader) {
       preContent = currentContent.trim();
     } else if (stack.length > 0) {
-      stack[stack.length - 1].content += currentContent;
+      const { cleanContent, sources } = extractSources(currentContent);
+      stack[stack.length - 1].content += cleanContent;
+      if (sources.length > 0) {
+        stack[stack.length - 1].sources = [
+          ...(stack[stack.length - 1].sources || []),
+          ...sources
+        ];
+      }
     }
   }
 
@@ -334,14 +366,17 @@ const ContentSectionComponent: React.FC<{
         </h1>
         
         {hasContent && (
-          <div className="mb-6 py-4 border-y-2 border-border/50">
+          <div className="mb-6 py-4 border-y-2 border-border/50 flex items-start gap-2">
             <div 
-              className="prose prose-slate dark:prose-invert max-w-none prose-sm text-muted-foreground italic"
+              className="prose prose-slate dark:prose-invert max-w-none prose-sm text-muted-foreground italic flex-1"
               onClick={handleContentClick}
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(section.content.trim()) 
               }}
             />
+            {section.sources && section.sources.length > 0 && (
+              <SourcesIndicator sources={section.sources} />
+            )}
           </div>
         )}
         
@@ -421,13 +456,20 @@ const ContentSectionComponent: React.FC<{
         <div className="mt-2">
           {hasContent && isContentVisible && (
             <div 
-              className={`prose prose-slate dark:prose-invert max-w-none prose-sm mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
+              className={`flex items-start gap-2 mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
               style={{ marginLeft: `${contentIndentationPx}px` }}
-              onClick={handleContentClick}
-              dangerouslySetInnerHTML={{ 
-                __html: renderMarkdown(section.content.trim()) 
-              }}
-            />
+            >
+              <div 
+                className="prose prose-slate dark:prose-invert max-w-none prose-sm flex-1"
+                onClick={handleContentClick}
+                dangerouslySetInnerHTML={{ 
+                  __html: renderMarkdown(section.content.trim()) 
+                }}
+              />
+              {section.sources && section.sources.length > 0 && (
+                <SourcesIndicator sources={section.sources} />
+              )}
+            </div>
           )}
           
           {hasChildren && isExpanded && (

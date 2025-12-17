@@ -6,6 +6,7 @@ export interface DocumentSection {
   level: number;
   content: string;
   tags: string[];
+  sources?: string[];
 }
 
 export interface ContentItem {
