@@ -521,7 +521,17 @@ const ContentPage: React.FC = () => {
         ) : navigation.sectionView ? (
           // Showing a specific section
           <div className="space-y-4">
-            <h1 className="text-3xl font-bold mb-1">{navigation.sectionView.title}</h1>
+            <h1 className="text-3xl font-bold mb-1">
+              {(() => {
+                const title = navigation.sectionView.title;
+                const colonIndex = title.indexOf(':');
+                // Strip prefix before colon if present and reasonable length
+                if (colonIndex > 0 && colonIndex <= 40 && colonIndex < title.length - 1) {
+                  return title.substring(colonIndex + 1).trim();
+                }
+                return title;
+              })()}
+            </h1>
             <HierarchicalContentDisplay
               content={navigation.sectionView.content}
               onSectionClick={navigateToSectionByTitle}
