@@ -61,6 +61,7 @@ export const rubricColorMap: Record<string, keyof typeof stampColorTreatments> =
 // Items without any rubric will appear last
 export const rubricOrder: string[] = [
   "background",
+  "prep",
   "main goal",
   "main work",
   "goals",
