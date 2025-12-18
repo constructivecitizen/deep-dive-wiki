@@ -305,6 +305,36 @@ const ContentSectionComponent: React.FC<{
     return `text-foreground ${getFontSizeClass(depth)}`;
   };
 
+  // Helper to render title with styled colon-prefix (for non-rubric prefixes)
+  const renderTitleWithStyledPrefix = (title: string, absoluteLevel: number) => {
+    // Get text after rubric extraction (rubrics are separate from this treatment)
+    const { text: titleAfterRubric } = parseRubric(title, absoluteLevel);
+    
+    // For level 1: treat text before first colon as styled prefix
+    // For level 2+: look for a secondary colon pattern in the remaining text
+    const colonIndex = titleAfterRubric.indexOf(':');
+    
+    // Only apply prefix styling if there's a colon and text after it
+    if (colonIndex > 0 && colonIndex < titleAfterRubric.length - 1) {
+      const prefix = titleAfterRubric.substring(0, colonIndex).trim();
+      const rest = titleAfterRubric.substring(colonIndex + 1).trim();
+      
+      // Only apply if prefix is reasonable length (not a full sentence)
+      if (prefix.length <= 40 && rest.length > 0) {
+        return (
+          <span className="inline-flex items-baseline gap-1.5">
+            <span className="text-[0.85em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-normal">
+              {prefix}
+            </span>
+            <span>{rest}</span>
+          </span>
+        );
+      }
+    }
+    
+    return <>{titleAfterRubric}</>;
+  };
+
   // Legacy helper for document title - level 0 so no rubric extraction
   const renderTitleWithRubric = (title: string, level: number) => {
     const { rubric, text } = parseRubric(title, level);
@@ -446,7 +476,7 @@ const ContentSectionComponent: React.FC<{
                       onSectionClick(section.title);
                     }
                   }}>
-                {parseRubric(section.title, section.level).text}
+                {renderTitleWithStyledPrefix(section.title, section.level)}
               </h1>
             </div>
           </div>
