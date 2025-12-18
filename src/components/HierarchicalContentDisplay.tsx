@@ -434,7 +434,7 @@ const ContentSectionComponent: React.FC<{
             </button>
             
             <div className="flex-1 min-w-0">
-              <h1 className={`${getHeadingClass()} cursor-pointer`}
+              <h1 className={`${getHeadingClass()} cursor-pointer ${depth === 0 ? 'text-center' : ''}`}
                   onClick={() => {
                     if (onSectionClick) {
                       onSectionClick(section.title);
