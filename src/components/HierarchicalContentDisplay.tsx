@@ -369,7 +369,7 @@ const ContentSectionComponent: React.FC<{
         {hasContent && (
           <div className="mb-6 py-4 border-y-2 border-border/50">
             <span 
-              className="prose prose-slate dark:prose-invert max-w-none text-muted-foreground italic [&>p]:inline"
+              className="prose prose-slate dark:prose-invert max-w-none prose-sm text-muted-foreground italic [&>p]:inline"
               onClick={handleContentClick}
               dangerouslySetInnerHTML={{ 
                 __html: renderMarkdown(section.content.trim()) 
@@ -646,13 +646,11 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   return (
     <div className="space-y-4">
       {preContent && (
-        <div className="mb-6 py-4 border-y-2 border-border/50">
-          <span 
-            className="prose prose-slate dark:prose-invert max-w-none text-muted-foreground italic [&>p]:inline"
-            onClick={handlePreContentClick}
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
-          />
-        </div>
+        <div 
+          className="prose prose-slate dark:prose-invert max-w-none"
+          onClick={handlePreContentClick}
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
+        />
       )}
       {renderGroupedChildren(
         sections,
