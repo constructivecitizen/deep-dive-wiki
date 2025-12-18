@@ -72,13 +72,13 @@ export const PersistentLayout: React.FC = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   
-  // Expand/collapse state
-  const [expandDepth, setExpandDepth] = useState(1);
+  // Expand/collapse state - default to collapsed (matches Home button behavior)
+  const [expandDepth, setExpandDepth] = useState(0);
   const [expandMode, setExpandMode] = useState<'depth' | 'mixed'>('depth');
   const [manualOverrides, setManualOverrides] = useState<Record<string, boolean>>({});
   
-  // Description visibility state
-  const [showDescriptions, setShowDescriptionsState] = useState<'on' | 'off' | 'mixed'>('on');
+  // Description visibility state - default to off (matches Home button behavior)
+  const [showDescriptions, setShowDescriptionsState] = useState<'on' | 'off' | 'mixed'>('off');
   const [descriptionOverrides, setDescriptionOverrides] = useState<Record<string, boolean>>({});
   
   // Sidebar collapse trigger
