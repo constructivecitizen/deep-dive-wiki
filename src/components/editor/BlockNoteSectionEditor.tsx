@@ -218,10 +218,6 @@ export function BlockNoteSectionEditor({
         e.preventDefault();
         performSave(false);
       }
-      if ((e.metaKey || e.ctrlKey) && e.key === "f" && editorMode === 'markdown') {
-        e.preventDefault();
-        setShowFindReplace(true);
-      }
       if (e.key === "Escape" && onClose) {
         if (showFindReplace) {
           setShowFindReplace(false);
@@ -239,7 +235,7 @@ export function BlockNoteSectionEditor({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [performSave, onClose, editorMode, showFindReplace]);
+  }, [performSave, onClose, showFindReplace]);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
@@ -324,7 +320,7 @@ export function BlockNoteSectionEditor({
                     variant={showFindReplace ? "secondary" : "ghost"}
                     size="sm"
                     className="h-7 w-7 p-0"
-                    title="Find & Replace (Ctrl+F)"
+                    title="Find & Replace"
                   >
                     <Search className="h-3.5 w-3.5" />
                   </Button>
