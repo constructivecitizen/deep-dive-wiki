@@ -45,7 +45,7 @@ export const stampColorTreatments = {
 export const rubricColorMap: Record<string, keyof typeof stampColorTreatments> = {
   background: "blue",
   "main goal": "blue",
-  "main work": "blue",
+  "main work": "purple",
   prep: "blue",
   important: "red",
   "minor tips": "green",
@@ -61,6 +61,7 @@ export const rubricColorMap: Record<string, keyof typeof stampColorTreatments> =
 // Items without any rubric will appear last
 export const rubricOrder: string[] = [
   "background",
+  "prep",
   "main goal",
   "main work",
   "goals",
