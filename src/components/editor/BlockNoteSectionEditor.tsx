@@ -354,6 +354,9 @@ export function BlockNoteSectionEditor({
                   >
                     Cancel
                   </Button>
+                  <Button onClick={() => performSave(false)} variant="secondary" size="sm" className="h-7 px-1.5 text-xs">
+                    Save
+                  </Button>
                   <Button onClick={handleSaveAndClose} size="sm" className="h-7 px-1.5 text-xs">
                     Save & Close
                   </Button>
