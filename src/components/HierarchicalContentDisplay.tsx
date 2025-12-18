@@ -37,7 +37,13 @@ interface HierarchicalContentDisplayProps {
 }
 
 // Helper to parse title and extract rubric if present
-const parseRubric = (title: string): { rubric: string | null; text: string } => {
+// Skip rubric extraction for root (level 0) and first level (level 1) sections
+const parseRubric = (title: string, absoluteLevel?: number): { rubric: string | null; text: string } => {
+  // Don't extract rubrics for level 0 and level 1 sections
+  if (absoluteLevel !== undefined && absoluteLevel <= 1) {
+    return { rubric: null, text: title };
+  }
+  
   const colonIndex = title.indexOf(':');
   if (colonIndex === -1 || colonIndex > 20) {
     return { rubric: null, text: title };
@@ -57,9 +63,9 @@ interface RubricGroup {
 const groupChildrenByRubric = (children: ContentSection[]): RubricGroup[] => {
   const groups: Map<string | null, ContentSection[]> = new Map();
   
-  // Group items by their rubric
+  // Group items by their rubric (passing absolute level for rubric extraction)
   for (const child of children) {
-    const { rubric } = parseRubric(child.title);
+    const { rubric } = parseRubric(child.title, child.level);
     const normalizedRubric = rubric?.toLowerCase().trim() || null;
     
     if (!groups.has(normalizedRubric)) {
@@ -299,9 +305,9 @@ const ContentSectionComponent: React.FC<{
     return `text-foreground ${getFontSizeClass(depth)}`;
   };
 
-  // Legacy helper for document title
-  const renderTitleWithRubric = (title: string) => {
-    const { rubric, text } = parseRubric(title);
+  // Legacy helper for document title - level 0 so no rubric extraction
+  const renderTitleWithRubric = (title: string, level: number) => {
+    const { rubric, text } = parseRubric(title, level);
     if (!rubric) {
       return <>{title}</>;
     }
@@ -363,7 +369,7 @@ const ContentSectionComponent: React.FC<{
     return (
       <div id={section.id}>
         <h1 className="text-3xl font-bold text-foreground mb-6">
-          {renderTitleWithRubric(section.title)}
+          {renderTitleWithRubric(section.title, section.level)}
         </h1>
         
         {hasContent && (
@@ -440,7 +446,7 @@ const ContentSectionComponent: React.FC<{
                       onSectionClick(section.title);
                     }
                   }}>
-                {parseRubric(section.title).text}
+                {parseRubric(section.title, section.level).text}
               </h1>
             </div>
           </div>
