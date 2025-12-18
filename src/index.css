@@ -348,6 +348,12 @@
     @apply list-[lower-alpha] mt-0.5 mb-0.5;
   }
 
+  /* Reset indentation for paragraphs following lists */
+  .prose ul + p,
+  .prose ol + p {
+    @apply pl-0 ml-0;
+  }
+
   /* Prose typography - bold, italic, code */
   .prose strong {
     @apply font-bold text-foreground;
