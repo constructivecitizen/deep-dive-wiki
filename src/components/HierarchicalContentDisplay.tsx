@@ -238,7 +238,8 @@ const ContentSectionComponent: React.FC<{
   descriptionOverrides?: Record<string, boolean>;
   onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void;
   parentWasManuallyExpanded?: boolean;
-}> = ({ section, depth, onSectionClick, onInternalLinkClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions = 'on', descriptionOverrides, onToggleDescription, parentWasManuallyExpanded = false }) => {
+  showRubricVisuals?: boolean;
+}> = ({ section, depth, onSectionClick, onInternalLinkClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions = 'on', descriptionOverrides, onToggleDescription, parentWasManuallyExpanded = false, showRubricVisuals = true }) => {
   // Determine initial expanded state
   const getInitialExpandedState = () => {
     // If parent was manually expanded, children start collapsed
@@ -396,7 +397,8 @@ const ContentSectionComponent: React.FC<{
               showDescriptions, 
               descriptionOverrides, 
               onToggleDescription, 
-              false
+              false,
+              showRubricVisuals // Pass through from parent
             )}
           </div>
         )}
@@ -488,7 +490,8 @@ const ContentSectionComponent: React.FC<{
                 showDescriptions, 
                 descriptionOverrides, 
                 onToggleDescription, 
-                wasManuallyExpanded
+                wasManuallyExpanded,
+                false // Disable rubric visuals for nested levels
               )}
             </div>
           )}
@@ -513,7 +516,8 @@ const renderGroupedChildren = (
   showDescriptions?: 'on' | 'off' | 'mixed',
   descriptionOverrides?: Record<string, boolean>,
   onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void,
-  parentWasManuallyExpanded?: boolean
+  parentWasManuallyExpanded?: boolean,
+  showRubricVisuals: boolean = true // Only show slugs/lines at the topmost level
 ) => {
   const groups = groupChildrenByRubric(children);
   const chevronAndGapWidth = 17;
@@ -523,7 +527,8 @@ const renderGroupedChildren = (
   const linePositionPx = indentationPx + chevronAndGapWidth - 10; // 1px from chevron tip
   
   return groups.map((group, groupIndex) => {
-    if (group.rubric) {
+    // Show rubric visuals only at the topmost level where they appear
+    if (group.rubric && showRubricVisuals) {
       const colors = getStampColors(group.rubric);
       return (
         <div key={`group-${groupIndex}-${group.rubric}`} className="relative">
@@ -557,6 +562,7 @@ const renderGroupedChildren = (
                 descriptionOverrides={descriptionOverrides}
                 onToggleDescription={onToggleDescription}
                 parentWasManuallyExpanded={parentWasManuallyExpanded}
+                showRubricVisuals={false} // Disable rubric visuals for nested levels
               />
             ))}
           </div>
@@ -564,9 +570,10 @@ const renderGroupedChildren = (
       );
     }
     
-    // No rubric - render items directly without wrapper
+    // No rubric OR rubric visuals disabled - render items directly without wrapper
+    // (ordering by rubric is still maintained from groupChildrenByRubric)
     return (
-      <div key={`group-${groupIndex}-none`}>
+      <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
         {group.items.map((child, index) => (
           <ContentSectionComponent
             key={child.id}
@@ -585,6 +592,7 @@ const renderGroupedChildren = (
             descriptionOverrides={descriptionOverrides}
             onToggleDescription={onToggleDescription}
             parentWasManuallyExpanded={parentWasManuallyExpanded}
+            showRubricVisuals={showRubricVisuals} // Pass through for non-rubric groups
           />
         ))}
       </div>
