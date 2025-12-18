@@ -7,7 +7,7 @@ import { DocumentSection } from "@/services/contentService";
 import { useEffect, useCallback, useRef, useState, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bold, Italic, List, Link2, BookOpen, X, FileSymlink, Search } from "lucide-react";
+import { Bold, Italic, List, Link2, BookOpen, X, FileSymlink, Search, Check } from "lucide-react";
 import { HierarchyParser } from "@/lib/hierarchyParser";
 import { LinkPicker } from "./LinkPicker";
 import { FindReplacePanel } from "./FindReplacePanel";
@@ -41,6 +41,7 @@ export function BlockNoteSectionEditor({
   const [showMarkupGuide, setShowMarkupGuide] = useState(false);
   const [showLinkPicker, setShowLinkPicker] = useState(false);
   const [showFindReplace, setShowFindReplace] = useState(false);
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasChangesRef = useRef(false);
   
@@ -70,7 +71,7 @@ export function BlockNoteSectionEditor({
   }, [editorMode, markdownContent]);
 
   // Perform save - skipReload=true for auto-save (keep editor open), false for close
-  const performSave = useCallback((closeAfter = false) => {
+  const performSave = useCallback((closeAfter = false, showIndicator = false) => {
     try {
       console.log('performSave called, closeAfter:', closeAfter);
       const flatSections = getCurrentSections();
@@ -79,6 +80,13 @@ export function BlockNoteSectionEditor({
       // Manual close (closeAfter=true) should reload to show updated content
       onSave(flatSections, !closeAfter);
       hasChangesRef.current = false;
+      
+      // Show saved indicator for manual saves
+      if (showIndicator) {
+        setShowSavedIndicator(true);
+        setTimeout(() => setShowSavedIndicator(false), 1500);
+      }
+      
       if (closeAfter) {
         console.log('Closing editor after save');
         onClose?.();
@@ -354,8 +362,20 @@ export function BlockNoteSectionEditor({
                   >
                     Cancel
                   </Button>
-                  <Button onClick={() => performSave(false)} variant="secondary" size="sm" className="h-7 px-1.5 text-xs">
-                    Save
+                  <Button 
+                    onClick={() => performSave(false, true)} 
+                    variant="secondary" 
+                    size="sm" 
+                    className="h-7 px-1.5 text-xs min-w-[52px] transition-all duration-200"
+                  >
+                    {showSavedIndicator ? (
+                      <span className="flex items-center gap-1">
+                        <Check className="h-3 w-3 text-green-600" />
+                        <span className="text-green-600">Saved</span>
+                      </span>
+                    ) : (
+                      'Save'
+                    )}
                   </Button>
                   <Button onClick={handleSaveAndClose} size="sm" className="h-7 px-1.5 text-xs">
                     Save & Close
