@@ -367,7 +367,7 @@ const ContentSectionComponent: React.FC<{
         </h1>
         
         {hasContent && (
-          <div className="mb-6 py-4 border-y-2 border-border/50">
+          <div className="mb-6 py-4 border-b-2 border-border/50">
             <span 
               className="prose prose-slate dark:prose-invert max-w-none text-base text-muted-foreground italic [&>p]:inline"
               onClick={handleContentClick}
@@ -646,7 +646,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
   return (
     <div className="space-y-4">
       {preContent && (
-        <div className="mb-6 py-4 border-y-2 border-border/50">
+        <div className="mb-6 py-4 border-b-2 border-border/50">
           <span 
             className="prose prose-slate dark:prose-invert max-w-none text-base text-muted-foreground italic [&>p]:inline"
             onClick={handlePreContentClick}
