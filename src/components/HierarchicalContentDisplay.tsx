@@ -319,9 +319,10 @@ const ContentSectionComponent: React.FC<{
   };
 
   // Calculate indentation: children align with parent's text (after the chevron + gap)
-  const chevronAndGapWidth = 24; // Increased for more visual separation between parent and children
+  const chevronAndGapWidth = 28; // Increased for more visual separation between parent and children
+  const additionalContentOffset = 8; // Additional offset to align chevrons/text with rubric elements
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
-  const contentIndentationPx = indentationPx + chevronAndGapWidth + 3; // Reduced gap between line and content
+  const contentIndentationPx = indentationPx + chevronAndGapWidth + additionalContentOffset;
   
   // Calculate color based on depth level (cycling through 6 colors)
   const getContentColorClass = (depth: number) => {
@@ -520,11 +521,12 @@ const renderGroupedChildren = (
   showRubricVisuals: boolean = true // Only show slugs/lines at the topmost level
 ) => {
   const groups = groupChildrenByRubric(children);
-  const chevronAndGapWidth = 24; // Match the indentation value from ContentSectionComponent
+  const chevronAndGapWidth = 28; // Match the indentation value from ContentSectionComponent
+  const additionalContentOffset = 8; // Match the offset from ContentSectionComponent
   // Align slug with the chevrons of items at this depth
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   // Vertical line positioned to abut the left edge of content bubbles
-  const linePositionPx = indentationPx + chevronAndGapWidth - 10; // 1px from chevron tip
+  const linePositionPx = indentationPx + chevronAndGapWidth + additionalContentOffset - 10;
   
   return groups.map((group, groupIndex) => {
     // Show rubric visuals only at the topmost level where they appear
