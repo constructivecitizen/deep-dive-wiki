@@ -637,7 +637,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
     return (
       <div className="mb-6 py-4 border-b-2 border-border/50">
         <span 
-          className="prose prose-slate dark:prose-invert max-w-none text-base text-muted-foreground italic [&>p]:inline"
+          className="prose prose-slate dark:prose-invert max-w-none text-[0.95rem] text-muted-foreground italic [&>p]:inline"
           onClick={handlePreContentClick}
           dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanedContent) }}
         />
@@ -650,7 +650,7 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
       {preContent && (
         <div className="mb-6 py-4 border-b-2 border-border/50">
           <span 
-            className="prose prose-slate dark:prose-invert max-w-none text-base text-muted-foreground italic [&>p]:inline"
+            className="prose prose-slate dark:prose-invert max-w-none text-[0.95rem] text-muted-foreground italic [&>p]:inline"
             onClick={handlePreContentClick}
             dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
           />
