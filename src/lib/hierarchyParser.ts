@@ -28,10 +28,10 @@ export class HierarchyParser {
     let foundFirstHeader = false;
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
+      const line = lines[i];
+      const trimmedLine = line.trim();
 
-      const headerMatch = line.match(/^(#{1,99})\s+(.+?)(?:\s+\[([^\]]+)\])?$/);
+      const headerMatch = trimmedLine.match(/^(#{1,99})\s+(.+?)(?:\s+\[([^\]]+)\])?$/);
       
       if (headerMatch) {
         foundFirstHeader = true;
@@ -50,6 +50,8 @@ export class HierarchyParser {
         
         // Save previous section if exists
         if (currentSection) {
+          // Trim trailing whitespace from content
+          currentSection.content = currentSection.content.trim();
           sections.push(currentSection);
         }
 
@@ -64,13 +66,15 @@ export class HierarchyParser {
           level,
           tags
         };
-      } else if (line) {
+      } else {
         if (!foundFirstHeader) {
-          // Collect pre-header content
-          preHeaderContent.push(line);
+          // Collect pre-header content (preserve blank lines)
+          if (trimmedLine || preHeaderContent.length > 0) {
+            preHeaderContent.push(trimmedLine);
+          }
         } else if (currentSection) {
-          // Add content to current section
-          currentSection.content += (currentSection.content ? '\n' : '') + line;
+          // Add content to current section (preserve blank lines for paragraph separation)
+          currentSection.content += (currentSection.content ? '\n' : '') + trimmedLine;
         }
       }
     }
@@ -88,6 +92,7 @@ export class HierarchyParser {
 
     // Add final section
     if (currentSection) {
+      currentSection.content = currentSection.content.trim();
       sections.push(currentSection);
     }
 
