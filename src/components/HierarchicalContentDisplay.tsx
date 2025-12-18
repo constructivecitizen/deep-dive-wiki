@@ -639,7 +639,7 @@ const renderGroupedChildren = (
     // Use space-y-1 internally so items appear grouped together, not separated
     // Use !mt-0 to override parent's space-y-4 so groups flow together seamlessly
     return (
-      <div key={`group-${groupIndex}-${group.rubric || 'none'}`} className="space-y-1 !mt-0">
+      <div key={`group-${groupIndex}-${group.rubric || 'none'}`} className="space-y-1 !mt-1">
         {group.items.map((child, index) => (
           <ContentSectionComponent
             key={child.id}
