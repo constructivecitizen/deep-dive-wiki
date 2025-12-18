@@ -10,18 +10,6 @@ import {
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 
-// Helper to parse title and extract category if present (text before colon)
-const parseCategory = (title: string): { category: string | null; text: string } => {
-  const colonIndex = title.indexOf(':');
-  if (colonIndex === -1 || colonIndex > 20) {
-    return { category: null, text: title };
-  }
-  return {
-    category: title.substring(0, colonIndex),
-    text: title.substring(colonIndex + 1).trim()
-  };
-};
-
 interface EnhancedSectionItemProps {
   section: HierarchicalDocumentSection;
   depth: number;
@@ -135,14 +123,12 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
     window.open(url, '_blank');
   };
 
-  const { category, text: nodeText } = parseCategory(section.title);
-
   return (
     <div className="text-sm">
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <div 
-            className={`flex items-center py-0.5 pr-3 rounded cursor-pointer transition-colors border-l-2 ${
+            className={`flex items-center gap-1 py-0.5 pr-3 rounded cursor-pointer transition-colors border-l-2 ${
               isActive
                 ? 'bg-primary/10 border-l-primary text-primary font-medium' 
                 : 'hover:bg-accent text-muted-foreground hover:text-foreground border-l-transparent'
@@ -150,7 +136,6 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
             style={{ marginLeft: `${indentationPx}px` }}
             onClick={handleSectionClick}
           >
-            {/* Chevron - fixed width */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -169,18 +154,8 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
               )}
             </button>
             
-            {/* Category - right-aligned in fixed width column */}
-            <div className="w-20 flex-shrink-0 text-right pr-2">
-              {category && (
-                <span className="text-xs text-muted-foreground/70 truncate" title={category}>
-                  {category}
-                </span>
-              )}
-            </div>
-            
-            {/* Node text - left-aligned, takes remaining space */}
             <span className="truncate flex-1 overflow-hidden text-ellipsis whitespace-nowrap" title={section.title}>
-              {nodeText}
+              {section.title}
             </span>
           </div>
         </ContextMenuTrigger>
