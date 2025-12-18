@@ -495,7 +495,7 @@ const ContentSectionComponent: React.FC<{
           {hasContent && isContentVisible && (
             <div 
               className={`mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
-              style={{ marginLeft: `${contentIndentationPx + 6}px` }}
+              style={{ marginLeft: `${contentIndentationPx + 4}px` }}
             >
               <span 
                 className="prose prose-slate dark:prose-invert max-w-none prose-sm [&>p]:inline"
