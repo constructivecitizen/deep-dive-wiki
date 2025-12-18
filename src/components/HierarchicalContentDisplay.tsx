@@ -396,7 +396,8 @@ const ContentSectionComponent: React.FC<{
               showDescriptions, 
               descriptionOverrides, 
               onToggleDescription, 
-              false
+              false,
+              false // No visual grouping for inner levels
             )}
           </div>
         )}
@@ -488,7 +489,8 @@ const ContentSectionComponent: React.FC<{
                 showDescriptions, 
                 descriptionOverrides, 
                 onToggleDescription, 
-                wasManuallyExpanded
+                wasManuallyExpanded,
+                false // No visual grouping for inner levels
               )}
             </div>
           )}
@@ -513,7 +515,8 @@ const renderGroupedChildren = (
   showDescriptions?: 'on' | 'off' | 'mixed',
   descriptionOverrides?: Record<string, boolean>,
   onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void,
-  parentWasManuallyExpanded?: boolean
+  parentWasManuallyExpanded?: boolean,
+  showVisualGrouping: boolean = true // Only show slugs/lines at top level
 ) => {
   const groups = groupChildrenByRubric(children);
   const chevronAndGapWidth = 17;
@@ -521,6 +524,31 @@ const renderGroupedChildren = (
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   // Vertical line positioned to abut the left edge of content bubbles
   const linePositionPx = indentationPx + chevronAndGapWidth - 10; // 1px from chevron tip
+  
+  // Flatten groups into ordered items when not showing visual grouping
+  if (!showVisualGrouping) {
+    const orderedItems = groups.flatMap(group => group.items);
+    return orderedItems.map((child, index) => (
+      <ContentSectionComponent
+        key={child.id}
+        section={child}
+        depth={depth}
+        onSectionClick={onSectionClick}
+        onInternalLinkClick={onInternalLinkClick}
+        activeNodeId={activeNodeId}
+        documentPath={documentPath}
+        documentTitle={documentTitle}
+        siblingIndex={index}
+        expandedSections={expandedSections}
+        defaultExpandDepth={defaultExpandDepth}
+        onToggleSection={onToggleSection}
+        showDescriptions={showDescriptions}
+        descriptionOverrides={descriptionOverrides}
+        onToggleDescription={onToggleDescription}
+        parentWasManuallyExpanded={parentWasManuallyExpanded}
+      />
+    ));
+  }
   
   return groups.map((group, groupIndex) => {
     if (group.rubric) {
@@ -658,7 +686,8 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
         showDescriptions,
         descriptionOverrides,
         onToggleDescription,
-        false
+        false,
+        true // Show visual grouping at top level only
       )}
     </div>
   );
