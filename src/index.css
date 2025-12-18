@@ -381,7 +381,7 @@
   }
 
   .prose p {
-    @apply mb-2 text-foreground;
+    @apply mb-2 text-foreground leading-snug;
   }
 
   /* Inline markdown styles for rendered content */
