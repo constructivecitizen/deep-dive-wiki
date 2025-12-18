@@ -376,15 +376,6 @@
 
   .prose p {
     @apply mb-2 text-foreground;
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-  }
-
-  /* Ensure paragraphs after lists are not indented */
-  .prose ul + p,
-  .prose ol + p {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
   }
 
   /* Inline markdown styles for rendered content */

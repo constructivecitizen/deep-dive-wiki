@@ -282,8 +282,8 @@ const ContentSectionComponent: React.FC<{
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
-  // Check if this is the top-level section (first section at depth 0) - applies title treatment
-  const isTopLevelTitle = depth === 0 && siblingIndex === 0;
+  // Check if this is the document title section (first section at depth 0)
+  const isDocumentTitle = depth === 0 && siblingIndex === 0 && documentTitle && section.title === documentTitle;
 
   const getHeadingClass = () => {
     // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
@@ -358,7 +358,7 @@ const ContentSectionComponent: React.FC<{
   };
 
   // If this is the document title section, render as page title
-  if (isTopLevelTitle) {
+  if (isDocumentTitle) {
     return (
       <div id={section.id}>
         <h1 className="text-3xl font-bold text-foreground mb-6">
