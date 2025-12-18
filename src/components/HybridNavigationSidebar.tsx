@@ -15,7 +15,7 @@ import {
   Moon
 } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { NavigationNode, WikiDocument, ContentService } from '../services/contentService';
 import { NavigationContextValue } from '@/hooks/useNavigationState';
 import { Button } from '@/components/ui/button';
@@ -53,6 +53,27 @@ interface HybridNavigationSidebarProps {
   sidebarCollapseKey?: number;
 }
 
+// Helper to collect expanded state from sidebar
+export const collectSidebarState = (): { expandedFolders: string[], expandedSections: string[] } => {
+  const state = (window as any).__sidebarExpandedState || { expandedFolders: [], expandedSections: [] };
+  return state;
+};
+
+// Helper to serialize sidebar state to URL params
+export const serializeSidebarState = (state: { expandedFolders: string[], expandedSections: string[] }): string => {
+  return btoa(JSON.stringify(state));
+};
+
+// Helper to deserialize sidebar state from URL params
+export const deserializeSidebarState = (encoded: string | null): { expandedFolders: string[], expandedSections: string[] } | null => {
+  if (!encoded) return null;
+  try {
+    return JSON.parse(atob(encoded));
+  } catch {
+    return null;
+  }
+};
+
 const FolderNode: React.FC<{
   node: NavigationNode;
   contentNodes?: WikiDocument[];
@@ -65,6 +86,8 @@ const FolderNode: React.FC<{
   onSectionNavigate?: (sectionTitle: string) => void;
   navigation: NavigationContextValue;
   collapseKey?: number;
+  initialExpandedFolders?: string[];
+  initialExpandedSections?: string[];
 }> = ({
   node, 
   contentNodes, 
@@ -76,9 +99,26 @@ const FolderNode: React.FC<{
   allRootNodes,
   onSectionNavigate,
   navigation,
-  collapseKey
+  collapseKey,
+  initialExpandedFolders,
+  initialExpandedSections
 }) => {
-  const [expanded, setExpanded] = useState(true);
+  // Check if this folder should be initially expanded based on restored state
+  const shouldBeExpanded = initialExpandedFolders?.includes(node.id) ?? true;
+  const [expanded, setExpanded] = useState(shouldBeExpanded);
+
+  // Track expanded state globally for "open in new tab"
+  React.useEffect(() => {
+    const state = (window as any).__sidebarExpandedState || { expandedFolders: [], expandedSections: [] };
+    if (expanded) {
+      if (!state.expandedFolders.includes(node.id)) {
+        state.expandedFolders.push(node.id);
+      }
+    } else {
+      state.expandedFolders = state.expandedFolders.filter((id: string) => id !== node.id);
+    }
+    (window as any).__sidebarExpandedState = state;
+  }, [expanded, node.id]);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(node.title);
   const navigate = useNavigate();
@@ -188,7 +228,9 @@ const FolderNode: React.FC<{
   const handleOpenInNewTab = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    window.open(`${window.location.origin}${node.path}`, '_blank');
+    const sidebarState = collectSidebarState();
+    const encodedState = serializeSidebarState(sidebarState);
+    window.open(`${window.location.origin}${node.path}?sidebarState=${encodedState}`, '_blank');
   };
 
   return (
@@ -234,7 +276,7 @@ const FolderNode: React.FC<{
           {hierarchicalSections
             .filter(section => section.title.toLowerCase().trim() !== node.title.toLowerCase().trim())
             .map((section, index) => (
-              <EnhancedSectionItem key={section.id} section={section} depth={0} folderPath={node.path} sectionPosition={index} flatSections={flatSections} currentPath={currentPath} onSectionNavigate={onSectionNavigate} navigation={navigation} collapseKey={collapseKey} />
+              <EnhancedSectionItem key={section.id} section={section} depth={0} folderPath={node.path} sectionPosition={index} flatSections={flatSections} currentPath={currentPath} onSectionNavigate={onSectionNavigate} navigation={navigation} collapseKey={collapseKey} initialExpandedSections={initialExpandedSections} />
             ))}
         </div>
       )}
@@ -254,6 +296,34 @@ const ThemeToggleButton: React.FC = () => {
 export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = ({
   structure, contentNodes = [], onStructureUpdate, onNavigationClick, currentNavId, setShowEditor, currentPath, onSectionNavigate, navigation, expandDepth = 1, expandMode = 'depth', onExpandDepthChange, showDescriptions = 'on', onShowDescriptionsChange, onSearchOpen, onCollapseAll, sidebarCollapseKey
 }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Parse sidebar state from URL on initial load
+  const initialSidebarState = React.useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const encodedState = params.get('sidebarState');
+    return deserializeSidebarState(encodedState);
+  }, []);  // Only run once on mount
+
+  // Clean up URL params after loading (so the ugly sidebarState param doesn't stay in URL)
+  React.useEffect(() => {
+    if (initialSidebarState) {
+      const params = new URLSearchParams(location.search);
+      params.delete('sidebarState');
+      const newSearch = params.toString();
+      const newUrl = `${location.pathname}${newSearch ? `?${newSearch}` : ''}${location.hash}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [initialSidebarState]);
+
+  // Initialize global state tracker
+  React.useEffect(() => {
+    if (!(window as any).__sidebarExpandedState) {
+      (window as any).__sidebarExpandedState = { expandedFolders: [], expandedSections: [] };
+    }
+  }, []);
+
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -318,7 +388,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
         <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">Navigation</div>
         <div className="flex-1 overflow-y-auto">
           {topLevelNodes.length > 0 ? topLevelNodes.map((item) => (
-            <FolderNode key={item.id} node={item} contentNodes={contentNodes} onStructureUpdate={onStructureUpdate} onNavigationClick={onNavigationClick} currentNavId={currentNavId} setShowEditor={setShowEditor} currentPath={currentPath} allRootNodes={topLevelNodes} onSectionNavigate={onSectionNavigate} navigation={navigation} collapseKey={sidebarCollapseKey} />
+            <FolderNode key={item.id} node={item} contentNodes={contentNodes} onStructureUpdate={onStructureUpdate} onNavigationClick={onNavigationClick} currentNavId={currentNavId} setShowEditor={setShowEditor} currentPath={currentPath} allRootNodes={topLevelNodes} onSectionNavigate={onSectionNavigate} navigation={navigation} collapseKey={sidebarCollapseKey} initialExpandedFolders={initialSidebarState?.expandedFolders} initialExpandedSections={initialSidebarState?.expandedSections} />
           )) : <div className="p-3 text-center text-muted-foreground"><p className="text-sm">No folders found</p></div>}
         </div>
         <div className="mt-3 pt-1 pb-0 border-t border-sidebar-border/50">

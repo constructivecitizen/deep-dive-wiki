@@ -23,6 +23,7 @@ interface EnhancedSectionItemProps {
   navigation: NavigationContextValue;
   
   collapseKey?: number;
+  initialExpandedSections?: string[];
 }
 
 /**
@@ -33,6 +34,17 @@ interface EnhancedSectionItemProps {
  * 2. Properly distinguishes between same-document and cross-document navigation
  * 3. No stale closure issues since we use the navigation context directly
  */
+// Helper to collect expanded state
+const collectSidebarState = (): { expandedFolders: string[], expandedSections: string[] } => {
+  const state = (window as any).__sidebarExpandedState || { expandedFolders: [], expandedSections: [] };
+  return state;
+};
+
+// Helper to serialize sidebar state to URL params
+const serializeSidebarState = (state: { expandedFolders: string[], expandedSections: string[] }): string => {
+  return btoa(JSON.stringify(state));
+};
+
 export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   section,
   depth,
@@ -42,10 +54,26 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   currentPath,
   onSectionNavigate,
   navigation,
-  collapseKey
+  collapseKey,
+  initialExpandedSections
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Check if this section should be initially expanded based on restored state
+  const shouldBeExpanded = initialExpandedSections?.includes(section.id) ?? false;
+  const [isExpanded, setIsExpanded] = useState(shouldBeExpanded);
   const navigate = useNavigate();
+
+  // Track expanded state globally for "open in new tab"
+  React.useEffect(() => {
+    const state = (window as any).__sidebarExpandedState || { expandedFolders: [], expandedSections: [] };
+    if (isExpanded) {
+      if (!state.expandedSections.includes(section.id)) {
+        state.expandedSections.push(section.id);
+      }
+    } else {
+      state.expandedSections = state.expandedSections.filter((id: string) => id !== section.id);
+    }
+    (window as any).__sidebarExpandedState = state;
+  }, [isExpanded, section.id]);
 
   // Collapse when collapseKey changes
   React.useEffect(() => {
@@ -89,7 +117,9 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
   const handleOpenInNewTab = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const url = `${window.location.origin}${folderPath}#${section.id}`;
+    const sidebarState = collectSidebarState();
+    const encodedState = serializeSidebarState(sidebarState);
+    const url = `${window.location.origin}${folderPath}?sidebarState=${encodedState}#${section.id}`;
     window.open(url, '_blank');
   };
 
@@ -151,6 +181,7 @@ export const EnhancedSectionItem: React.FC<EnhancedSectionItemProps> = ({
               onSectionNavigate={onSectionNavigate}
               navigation={navigation}
               collapseKey={collapseKey}
+              initialExpandedSections={initialExpandedSections}
             />
           ))}
         </div>
