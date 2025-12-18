@@ -254,7 +254,7 @@ const FolderNode: React.FC<{
                   <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); handleEditCancel(); }}><X className="w-3 h-3" /></Button>
                 </div>
               ) : (
-                <div className={`text-sm truncate whitespace-nowrap group-hover:text-foreground/80 ${isActiveNode ? 'text-sidebar-primary font-medium' : 'text-foreground'}`} title={node.title}>{node.title}</div>
+                <div className={`text-sm truncate whitespace-nowrap group-hover:text-foreground/80 ${isActiveNode ? 'text-sidebar-primary' : 'text-foreground'}`} title={node.title}>{node.title}</div>
               )}
             </div>
             {!isEditing && (
