@@ -398,7 +398,7 @@ const ContentSectionComponent: React.FC<{
               descriptionOverrides, 
               onToggleDescription, 
               false,
-              showRubricVisuals // Pass through from parent
+              true // Document title's children ARE the top level, so always show rubric visuals
             )}
           </div>
         )}
@@ -666,7 +666,8 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
         showDescriptions,
         descriptionOverrides,
         onToggleDescription,
-        false
+        false,
+        true // Top level always shows rubric visuals
       )}
     </div>
   );
