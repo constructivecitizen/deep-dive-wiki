@@ -295,7 +295,7 @@ const ContentSectionComponent: React.FC<{
   const getHeadingClass = () => {
     // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
     const getFontSizeClass = (currentDepth: number) => {
-      if (currentDepth === 0) return 'text-xl font-semibold leading-relaxed underline decoration-1 underline-offset-4'; // 1.25rem - underlined
+      if (currentDepth === 0) return 'text-xl font-semibold leading-relaxed'; // 1.25rem
       if (currentDepth === 1) return 'text-lg font-medium leading-relaxed'; // 1.125rem
       if (currentDepth === 2) return 'text-base font-medium leading-normal'; // 1rem
       if (currentDepth === 3) return 'text-sm font-medium leading-normal'; // 0.875rem
@@ -323,7 +323,7 @@ const ContentSectionComponent: React.FC<{
       if (prefix.length <= 40 && rest.length > 0) {
         return (
           <span className="block">
-            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium relative -top-[1px] whitespace-nowrap mr-1.5 underline decoration-inherit underline-offset-[6px]">
+            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium relative -top-[1px] whitespace-nowrap mr-1.5">
               {prefix}
             </span>
             {rest}
