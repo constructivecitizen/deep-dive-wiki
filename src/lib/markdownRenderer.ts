@@ -76,7 +76,7 @@ const createRenderer = (): Renderer => {
 
 // Configure marked with custom renderer
 marked.setOptions({
-  breaks: true,
+  breaks: false,
   gfm: true
 });
 
