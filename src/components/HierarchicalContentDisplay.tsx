@@ -324,7 +324,7 @@ const ContentSectionComponent: React.FC<{
         return (
           <span className="inline-flex items-baseline gap-1.5">
             <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium">
-              {prefix}
+              {prefix}:
             </span>
             <span>{rest}</span>
           </span>
