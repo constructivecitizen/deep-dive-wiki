@@ -323,7 +323,7 @@ const ContentSectionComponent: React.FC<{
       if (prefix.length <= 40 && rest.length > 0) {
         return (
           <span>
-            <span className="bg-muted/50 px-1 py-0.5 rounded-sm">{prefix}:</span>
+            <span className="bg-muted px-1 py-0.5 rounded-sm">{prefix}:</span>
             <span> {rest}</span>
           </span>
         );
