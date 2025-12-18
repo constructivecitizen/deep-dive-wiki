@@ -491,7 +491,7 @@ const ContentSectionComponent: React.FC<{
                 descriptionOverrides, 
                 onToggleDescription, 
                 wasManuallyExpanded,
-                false // Disable rubric visuals for nested levels
+                showRubricVisuals // Pass through - will be false if already shown at higher level
               )}
             </div>
           )}
