@@ -4,30 +4,51 @@ import DOMPurify from 'dompurify';
 /**
  * Preprocesses content to convert wiki-style [[links]] to markdown links
  * Supports:
- * - [[Section Title]] - same document link
+ * - [[Section Title]] - same document link (display text = destination)
+ * - [[display text|#Section Title]] - same document link with custom display text
  * - [[/document-path#Section Title]] - cross-document link
+ * - [[display text|/document-path#Section Title]] - cross-document link with custom display text
  * - [[/document-path]] - document link without section
  */
 const preprocessWikiLinks = (content: string): string => {
   return content.replace(/\[\[([^\]]+)\]\]/g, (match, linkText) => {
     const trimmedText = linkText.trim();
     
+    // Check for pipe-separated format: [[display text|destination]]
+    const pipeIndex = trimmedText.indexOf('|');
+    let displayText: string;
+    let destination: string;
+    
+    if (pipeIndex !== -1) {
+      displayText = trimmedText.substring(0, pipeIndex).trim();
+      destination = trimmedText.substring(pipeIndex + 1).trim();
+    } else {
+      destination = trimmedText;
+      displayText = ''; // Will be derived from destination
+    }
+    
     // Cross-document link (starts with /)
-    if (trimmedText.startsWith('/')) {
-      // Extract display text (after # or last / if no #)
-      const hashIndex = trimmedText.indexOf('#');
-      let displayText: string;
-      if (hashIndex !== -1) {
-        displayText = trimmedText.substring(hashIndex + 1);
-      } else {
-        const parts = trimmedText.split('/').filter(Boolean);
-        displayText = parts[parts.length - 1] || trimmedText;
+    if (destination.startsWith('/')) {
+      // If no custom display text, derive from destination
+      if (!displayText) {
+        const hashIndex = destination.indexOf('#');
+        if (hashIndex !== -1) {
+          displayText = destination.substring(hashIndex + 1);
+        } else {
+          const parts = destination.split('/').filter(Boolean);
+          displayText = parts[parts.length - 1] || destination;
+        }
       }
-      return `[${displayText}](internal:${trimmedText})`;
+      return `[${displayText}](internal:${destination})`;
     }
     
     // Same-document link - use # prefix
-    return `[${trimmedText}](internal:#${encodeURIComponent(trimmedText)})`;
+    // If destination starts with #, it's explicit; otherwise add #
+    const target = destination.startsWith('#') ? destination : `#${encodeURIComponent(destination)}`;
+    if (!displayText) {
+      displayText = destination.startsWith('#') ? destination.substring(1) : destination;
+    }
+    return `[${displayText}](internal:${target})`;
   });
 };
 
@@ -90,7 +111,8 @@ export const renderMarkdown = (content: string): string => {
 export const stripMarkdown = (content: string): string => {
   // Remove markdown syntax for plain text display
   return content
-    .replace(/\[\[([^\]]+)\]\]/g, '$1') // Wiki links
+    .replace(/\[\[([^|\]]+)\|[^\]]+\]\]/g, '$1') // Wiki links with custom display text
+    .replace(/\[\[([^\]]+)\]\]/g, '$1') // Wiki links without custom display text
     .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
     .replace(/\*(.*?)\*/g, '$1')     // Italic
     .replace(/`(.*?)`/g, '$1')       // Code
