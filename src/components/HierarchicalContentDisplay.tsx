@@ -432,7 +432,7 @@ const ContentSectionComponent: React.FC<{
             </button>
             
             <div className="flex-1 min-w-0">
-              <h1 className={`${getHeadingClass()} cursor-pointer hover:text-primary transition-colors`}
+              <h1 className={`${getHeadingClass()} cursor-pointer`}
                   onClick={() => {
                     if (onSectionClick) {
                       onSectionClick(section.title);
