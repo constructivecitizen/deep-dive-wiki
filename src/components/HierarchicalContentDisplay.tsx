@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, createContext, useContext, useMemo } from 'react';
 import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 import { getStampColors, getRubricOrderIndex } from '@/lib/rubricConfig';
@@ -35,6 +35,17 @@ interface HierarchicalContentDisplayProps {
   descriptionOverrides?: Record<string, boolean>;
   onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void;
 }
+
+// Context to track if any top-level node has exposed children
+interface TopLevelExpandedContextType {
+  anyTopLevelExpanded: boolean;
+  registerTopLevelExpanded: (id: string, isExpanded: boolean) => void;
+}
+
+const TopLevelExpandedContext = createContext<TopLevelExpandedContextType>({
+  anyTopLevelExpanded: false,
+  registerTopLevelExpanded: () => {},
+});
 
 // Helper to parse title and extract rubric if present
 // Skip rubric extraction for root (level 0) and first level (level 1) sections
@@ -264,6 +275,23 @@ const ContentSectionComponent: React.FC<{
   const [isExpanded, setIsExpanded] = useState(getInitialExpandedState);
   const [wasManuallyExpanded, setWasManuallyExpanded] = useState(false);
   
+  // Get top-level expansion context
+  const { anyTopLevelExpanded, registerTopLevelExpanded } = useContext(TopLevelExpandedContext);
+  
+  const hasChildren = section.children.length > 0;
+  const hasContent = section.content.trim().length > 0;
+  const isLeafNode = !hasChildren && !hasContent;
+  // Check if this is the document title section (first section at depth 0)
+  const isDocumentTitle = depth === 0 && siblingIndex === 0 && documentTitle && section.title === documentTitle;
+  
+  // Register this node's expanded state if it's a top-level node (depth 1, since depth 0 is document title)
+  const isTopLevelNode = depth === 1;
+  React.useEffect(() => {
+    if (isTopLevelNode && hasChildren) {
+      registerTopLevelExpanded(section.id, isExpanded);
+    }
+  }, [isTopLevelNode, hasChildren, section.id, isExpanded, registerTopLevelExpanded]);
+  
   // Update when external control changes
   React.useEffect(() => {
     if (expandedSections && section.id in expandedSections) {
@@ -285,12 +313,6 @@ const ContentSectionComponent: React.FC<{
       setWasManuallyExpanded(true);
     }
   };
-  
-  const hasChildren = section.children.length > 0;
-  const hasContent = section.content.trim().length > 0;
-  const isLeafNode = !hasChildren && !hasContent;
-  // Check if this is the document title section (first section at depth 0)
-  const isDocumentTitle = depth === 0 && siblingIndex === 0 && documentTitle && section.title === documentTitle;
 
   const getHeadingClass = () => {
     // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
@@ -306,9 +328,13 @@ const ContentSectionComponent: React.FC<{
   };
 
   // Helper to render title with styled colon-prefix (for non-rubric prefixes)
+  // Apply underline to text (not prefix) when this is a top-level node and any top-level is expanded
   const renderTitleWithStyledPrefix = (title: string, absoluteLevel: number) => {
     // Get text after rubric extraction (rubrics are separate from this treatment)
     const { text: titleAfterRubric } = parseRubric(title, absoluteLevel);
+    
+    // Determine if we should underline (top-level node and any top-level is expanded)
+    const shouldUnderline = isTopLevelNode && anyTopLevelExpanded;
     
     // For level 1: treat text before first colon as styled prefix
     // For level 2+: look for a secondary colon pattern in the remaining text
@@ -326,13 +352,15 @@ const ContentSectionComponent: React.FC<{
             <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium relative -top-[1px] whitespace-nowrap mr-1.5">
               {prefix}
             </span>
-            {rest}
+            <span className={shouldUnderline ? 'underline decoration-1 underline-offset-2' : ''}>
+              {rest}
+            </span>
           </span>
         );
       }
     }
     
-    return <>{titleAfterRubric}</>;
+    return <span className={shouldUnderline ? 'underline decoration-1 underline-offset-2' : ''}>{titleAfterRubric}</span>;
   };
 
   // Legacy helper for document title - level 0 so no rubric extraction
@@ -635,7 +663,7 @@ const renderGroupedChildren = (
     );
   });
 };
-export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = ({ 
+const HierarchicalContentDisplayInner: React.FC<HierarchicalContentDisplayProps> = ({ 
   content, 
   onSectionClick,
   onInternalLinkClick,
@@ -710,5 +738,32 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
         true // Top level always shows rubric visuals
       )}
     </div>
+  );
+};
+
+export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = (props) => {
+  // State to track which top-level nodes are expanded
+  const [topLevelExpandedState, setTopLevelExpandedState] = useState<Record<string, boolean>>({});
+  
+  const registerTopLevelExpanded = React.useCallback((id: string, isExpanded: boolean) => {
+    setTopLevelExpandedState(prev => {
+      if (prev[id] === isExpanded) return prev;
+      return { ...prev, [id]: isExpanded };
+    });
+  }, []);
+  
+  const anyTopLevelExpanded = useMemo(() => {
+    return Object.values(topLevelExpandedState).some(v => v);
+  }, [topLevelExpandedState]);
+  
+  const contextValue = useMemo(() => ({
+    anyTopLevelExpanded,
+    registerTopLevelExpanded,
+  }), [anyTopLevelExpanded, registerTopLevelExpanded]);
+  
+  return (
+    <TopLevelExpandedContext.Provider value={contextValue}>
+      <HierarchicalContentDisplayInner {...props} />
+    </TopLevelExpandedContext.Provider>
   );
 };
