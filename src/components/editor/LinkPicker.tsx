@@ -68,14 +68,14 @@ export const LinkPicker: React.FC<LinkPickerProps> = ({
     const isSameDocument = currentDocumentPath === result.documentPath;
     
     if (isSameDocument) {
-      // Same document: [[Section Title]]
-      return `[[${targetTitle}]]`;
+      // Same document: [[display text|#Section Title]]
+      return `[[${targetTitle}|#${targetTitle}]]`;
     } else {
-      // Different document: [[/path#Section Title]] or [[/path]]
+      // Different document: [[display text|/path#Section Title]] or [[display text|/path]]
       if (result.sectionTitle) {
-        return `[[${result.documentPath}#${result.sectionTitle}]]`;
+        return `[[${result.sectionTitle}|${result.documentPath}#${result.sectionTitle}]]`;
       } else {
-        return `[[${result.documentPath}]]`;
+        return `[[${result.documentTitle}|${result.documentPath}]]`;
       }
     }
   }, [currentDocumentPath]);
