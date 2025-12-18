@@ -7,9 +7,10 @@ import { DocumentSection } from "@/services/contentService";
 import { useEffect, useCallback, useRef, useState, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bold, Italic, List, Link2, BookOpen, X, FileSymlink } from "lucide-react";
+import { Bold, Italic, List, Link2, BookOpen, X, FileSymlink, Search } from "lucide-react";
 import { HierarchyParser } from "@/lib/hierarchyParser";
 import { LinkPicker } from "./LinkPicker";
+import { FindReplacePanel } from "./FindReplacePanel";
 
 // Lazy load the JSX wrapper to isolate BlockNote types
 const BlockNoteWrapper = lazy(() => import("./BlockNoteWrapper"));
@@ -39,6 +40,7 @@ export function BlockNoteSectionEditor({
   const [markdownContent, setMarkdownContent] = useState('');
   const [showMarkupGuide, setShowMarkupGuide] = useState(false);
   const [showLinkPicker, setShowLinkPicker] = useState(false);
+  const [showFindReplace, setShowFindReplace] = useState(false);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const hasChangesRef = useRef(false);
   
@@ -216,7 +218,15 @@ export function BlockNoteSectionEditor({
         e.preventDefault();
         performSave(false);
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === "f" && editorMode === 'markdown') {
+        e.preventDefault();
+        setShowFindReplace(true);
+      }
       if (e.key === "Escape" && onClose) {
+        if (showFindReplace) {
+          setShowFindReplace(false);
+          return;
+        }
         if (autoSaveTimerRef.current) {
           clearTimeout(autoSaveTimerRef.current);
         }
@@ -229,7 +239,7 @@ export function BlockNoteSectionEditor({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [performSave, onClose]);
+  }, [performSave, onClose, editorMode, showFindReplace]);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
@@ -309,6 +319,15 @@ export function BlockNoteSectionEditor({
                   >
                     <FileSymlink className="h-3.5 w-3.5" />
                   </Button>
+                  <Button 
+                    onClick={() => setShowFindReplace(!showFindReplace)} 
+                    variant={showFindReplace ? "secondary" : "ghost"}
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    title="Find & Replace (Ctrl+F)"
+                  >
+                    <Search className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               )}
 
@@ -347,6 +366,19 @@ export function BlockNoteSectionEditor({
             </div>
           </div>
         </header>
+
+        {/* Find/Replace Panel */}
+        {showFindReplace && editorMode === 'markdown' && (
+          <FindReplacePanel
+            content={markdownContent}
+            onContentChange={(newContent) => {
+              setMarkdownContent(newContent);
+              triggerAutoSave();
+            }}
+            onClose={() => setShowFindReplace(false)}
+            textareaRef={textareaRef}
+          />
+        )}
 
         {/* Editor + Sidebar */}
         <div className="flex-1 flex overflow-hidden">
