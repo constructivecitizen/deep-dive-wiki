@@ -50,6 +50,7 @@ export const rubricColorMap: Record<string, keyof typeof stampColorTreatments> =
   important: "red",
   "minor tips": "green",
   "other tips": "green",
+  "other principles": "green",
   note: "green",
   goal: "purple",
   goals: "purple",
@@ -67,6 +68,7 @@ export const rubricOrder: string[] = [
   "critical",
   "important",
   "tips",
+  "other principles",
   "note",
   "minor tips",
 ];
