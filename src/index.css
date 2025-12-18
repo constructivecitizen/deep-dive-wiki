@@ -328,6 +328,11 @@
     color: hsl(var(--foreground));
   }
 
+  .prose ul li::marker,
+  .prose ol li::marker {
+    color: hsl(var(--foreground));
+  }
+
   .prose ol {
     @apply list-decimal pl-5 mb-2 mt-1;
     color: hsl(var(--foreground));
