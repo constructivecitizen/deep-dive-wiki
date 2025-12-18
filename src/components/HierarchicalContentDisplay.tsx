@@ -572,9 +572,8 @@ const renderGroupedChildren = (
     
     // No rubric OR rubric visuals disabled - render items directly without wrapper
     // (ordering by rubric is still maintained from groupChildrenByRubric)
-    // Use Fragment to avoid extra spacing between groups when rubrics are hidden
     return (
-      <React.Fragment key={`group-${groupIndex}-${group.rubric || 'none'}`}>
+      <div key={`group-${groupIndex}-${group.rubric || 'none'}`}>
         {group.items.map((child, index) => (
           <ContentSectionComponent
             key={child.id}
@@ -596,7 +595,7 @@ const renderGroupedChildren = (
             showRubricVisuals={showRubricVisuals} // Pass through for non-rubric groups
           />
         ))}
-      </React.Fragment>
+      </div>
     );
   });
 };
