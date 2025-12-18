@@ -635,11 +635,13 @@ export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProp
 
   if (sections.length === 0) {
     return (
-      <div 
-        className="prose prose-slate dark:prose-invert max-w-none"
-        onClick={handlePreContentClick}
-        dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanedContent) }}
-      />
+      <div className="mb-6 py-4 border-b-2 border-border/50">
+        <span 
+          className="prose prose-slate dark:prose-invert max-w-none text-base text-muted-foreground italic [&>p]:inline"
+          onClick={handlePreContentClick}
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanedContent) }}
+        />
+      </div>
     );
   }
 
