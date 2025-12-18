@@ -323,7 +323,7 @@ const ContentSectionComponent: React.FC<{
       if (prefix.length <= 40 && rest.length > 0) {
         return (
           <span className="block">
-            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium relative -top-[1px] whitespace-nowrap mr-1.5">
+            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium relative -top-[1px] whitespace-nowrap mr-1.5 underline decoration-inherit underline-offset-[6px]">
               {prefix}
             </span>
             {rest}
