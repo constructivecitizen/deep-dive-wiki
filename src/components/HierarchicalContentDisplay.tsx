@@ -634,11 +634,11 @@ const renderGroupedChildren = (
       );
     }
     
-    // No rubric OR rubric visuals disabled - render items directly without wrapper
+    // No rubric OR rubric visuals disabled - render items with tight internal spacing
     // (ordering by rubric is still maintained from groupChildrenByRubric)
-    // Use Fragment to avoid extra wrapper divs that would get space-y margin
+    // Use space-y-1 internally so items appear grouped together, not separated
     return (
-      <React.Fragment key={`group-${groupIndex}-${group.rubric || 'none'}`}>
+      <div key={`group-${groupIndex}-${group.rubric || 'none'}`} className="space-y-1">
         {group.items.map((child, index) => (
           <ContentSectionComponent
             key={child.id}
@@ -660,7 +660,7 @@ const renderGroupedChildren = (
             showRubricVisuals={showRubricVisuals} // Pass through for non-rubric groups
           />
         ))}
-      </React.Fragment>
+      </div>
     );
   });
 };
