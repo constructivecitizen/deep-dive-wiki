@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Eye, FileText, Save, Bold, Italic, List, Link2, Edit3, Code, FileSymlink } from 'lucide-react';
+import { Eye, FileText, Save, Bold, Italic, List, Link2, Edit3, Code, FileSymlink, Loader2 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -23,6 +23,7 @@ export const UnifiedEditor = ({ editorData, onSave, onClose, currentDocumentPath
   const [content, setContent] = useState('');
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
   const [showLinkPicker, setShowLinkPicker] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const hasInitializedRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -83,15 +84,20 @@ export const UnifiedEditor = ({ editorData, onSave, onClose, currentDocumentPath
   }, [editorData, editor, editorMode]);
 
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
     let finalContent = content;
     if (editorMode === 'wysiwyg' && editor) {
       // Convert editor HTML to markdown before saving
       const html = editor.getHTML();
       finalContent = htmlToMarkdown(html);
     }
-    onSave(finalContent);
-    onClose();
+    await onSave(finalContent);
+    // Brief delay to show the saving indicator
+    setTimeout(() => {
+      setIsSaving(false);
+      onClose();
+    }, 300);
   };
 
   const toggleEditorMode = () => {
@@ -324,9 +330,14 @@ export const UnifiedEditor = ({ editorData, onSave, onClose, currentDocumentPath
                 <Button 
                   onClick={handleSave} 
                   size="sm"
+                  disabled={isSaving}
                 >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  {isSaving ? 'Saving...' : 'Save Changes'}
                 </Button>
                 <Button 
                   onClick={onClose} 
