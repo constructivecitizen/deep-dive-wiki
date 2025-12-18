@@ -52,10 +52,10 @@ export function FindReplacePanel({
     }
   }, [findText, content, caseSensitive]);
 
-  // Highlight current match in textarea
-  useEffect(() => {
-    if (matches.length > 0 && textareaRef.current) {
-      const pos = matches[currentMatchIndex];
+  // Highlight match in textarea at specific index
+  const highlightMatchAtIndex = useCallback((index: number) => {
+    if (matches.length > 0 && textareaRef.current && index < matches.length) {
+      const pos = matches[index];
       textareaRef.current.focus();
       textareaRef.current.setSelectionRange(pos, pos + findText.length);
       
@@ -64,17 +64,21 @@ export function FindReplacePanel({
       const linesBeforeMatch = content.substring(0, pos).split('\n').length;
       textareaRef.current.scrollTop = Math.max(0, (linesBeforeMatch - 5) * lineHeight);
     }
-  }, [currentMatchIndex, matches, findText, textareaRef, content]);
+  }, [matches, findText, textareaRef, content]);
 
   const goToNextMatch = useCallback(() => {
     if (matches.length === 0) return;
-    setCurrentMatchIndex((prev) => (prev + 1) % matches.length);
-  }, [matches.length]);
+    const newIndex = (currentMatchIndex + 1) % matches.length;
+    setCurrentMatchIndex(newIndex);
+    highlightMatchAtIndex(newIndex);
+  }, [matches.length, currentMatchIndex, highlightMatchAtIndex]);
 
   const goToPrevMatch = useCallback(() => {
     if (matches.length === 0) return;
-    setCurrentMatchIndex((prev) => (prev - 1 + matches.length) % matches.length);
-  }, [matches.length]);
+    const newIndex = (currentMatchIndex - 1 + matches.length) % matches.length;
+    setCurrentMatchIndex(newIndex);
+    highlightMatchAtIndex(newIndex);
+  }, [matches.length, currentMatchIndex, highlightMatchAtIndex]);
 
   const replaceCurrent = useCallback(() => {
     if (matches.length === 0 || !findText) return;
