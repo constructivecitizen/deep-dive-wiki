@@ -106,20 +106,26 @@ export function FindReplacePanel({
     onContentChange(newContent);
   }, [content, findText, replaceText, caseSensitive, onContentChange]);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts - only when find/replace inputs are focused
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInFindReplacePanel = target.closest('.find-replace-panel');
+      
       if (e.key === "Escape") {
         onClose();
-      } else if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        goToNextMatch();
-      } else if (e.key === "Enter" && e.shiftKey) {
-        e.preventDefault();
-        goToPrevMatch();
-      } else if ((e.metaKey || e.ctrlKey) && e.key === "h") {
-        e.preventDefault();
-        replaceCurrent();
+      } else if (isInFindReplacePanel) {
+        // Only handle these shortcuts when focused in the find/replace panel
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          goToNextMatch();
+        } else if (e.key === "Enter" && e.shiftKey) {
+          e.preventDefault();
+          goToPrevMatch();
+        } else if ((e.metaKey || e.ctrlKey) && e.key === "h") {
+          e.preventDefault();
+          replaceCurrent();
+        }
       }
     };
 
@@ -128,7 +134,7 @@ export function FindReplacePanel({
   }, [onClose, goToNextMatch, goToPrevMatch, replaceCurrent]);
 
   return (
-    <div className="flex items-center gap-2 p-2 bg-muted/80 border-b border-border">
+    <div className="find-replace-panel flex items-center gap-2 p-2 bg-muted/80 border-b border-border">
       {/* Find input */}
       <div className="flex items-center gap-1">
         <Input
