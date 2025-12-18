@@ -355,7 +355,7 @@ const ContentSectionComponent: React.FC<{
   };
 
   // Calculate indentation: children align with parent's text (after the chevron + gap)
-  const chevronAndGapWidth = 17; // 16px chevron + 1px gap
+  const chevronAndGapWidth = 29; // 16px chevron + 1px gap + 12px extra indent
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   const contentIndentationPx = indentationPx + chevronAndGapWidth + 3; // Reduced gap between line and content
   
