@@ -46,13 +46,13 @@ export const rubricColorMap: Record<string, keyof typeof stampColorTreatments> =
   background: "blue",
   "main goal": "blue",
   "main work": "blue",
-  critical: "red",
-  important: "amber",
-  "minor tips": "green",
-  tips: "green",
-  note: "green",
-  goal: "purple",
-  goals: "purple",
+  critical: "blue",
+  important: "blue",
+  "minor tips": "blue",
+  tips: "blue",
+  note: "blue",
+  goal: "blue",
+  goals: "blue",
 };
 
 // Defines the display order of rubrics when grouping siblings
