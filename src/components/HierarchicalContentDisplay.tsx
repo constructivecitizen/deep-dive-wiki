@@ -295,7 +295,7 @@ const ContentSectionComponent: React.FC<{
   const getHeadingClass = () => {
     // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
     const getFontSizeClass = (currentDepth: number) => {
-      if (currentDepth === 0) return 'text-2xl font-semibold leading-relaxed'; // 1.5rem
+      if (currentDepth === 0) return 'text-xl font-semibold leading-relaxed'; // 1.25rem
       if (currentDepth === 1) return 'text-lg font-medium leading-relaxed'; // 1.125rem
       if (currentDepth === 2) return 'text-base font-medium leading-normal'; // 1rem
       if (currentDepth === 3) return 'text-sm font-medium leading-normal'; // 0.875rem
@@ -398,7 +398,7 @@ const ContentSectionComponent: React.FC<{
   if (isDocumentTitle) {
     return (
       <div id={section.id}>
-        <h1 className="text-3xl font-bold text-foreground mb-6">
+        <h1 className="text-4xl font-bold text-foreground mb-6">
           {renderTitleWithRubric(section.title, section.level)}
         </h1>
         
