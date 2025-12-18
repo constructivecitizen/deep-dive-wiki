@@ -322,9 +322,11 @@ const ContentSectionComponent: React.FC<{
       // Only apply if prefix is reasonable length (not a full sentence)
       if (prefix.length <= 40 && rest.length > 0) {
         return (
-          <span>
-            <span className="bg-muted px-1 py-0.5 rounded-sm">{prefix}:</span>
-            <span> {rest}</span>
+          <span className="inline-flex items-baseline gap-1.5">
+            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium relative -top-[1px]">
+              {prefix}
+            </span>
+            <span>{rest}</span>
           </span>
         );
       }
