@@ -284,8 +284,8 @@ const ContentSectionComponent: React.FC<{
   // Check if this is the document title section (first section at depth 0)
   const isDocumentTitle = depth === 0 && siblingIndex === 0 && documentTitle && section.title === documentTitle;
   
-  // Register this node's expanded state if it's a top-level node (depth 1, since depth 0 is document title)
-  const isTopLevelNode = depth === 1;
+  // Register this node's expanded state if it's a top-level node (depth 0, excluding document title)
+  const isTopLevelNode = depth === 0 && !isDocumentTitle;
   React.useEffect(() => {
     if (isTopLevelNode && hasChildren) {
       registerTopLevelExpanded(section.id, isExpanded);
