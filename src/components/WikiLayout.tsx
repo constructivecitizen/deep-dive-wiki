@@ -74,16 +74,16 @@ export const WikiLayout = ({
       <header className="border-b border-sidebar-border section-bg-1 shrink-0">
         <div className="py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center pl-3 gap-2 overflow-hidden">
+            <div className="flex items-center pl-3 gap-0 overflow-hidden">
               <img 
                 src={CompandioLogo} 
                 alt="Compandio" 
-                className="h-[46px] w-auto shrink-0"
+                className="h-[58px] w-auto shrink-0"
               />
               <img 
                 src={ProductLogo} 
                 alt="Product" 
-                className="h-7 w-auto"
+                className="h-5 w-auto"
               />
             </div>
             <Button
