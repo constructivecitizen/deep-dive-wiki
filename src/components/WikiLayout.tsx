@@ -78,12 +78,12 @@ export const WikiLayout = ({
               <img 
                 src={CompandioLogo} 
                 alt="Compandio" 
-                className="h-5 w-auto"
+                className="h-[46px] w-auto"
               />
               <img 
                 src={ProductLogo} 
                 alt="Product" 
-                className="h-4 w-auto"
+                className="h-7 w-auto"
               />
             </div>
             <Button
