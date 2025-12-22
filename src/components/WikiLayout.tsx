@@ -4,8 +4,8 @@ import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { SearchOverlay } from "./SearchOverlay";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
 import { NavigationContextValue } from "@/hooks/useNavigationState";
-import BetterProdLogoB from "@/assets/BetterProd-logo-3A-3.png";
-import BetterProdLogoText from "@/assets/BetterProd-logo-3B.png";
+import CompandioLogo from "@/assets/Compandio-logo.png";
+import ProductLogo from "@/assets/Product-logo.png";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -74,19 +74,17 @@ export const WikiLayout = ({
       <header className="border-b border-sidebar-border section-bg-1 shrink-0">
         <div className="py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center pl-[0.75rem]">
-              <div className="flex items-center">
-                <img 
-                  src={BetterProdLogoB} 
-                  alt="BetterProd B" 
-                  className="h-[51px] w-auto"
-                />
-                <img 
-                  src={BetterProdLogoText} 
-                  alt="etterProd" 
-                  className="h-10 w-auto mt-2"
-                />
-              </div>
+            <div className="flex flex-col items-start pl-3 gap-0.5">
+              <img 
+                src={CompandioLogo} 
+                alt="Compandio" 
+                className="h-5 w-auto"
+              />
+              <img 
+                src={ProductLogo} 
+                alt="Product" 
+                className="h-4 w-auto"
+              />
             </div>
             <Button
               variant="ghost"
