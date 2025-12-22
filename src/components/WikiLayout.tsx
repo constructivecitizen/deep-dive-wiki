@@ -83,7 +83,7 @@ export const WikiLayout = ({
               <img 
                 src={ProductLogo} 
                 alt="Product" 
-                className="h-5 w-auto"
+                className="h-[22px] w-auto"
               />
             </div>
             <Button
