@@ -4,7 +4,7 @@ import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { SearchOverlay } from "./SearchOverlay";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
 import { NavigationContextValue } from "@/hooks/useNavigationState";
-import CompandioLogo from "@/assets/Compandio-logo.png";
+import CompandioLogo from "@/assets/Compandio-logo-new.png";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
