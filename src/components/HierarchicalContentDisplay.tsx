@@ -3,7 +3,13 @@ import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdownRenderer';
 import { getStampColors, getRubricOrderIndex } from '@/lib/rubricConfig';
 import { SourcesIndicator } from './SourcesIndicator';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
+
 interface ContentSection {
   level: number;
   title: string;
@@ -13,6 +19,7 @@ interface ContentSection {
   id: string;
   sources?: string[];
 }
+
 interface HierarchicalContentDisplayProps {
   content: string;
   onSectionClick?: (sectionTitle: string) => void;
@@ -34,30 +41,23 @@ interface TopLevelExpandedContextType {
   anyTopLevelExpanded: boolean;
   registerTopLevelExpanded: (id: string, isExpanded: boolean) => void;
 }
+
 const TopLevelExpandedContext = createContext<TopLevelExpandedContextType>({
   anyTopLevelExpanded: false,
-  registerTopLevelExpanded: () => {}
+  registerTopLevelExpanded: () => {},
 });
 
 // Helper to parse title and extract rubric if present
 // Skip rubric extraction for root (level 0) and first level (level 1) sections
-const parseRubric = (title: string, absoluteLevel?: number): {
-  rubric: string | null;
-  text: string;
-} => {
+const parseRubric = (title: string, absoluteLevel?: number): { rubric: string | null; text: string } => {
   // Don't extract rubrics for level 0 and level 1 sections
   if (absoluteLevel !== undefined && absoluteLevel <= 1) {
-    return {
-      rubric: null,
-      text: title
-    };
+    return { rubric: null, text: title };
   }
+  
   const colonIndex = title.indexOf(':');
   if (colonIndex === -1 || colonIndex > 20) {
-    return {
-      rubric: null,
-      text: title
-    };
+    return { rubric: null, text: title };
   }
   return {
     rubric: title.substring(0, colonIndex),
@@ -70,83 +70,78 @@ interface RubricGroup {
   rubric: string | null;
   items: ContentSection[];
 }
+
 const groupChildrenByRubric = (children: ContentSection[]): RubricGroup[] => {
   const groups: Map<string | null, ContentSection[]> = new Map();
-
+  
   // Group items by their rubric (passing absolute level for rubric extraction)
   for (const child of children) {
-    const {
-      rubric
-    } = parseRubric(child.title, child.level);
+    const { rubric } = parseRubric(child.title, child.level);
     const normalizedRubric = rubric?.toLowerCase().trim() || null;
+    
     if (!groups.has(normalizedRubric)) {
       groups.set(normalizedRubric, []);
     }
     groups.get(normalizedRubric)!.push(child);
   }
-
+  
   // Convert to array and sort by rubric order
   const result: RubricGroup[] = [];
   for (const [rubric, items] of groups.entries()) {
-    result.push({
-      rubric,
-      items
-    });
+    result.push({ rubric, items });
   }
+  
   result.sort((a, b) => getRubricOrderIndex(a.rubric) - getRubricOrderIndex(b.rubric));
+  
   return result;
 };
 
 // Helper function to extract full hierarchical content for a section
 const extractSectionFullContent = (targetSection: ContentSection): string => {
   let fullContent = '';
-
+  
   // Add the section's own content if it exists
   if (targetSection.content && targetSection.content.trim()) {
     fullContent += targetSection.content.trim() + '\n\n';
   }
-
+  
   // Recursively extract all child content
   const extractChildrenContent = (section: ContentSection): string => {
     let childContent = '';
     for (const child of section.children) {
       const headerLevel = '#'.repeat(Math.max(1, child.level));
       childContent += `${headerLevel} ${child.title}\n\n`;
+      
       if (child.content && child.content.trim()) {
         childContent += child.content.trim() + '\n\n';
       }
-
+      
       // Recursively extract nested children
       childContent += extractChildrenContent(child);
     }
     return childContent;
   };
+  
   fullContent += extractChildrenContent(targetSection);
   return fullContent.trim();
 };
 
 // Helper to extract sources from content
-const extractSources = (content: string): {
-  cleanContent: string;
-  sources: string[];
-} => {
+const extractSources = (content: string): { cleanContent: string; sources: string[] } => {
   const sourcesRegex = /<!--\s*sources:\s*(.+?)\s*-->/gi;
   const sources: string[] = [];
+  
   let cleanContent = content.replace(sourcesRegex, (match, urlList) => {
     // Split by comma and clean up each URL
     const urls = urlList.split(',').map((url: string) => url.trim()).filter(Boolean);
     sources.push(...urls);
     return ''; // Remove the comment from content
   });
-  return {
-    cleanContent: cleanContent.trim(),
-    sources
-  };
+  
+  return { cleanContent: cleanContent.trim(), sources };
 };
-const parseHierarchicalContent = (content: string): {
-  preContent: string;
-  sections: ContentSection[];
-} => {
+
+const parseHierarchicalContent = (content: string): { preContent: string; sections: ContentSection[] } => {
   const lines = content.split('\n');
   const sections: ContentSection[] = [];
   const stack: ContentSection[] = [];
@@ -154,10 +149,12 @@ const parseHierarchicalContent = (content: string): {
   let preContent = '';
   let sectionId = 0;
   let hasSeenHeader = false;
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     // Support up to 30 levels of headers
     const headingMatch = line.match(/^(#{1,99})\s*(.+?)(?:\s*\[(.*?)\])?$/);
+    
     if (headingMatch) {
       // Process any accumulated content
       if (currentContent.trim()) {
@@ -166,21 +163,23 @@ const parseHierarchicalContent = (content: string): {
           preContent = currentContent.trim();
         } else if (stack.length > 0) {
           // This is content for the previous section - extract sources
-          const {
-            cleanContent,
-            sources
-          } = extractSources(currentContent);
+          const { cleanContent, sources } = extractSources(currentContent);
           stack[stack.length - 1].content += cleanContent;
           if (sources.length > 0) {
-            stack[stack.length - 1].sources = [...(stack[stack.length - 1].sources || []), ...sources];
+            stack[stack.length - 1].sources = [
+              ...(stack[stack.length - 1].sources || []),
+              ...sources
+            ];
           }
         }
       }
       currentContent = '';
       hasSeenHeader = true;
+
       const level = headingMatch[1].length;
       const title = headingMatch[2].trim();
       const tags = headingMatch[3] ? headingMatch[3].split(',').map(tag => tag.trim()) : [];
+      
       const section: ContentSection = {
         level,
         title,
@@ -195,11 +194,13 @@ const parseHierarchicalContent = (content: string): {
       while (stack.length > 0 && stack[stack.length - 1].level >= level) {
         stack.pop();
       }
+
       if (stack.length === 0) {
         sections.push(section);
       } else {
         stack[stack.length - 1].children.push(section);
       }
+
       stack.push(section);
     } else {
       currentContent += line + '\n';
@@ -211,37 +212,33 @@ const parseHierarchicalContent = (content: string): {
     if (!hasSeenHeader) {
       preContent = currentContent.trim();
     } else if (stack.length > 0) {
-      const {
-        cleanContent,
-        sources
-      } = extractSources(currentContent);
+      const { cleanContent, sources } = extractSources(currentContent);
       stack[stack.length - 1].content += cleanContent;
       if (sources.length > 0) {
-        stack[stack.length - 1].sources = [...(stack[stack.length - 1].sources || []), ...sources];
+        stack[stack.length - 1].sources = [
+          ...(stack[stack.length - 1].sources || []),
+          ...sources
+        ];
       }
     }
   }
-  return {
-    preContent,
-    sections
-  };
+
+  return { preContent, sections };
 };
 
 // Render a rubric slug header
-const RubricSlug: React.FC<{
-  rubric: string;
-  linePositionPx: number;
-}> = ({
-  rubric,
-  linePositionPx
-}) => {
+const RubricSlug: React.FC<{ rubric: string; linePositionPx: number }> = ({ rubric, linePositionPx }) => {
   const colors = getStampColors(rubric);
-  return <div className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-2.5 ${colors.bg} ${colors.text} ${colors.border}`} style={{
-    marginLeft: `${linePositionPx}px`
-  }}>
+  return (
+    <div 
+      className={`inline-flex items-center px-1.5 py-0.5 rounded-t-md border-b-2 text-[10px] font-semibold uppercase tracking-wider mb-2.5 ${colors.bg} ${colors.text} ${colors.border}`}
+      style={{ marginLeft: `${linePositionPx}px` }}
+    >
       {rubric}
-    </div>;
+    </div>
+  );
 };
+
 const ContentSectionComponent: React.FC<{
   section: ContentSection;
   depth: number;
@@ -259,24 +256,7 @@ const ContentSectionComponent: React.FC<{
   onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void;
   parentWasManuallyExpanded?: boolean;
   showRubricVisuals?: boolean;
-}> = ({
-  section,
-  depth,
-  onSectionClick,
-  onInternalLinkClick,
-  activeNodeId,
-  documentPath,
-  siblingIndex = 0,
-  documentTitle,
-  expandedSections,
-  defaultExpandDepth,
-  onToggleSection,
-  showDescriptions = 'on',
-  descriptionOverrides,
-  onToggleDescription,
-  parentWasManuallyExpanded = false,
-  showRubricVisuals = true
-}) => {
+}> = ({ section, depth, onSectionClick, onInternalLinkClick, activeNodeId, documentPath, siblingIndex = 0, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions = 'on', descriptionOverrides, onToggleDescription, parentWasManuallyExpanded = false, showRubricVisuals = true }) => {
   // Determine initial expanded state
   const getInitialExpandedState = () => {
     // If parent was manually expanded, children start collapsed
@@ -291,20 +271,19 @@ const ContentSectionComponent: React.FC<{
     }
     return true; // Default to expanded
   };
+  
   const [isExpanded, setIsExpanded] = useState(getInitialExpandedState);
   const [wasManuallyExpanded, setWasManuallyExpanded] = useState(false);
-
+  
   // Get top-level expansion context
-  const {
-    anyTopLevelExpanded,
-    registerTopLevelExpanded
-  } = useContext(TopLevelExpandedContext);
+  const { anyTopLevelExpanded, registerTopLevelExpanded } = useContext(TopLevelExpandedContext);
+  
   const hasChildren = section.children.length > 0;
   const hasContent = section.content.trim().length > 0;
   const isLeafNode = !hasChildren && !hasContent;
   // Check if this is the document title section (first section at depth 0)
   const isDocumentTitle = depth === 0 && siblingIndex === 0 && documentTitle && section.title === documentTitle;
-
+  
   // Register this node's expanded state if it's a top-level node (depth 0, excluding document title)
   const isTopLevelNode = depth === 0 && !isDocumentTitle;
   React.useEffect(() => {
@@ -312,7 +291,7 @@ const ContentSectionComponent: React.FC<{
       registerTopLevelExpanded(section.id, isExpanded);
     }
   }, [isTopLevelNode, hasChildren, section.id, isExpanded, registerTopLevelExpanded]);
-
+  
   // Update when external control changes
   React.useEffect(() => {
     if (expandedSections && section.id in expandedSections) {
@@ -321,6 +300,7 @@ const ContentSectionComponent: React.FC<{
       setIsExpanded(depth < defaultExpandDepth);
     }
   }, [expandedSections, defaultExpandDepth, section.id, depth]);
+  
   const handleToggle = () => {
     const newExpanded = !isExpanded;
     if (onToggleSection) {
@@ -333,6 +313,7 @@ const ContentSectionComponent: React.FC<{
       setWasManuallyExpanded(true);
     }
   };
+
   const getHeadingClass = () => {
     // Calculate font size based on depth: 3rem for depth 0, 2rem for depth 1, then 0.2rem smaller each level, minimum 1rem
     const getFontSizeClass = (currentDepth: number) => {
@@ -342,6 +323,7 @@ const ContentSectionComponent: React.FC<{
       if (currentDepth === 3) return 'text-sm font-medium leading-normal'; // 0.875rem
       return 'text-sm leading-normal'; // 0.875rem minimum for depth 4+
     };
+    
     return `text-foreground ${getFontSizeClass(depth)}`;
   };
 
@@ -349,65 +331,68 @@ const ContentSectionComponent: React.FC<{
   // Apply underline to text (not prefix) when this is a top-level node and any top-level is expanded
   const renderTitleWithStyledPrefix = (title: string, absoluteLevel: number) => {
     // Get text after rubric extraction (rubrics are separate from this treatment)
-    const {
-      text: titleAfterRubric
-    } = parseRubric(title, absoluteLevel);
-
+    const { text: titleAfterRubric } = parseRubric(title, absoluteLevel);
+    
     // Determine if we should underline (top-level node and any top-level is expanded)
     const shouldUnderline = isTopLevelNode && anyTopLevelExpanded;
-
+    
     // For level 1: treat text before first colon as styled prefix
     // For level 2+: look for a secondary colon pattern in the remaining text
     const colonIndex = titleAfterRubric.indexOf(':');
-
+    
     // Only apply prefix styling if there's a colon and text after it
     if (colonIndex > 0 && colonIndex < titleAfterRubric.length - 1) {
       const prefix = titleAfterRubric.substring(0, colonIndex).trim();
       const rest = titleAfterRubric.substring(colonIndex + 1).trim();
-
+      
       // Only apply if prefix is reasonable length (not a full sentence)
       if (prefix.length <= 40 && rest.length > 0) {
-        return <span className="block">
-            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted font-medium relative -top-[1px] whitespace-nowrap mr-1.5 text-white">
+        return (
+          <span className="block">
+            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-accent text-hierarchy-hover font-medium relative -top-[1px] whitespace-nowrap mr-1.5">
               {prefix}
             </span>
             <span className={shouldUnderline ? 'underline decoration-1 underline-offset-2' : ''}>
               {rest}
             </span>
-          </span>;
+          </span>
+        );
       }
     }
+    
     return <span className={shouldUnderline ? 'underline decoration-1 underline-offset-2' : ''}>{titleAfterRubric}</span>;
   };
 
   // Legacy helper for document title - level 0 so no rubric extraction
   const renderTitleWithRubric = (title: string, level: number) => {
-    const {
-      rubric,
-      text
-    } = parseRubric(title, level);
+    const { rubric, text } = parseRubric(title, level);
     if (!rubric) {
       return <>{title}</>;
     }
     const colors = getStampColors(rubric);
-    return <span className="inline-flex items-center gap-2">
+    return (
+      <span className="inline-flex items-center gap-2">
         <span>{text}</span>
-        <span className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider flex-shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}>
+        <span 
+          className={`inline-flex items-center justify-center w-[90px] px-1.5 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider flex-shrink-0 ${colors.bg} ${colors.text} ${colors.border}`}
+        >
           {rubric}
         </span>
-      </span>;
+      </span>
+    );
   };
 
   // Calculate indentation: children align with parent's text (after the chevron + gap)
   const chevronAndGapWidth = 17; // 16px chevron + 1px gap
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   const contentIndentationPx = indentationPx + chevronAndGapWidth + 3; // Reduced gap between line and content
-
+  
   // Calculate color based on depth level (cycling through 6 colors)
   const getContentColorClass = (depth: number) => {
     const classes = ['content-level-1', 'content-level-2', 'content-level-3', 'content-level-4', 'content-level-5', 'content-level-6'];
     return classes[depth % 6];
   };
+  
   const contentColorClass = getContentColorClass(depth);
 
   // Determine if content should be visible
@@ -420,12 +405,14 @@ const ContentSectionComponent: React.FC<{
     }
     return true; // Default to visible
   };
+
   const isContentVisible = getContentVisibility();
 
   // Handle clicks on internal links within content
   const handleContentClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     const link = target.closest('a[data-internal-link]');
+    
     if (link) {
       e.preventDefault();
       const linkTarget = link.getAttribute('data-internal-link');
@@ -437,47 +424,86 @@ const ContentSectionComponent: React.FC<{
 
   // If this is the document title section, render as page title
   if (isDocumentTitle) {
-    return <div id={section.id}>
-        <h1 className="text-4xl font-bold text-foreground mb-6">
+    return (
+      <div id={section.id}>
+        <h1 className="text-4xl font-bold text-hierarchy-hover mb-6">
           {renderTitleWithRubric(section.title, section.level)}
         </h1>
         
-        {hasContent && <div className="mb-6 py-4 border-b-2 border-border/50">
-            <span className="prose prose-slate dark:prose-invert max-w-none text-base text-muted-foreground italic [&>p]:inline" onClick={handleContentClick} dangerouslySetInnerHTML={{
-          __html: renderMarkdown(section.content.trim())
-        }} />
-            {section.sources && section.sources.length > 0 && <SourcesIndicator sources={section.sources} />}
-          </div>}
-        
-        {hasChildren && <div className="space-y-4">
-            {renderGroupedChildren(section.children, depth + 1, onSectionClick, onInternalLinkClick, activeNodeId, documentPath, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions, descriptionOverrides, onToggleDescription, false, true // Document title's children ARE the top level, so always show rubric visuals
+        {hasContent && (
+          <div className="mb-6 py-4 border-b-2 border-border/50">
+            <span 
+              className="prose prose-slate dark:prose-invert max-w-none text-base text-muted-foreground italic [&>p]:inline"
+              onClick={handleContentClick}
+              dangerouslySetInnerHTML={{ 
+                __html: renderMarkdown(section.content.trim()) 
+              }}
+            />
+            {section.sources && section.sources.length > 0 && (
+              <SourcesIndicator sources={section.sources} />
+            )}
+          </div>
         )}
-          </div>}
-      </div>;
+        
+        {hasChildren && (
+          <div className="space-y-4">
+            {renderGroupedChildren(
+              section.children, 
+              depth + 1, 
+              onSectionClick, 
+              onInternalLinkClick,
+              activeNodeId, 
+              documentPath, 
+              documentTitle, 
+              expandedSections, 
+              defaultExpandDepth, 
+              onToggleSection, 
+              showDescriptions, 
+              descriptionOverrides, 
+              onToggleDescription, 
+              false,
+              true // Document title's children ARE the top level, so always show rubric visuals
+            )}
+          </div>
+        )}
+      </div>
+    );
   }
+  
   const handleOpenInNewTab = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const url = `${window.location.origin}${documentPath || ''}#${section.id}`;
     window.open(url, '_blank');
   };
-  return <div id={section.id}>
+
+  return (
+    <div id={section.id}>
       <ContextMenu>
         <ContextMenuTrigger asChild>
-          <div className="flex items-start group" style={{
-          marginLeft: `${indentationPx}px`,
-          gap: '9px'
-        }}>
-            <button onClick={handleToggle} className="flex-shrink-0 w-4 h-4 flex items-center justify-start mt-[6px]" aria-label={isExpanded ? "Collapse section" : "Expand section"}>
-              {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+          <div 
+            className="flex items-start group"
+            style={{ marginLeft: `${indentationPx}px`, gap: '9px' }}
+          >
+            <button
+              onClick={handleToggle}
+              className="flex-shrink-0 w-4 h-4 flex items-center justify-start mt-[6px]"
+              aria-label={isExpanded ? "Collapse section" : "Expand section"}
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-hierarchy-line" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-hierarchy-line" />
+              )}
             </button>
             
             <div className="flex-1 min-w-0">
-              <h1 className={`${getHeadingClass()} cursor-pointer`} onClick={() => {
-              if (onSectionClick) {
-                onSectionClick(section.title);
-              }
-            }}>
+              <h1 className={`${getHeadingClass()} cursor-pointer`}
+                  onClick={() => {
+                    if (onSectionClick) {
+                      onSectionClick(section.title);
+                    }
+                  }}>
                 {renderTitleWithStyledPrefix(section.title, section.level)}
               </h1>
             </div>
@@ -492,26 +518,70 @@ const ContentSectionComponent: React.FC<{
       </ContextMenu>
 
       {/* Show content area when expanded OR when content is visible (descriptions on) and has content */}
-      {(isExpanded || isContentVisible && hasContent) && <div className="mt-2">
-          {hasContent && isContentVisible && <div className={`mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`} style={{
-        marginLeft: `${contentIndentationPx + 4}px`
-      }}>
-              <span className="prose prose-slate dark:prose-invert max-w-none prose-sm [&>p]:inline" onClick={handleContentClick} dangerouslySetInnerHTML={{
-          __html: renderMarkdown(section.content.trim())
-        }} />
-              {section.sources && section.sources.length > 0 && <SourcesIndicator sources={section.sources} />}
-            </div>}
+      {(isExpanded || (isContentVisible && hasContent)) && (
+        <div className="mt-2">
+          {hasContent && isContentVisible && (
+            <div 
+              className={`mb-4 py-[7px] px-[9px] rounded-md ${contentColorClass}`}
+              style={{ marginLeft: `${contentIndentationPx + 4}px` }}
+            >
+              <span 
+                className="prose prose-slate dark:prose-invert max-w-none prose-sm [&>p]:inline"
+                onClick={handleContentClick}
+                dangerouslySetInnerHTML={{ 
+                  __html: renderMarkdown(section.content.trim()) 
+                }}
+              />
+              {section.sources && section.sources.length > 0 && (
+                <SourcesIndicator sources={section.sources} />
+              )}
+            </div>
+          )}
           
-          {hasChildren && isExpanded && <div className="space-y-4 pb-3 ml-8">
-              {renderGroupedChildren(section.children, depth + 1, onSectionClick, onInternalLinkClick, activeNodeId, documentPath, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions, descriptionOverrides, onToggleDescription, wasManuallyExpanded, showRubricVisuals // Pass through - will be false if already shown at higher level
-        )}
-            </div>}
-        </div>}
-    </div>;
+          {hasChildren && isExpanded && (
+            <div className="space-y-4 pb-3 ml-8">
+              {renderGroupedChildren(
+                section.children, 
+                depth + 1, 
+                onSectionClick, 
+                onInternalLinkClick,
+                activeNodeId, 
+                documentPath, 
+                documentTitle, 
+                expandedSections, 
+                defaultExpandDepth, 
+                onToggleSection, 
+                showDescriptions, 
+                descriptionOverrides, 
+                onToggleDescription, 
+                wasManuallyExpanded,
+                showRubricVisuals // Pass through - will be false if already shown at higher level
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 // Helper function to render children grouped by rubric
-const renderGroupedChildren = (children: ContentSection[], depth: number, onSectionClick?: (sectionTitle: string) => void, onInternalLinkClick?: (target: string) => void, activeNodeId?: string, documentPath?: string, documentTitle?: string, expandedSections?: Record<string, boolean>, defaultExpandDepth?: number, onToggleSection?: (sectionId: string, currentlyExpanded: boolean) => void, showDescriptions?: 'on' | 'off' | 'mixed', descriptionOverrides?: Record<string, boolean>, onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void, parentWasManuallyExpanded?: boolean, showRubricVisuals: boolean = true // Only show slugs/lines at the topmost level
+const renderGroupedChildren = (
+  children: ContentSection[],
+  depth: number,
+  onSectionClick?: (sectionTitle: string) => void,
+  onInternalLinkClick?: (target: string) => void,
+  activeNodeId?: string,
+  documentPath?: string,
+  documentTitle?: string,
+  expandedSections?: Record<string, boolean>,
+  defaultExpandDepth?: number,
+  onToggleSection?: (sectionId: string, currentlyExpanded: boolean) => void,
+  showDescriptions?: 'on' | 'off' | 'mixed',
+  descriptionOverrides?: Record<string, boolean>,
+  onToggleDescription?: (sectionId: string, currentlyVisible: boolean) => void,
+  parentWasManuallyExpanded?: boolean,
+  showRubricVisuals: boolean = true // Only show slugs/lines at the topmost level
 ) => {
   const groups = groupChildrenByRubric(children);
   const chevronAndGapWidth = 17;
@@ -519,45 +589,88 @@ const renderGroupedChildren = (children: ContentSection[], depth: number, onSect
   const indentationPx = depth === 0 ? 0 : depth * chevronAndGapWidth;
   // Vertical line positioned to abut the left edge of content bubbles
   const linePositionPx = indentationPx + chevronAndGapWidth - 10; // 1px from chevron tip
-
+  
   return groups.map((group, groupIndex) => {
     // Show rubric visuals only at the topmost level where they appear
     if (group.rubric && showRubricVisuals) {
       const colors = getStampColors(group.rubric);
-      return <div key={`group-${groupIndex}-${group.rubric}`} className="relative">
+      return (
+        <div key={`group-${groupIndex}-${group.rubric}`} className="relative">
           {/* Render rubric slug header */}
           <RubricSlug rubric={group.rubric} linePositionPx={linePositionPx} />
           
           {/* Vertical line container */}
           <div className="relative">
             {/* Subtle vertical line matching rubric color */}
-            <div className={`absolute -top-2.5 bottom-1 w-[2px] rounded-b-full opacity-50 ${colors.line}`} style={{
-            left: `${linePositionPx}px`
-          }} />
+            <div 
+              className={`absolute -top-2.5 bottom-1 w-[2px] rounded-b-full opacity-50 ${colors.line}`}
+              style={{ left: `${linePositionPx}px` }}
+            />
             
             {/* Render all items in this group */}
-            {group.items.map((child, index) => <ContentSectionComponent key={child.id} section={child} depth={depth} onSectionClick={onSectionClick} onInternalLinkClick={onInternalLinkClick} activeNodeId={activeNodeId} documentPath={documentPath} documentTitle={documentTitle} siblingIndex={index} expandedSections={expandedSections} defaultExpandDepth={defaultExpandDepth} onToggleSection={onToggleSection} showDescriptions={showDescriptions} descriptionOverrides={descriptionOverrides} onToggleDescription={onToggleDescription} parentWasManuallyExpanded={parentWasManuallyExpanded} showRubricVisuals={false} // Disable rubric visuals for nested levels
-          />)}
+            {group.items.map((child, index) => (
+              <ContentSectionComponent
+                key={child.id}
+                section={child}
+                depth={depth}
+                onSectionClick={onSectionClick}
+                onInternalLinkClick={onInternalLinkClick}
+                activeNodeId={activeNodeId}
+                documentPath={documentPath}
+                documentTitle={documentTitle}
+                siblingIndex={index}
+                expandedSections={expandedSections}
+                defaultExpandDepth={defaultExpandDepth}
+                onToggleSection={onToggleSection}
+                showDescriptions={showDescriptions}
+                descriptionOverrides={descriptionOverrides}
+                onToggleDescription={onToggleDescription}
+                parentWasManuallyExpanded={parentWasManuallyExpanded}
+                showRubricVisuals={false} // Disable rubric visuals for nested levels
+              />
+            ))}
           </div>
-        </div>;
+        </div>
+      );
     }
-
+    
     // No rubric OR rubric visuals disabled - render items with tight internal spacing
     // (ordering by rubric is still maintained from groupChildrenByRubric)
     // Use space-y-1 internally so items appear grouped together, not separated
     // Use !mt-0 to override parent's space-y-4 so groups flow together seamlessly
-    return <div key={`group-${groupIndex}-${group.rubric || 'none'}`} className="space-y-1 !mt-1">
-        {group.items.map((child, index) => <ContentSectionComponent key={child.id} section={child} depth={depth} onSectionClick={onSectionClick} onInternalLinkClick={onInternalLinkClick} activeNodeId={activeNodeId} documentPath={documentPath} documentTitle={documentTitle} siblingIndex={index} expandedSections={expandedSections} defaultExpandDepth={defaultExpandDepth} onToggleSection={onToggleSection} showDescriptions={showDescriptions} descriptionOverrides={descriptionOverrides} onToggleDescription={onToggleDescription} parentWasManuallyExpanded={parentWasManuallyExpanded} showRubricVisuals={showRubricVisuals} // Pass through for non-rubric groups
-      />)}
-      </div>;
+    return (
+      <div key={`group-${groupIndex}-${group.rubric || 'none'}`} className="space-y-1 !mt-1">
+        {group.items.map((child, index) => (
+          <ContentSectionComponent
+            key={child.id}
+            section={child}
+            depth={depth}
+            onSectionClick={onSectionClick}
+            onInternalLinkClick={onInternalLinkClick}
+            activeNodeId={activeNodeId}
+            documentPath={documentPath}
+            documentTitle={documentTitle}
+            siblingIndex={index}
+            expandedSections={expandedSections}
+            defaultExpandDepth={defaultExpandDepth}
+            onToggleSection={onToggleSection}
+            showDescriptions={showDescriptions}
+            descriptionOverrides={descriptionOverrides}
+            onToggleDescription={onToggleDescription}
+            parentWasManuallyExpanded={parentWasManuallyExpanded}
+            showRubricVisuals={showRubricVisuals} // Pass through for non-rubric groups
+          />
+        ))}
+      </div>
+    );
   });
 };
-const HierarchicalContentDisplayInner: React.FC<HierarchicalContentDisplayProps> = ({
-  content,
+const HierarchicalContentDisplayInner: React.FC<HierarchicalContentDisplayProps> = ({ 
+  content, 
   onSectionClick,
   onInternalLinkClick,
-  activeNodeId,
-  currentSectionId,
+  activeNodeId, 
+  currentSectionId, 
   documentPath,
   documentTitle,
   expandedSections,
@@ -567,17 +680,16 @@ const HierarchicalContentDisplayInner: React.FC<HierarchicalContentDisplayProps>
   descriptionOverrides,
   onToggleDescription
 }) => {
+  
   // Clean tag syntax from content before parsing
   const cleanedContent = content.replace(/^(#+\s*.+?)\s*\[.*?\](\s*$)/gm, '$1$2');
-  const {
-    preContent,
-    sections
-  } = parseHierarchicalContent(content); // Use original content with tags for parsing
+  const { preContent, sections } = parseHierarchicalContent(content); // Use original content with tags for parsing
 
   // Handle clicks on internal links within pre-content
   const handlePreContentClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     const link = target.closest('a[data-internal-link]');
+    
     if (link) {
       e.preventDefault();
       const linkTarget = link.getAttribute('data-internal-link');
@@ -586,43 +698,74 @@ const HierarchicalContentDisplayInner: React.FC<HierarchicalContentDisplayProps>
       }
     }
   };
+
   if (sections.length === 0) {
-    return <div className="mb-6 py-4 border-b-2 border-border/50">
-        <span className="prose prose-slate dark:prose-invert max-w-none text-[0.95rem] text-muted-foreground italic [&>p]:inline" onClick={handlePreContentClick} dangerouslySetInnerHTML={{
-        __html: renderMarkdown(cleanedContent)
-      }} />
-      </div>;
+    return (
+      <div className="mb-6 py-4 border-b-2 border-border/50">
+        <span 
+          className="prose prose-slate dark:prose-invert max-w-none text-[0.95rem] text-muted-foreground italic [&>p]:inline"
+          onClick={handlePreContentClick}
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanedContent) }}
+        />
+      </div>
+    );
   }
-  return <div className="space-y-4">
-      {preContent && <div className="mb-6 py-4 border-b-2 border-border/50">
-          <span className="prose prose-slate dark:prose-invert max-w-none text-[0.95rem] text-muted-foreground italic [&>p]:inline" onClick={handlePreContentClick} dangerouslySetInnerHTML={{
-        __html: renderMarkdown(preContent)
-      }} />
-        </div>}
-      {renderGroupedChildren(sections, 0, onSectionClick, onInternalLinkClick, activeNodeId, documentPath, documentTitle, expandedSections, defaultExpandDepth, onToggleSection, showDescriptions, descriptionOverrides, onToggleDescription, false, true // Top level always shows rubric visuals
-    )}
-    </div>;
+
+  return (
+    <div className="space-y-4">
+      {preContent && (
+        <div className="mb-6 py-4 border-b-2 border-border/50">
+          <span 
+            className="prose prose-slate dark:prose-invert max-w-none text-[0.95rem] text-muted-foreground italic [&>p]:inline"
+            onClick={handlePreContentClick}
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(preContent) }}
+          />
+        </div>
+      )}
+      {renderGroupedChildren(
+        sections,
+        0,
+        onSectionClick,
+        onInternalLinkClick,
+        activeNodeId,
+        documentPath,
+        documentTitle,
+        expandedSections,
+        defaultExpandDepth,
+        onToggleSection,
+        showDescriptions,
+        descriptionOverrides,
+        onToggleDescription,
+        false,
+        true // Top level always shows rubric visuals
+      )}
+    </div>
+  );
 };
-export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = props => {
+
+export const HierarchicalContentDisplay: React.FC<HierarchicalContentDisplayProps> = (props) => {
   // State to track which top-level nodes are expanded
   const [topLevelExpandedState, setTopLevelExpandedState] = useState<Record<string, boolean>>({});
+  
   const registerTopLevelExpanded = React.useCallback((id: string, isExpanded: boolean) => {
     setTopLevelExpandedState(prev => {
       if (prev[id] === isExpanded) return prev;
-      return {
-        ...prev,
-        [id]: isExpanded
-      };
+      return { ...prev, [id]: isExpanded };
     });
   }, []);
+  
   const anyTopLevelExpanded = useMemo(() => {
     return Object.values(topLevelExpandedState).some(v => v);
   }, [topLevelExpandedState]);
+  
   const contextValue = useMemo(() => ({
     anyTopLevelExpanded,
-    registerTopLevelExpanded
+    registerTopLevelExpanded,
   }), [anyTopLevelExpanded, registerTopLevelExpanded]);
-  return <TopLevelExpandedContext.Provider value={contextValue}>
+  
+  return (
+    <TopLevelExpandedContext.Provider value={contextValue}>
       <HierarchicalContentDisplayInner {...props} />
-    </TopLevelExpandedContext.Provider>;
+    </TopLevelExpandedContext.Provider>
+  );
 };
