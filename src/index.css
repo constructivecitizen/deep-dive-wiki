@@ -32,7 +32,7 @@
     --muted-foreground: 215 15% 45%;
 
     /* Accent system - Teal highlights */
-    --accent: 181 40% 81%;
+    --accent: 181 30% 85%;
     --accent-foreground: 215 25% 15%;
 
     /* Destructive actions */
@@ -55,9 +55,9 @@
     --tag-red: 0 75% 60%;
     --tag-teal: 180 65% 45%;
 
-    /* Hierarchy indicators */
-    --hierarchy-line: 215 25% 80%;
-    --hierarchy-hover: 155 45% 35%;
+    /* Hierarchy indicators - Teal */
+    --hierarchy-line: 181 30% 70%;
+    --hierarchy-hover: 181 40% 50%;
 
     /* Content depth levels */
     --depth-bg-1: 35 20% 98%;
@@ -72,7 +72,7 @@
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 181 40% 81%;
+    --sidebar-accent: 181 30% 85%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
@@ -120,7 +120,7 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 181 30% 25%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -137,6 +137,10 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Hierarchy indicators - Teal (dark mode) */
+    --hierarchy-line: 181 30% 45%;
+    --hierarchy-hover: 181 40% 55%;
 
     /* Deeper dark mode section backgrounds */
     --section-bg-1: 210 35% 12%;  /* Deeper blue */

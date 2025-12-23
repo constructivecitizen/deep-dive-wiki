@@ -491,9 +491,9 @@ const ContentSectionComponent: React.FC<{
               aria-label={isExpanded ? "Collapse section" : "Expand section"}
             >
               {isExpanded ? (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                <ChevronDown className="w-4 h-4 text-hierarchy-line" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                <ChevronRight className="w-4 h-4 text-hierarchy-line" />
               )}
             </button>
             

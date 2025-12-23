@@ -36,7 +36,13 @@ export const stampColorTreatments = {
     bg: "bg-muted",
     text: "text-muted-foreground",
     border: "border-border",
-    line: "bg-border",
+    line: "bg-hierarchy-line",
+  },
+  teal: {
+    bg: "bg-accent/50",
+    text: "text-hierarchy-hover",
+    border: "border-hierarchy-line",
+    line: "bg-hierarchy-line",
   },
 } as const;
 
