@@ -70,8 +70,8 @@ export const WikiLayout = ({
 
   const sidebarContent = (
     <>
-      <header className="shrink-0">
-        <div className="py-3">
+      <header className="shrink-0 border-b border-sidebar-border/50">
+        <div className="py-2">
           <div className="flex items-center justify-between">
             <div className="pl-3 overflow-hidden">
               <img 
@@ -94,7 +94,7 @@ export const WikiLayout = ({
       </header>
       
       <div className="flex-1 h-0 overflow-y-auto overflow-x-hidden">
-        <HybridNavigationSidebar 
+        <HybridNavigationSidebar
           structure={navigationStructure} 
           contentNodes={contentNodes}
           onStructureUpdate={onStructureUpdate || (() => {})}
