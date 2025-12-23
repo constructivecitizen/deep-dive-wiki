@@ -384,8 +384,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
 
   return (
     <div className="h-full w-full flex flex-col bg-sidebar">
-      <div className="flex-1 section-bg-3 overflow-y-auto p-3 flex flex-col">
-        <div className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wide mb-3 px-1">Navigation</div>
+      <div className="flex-1 overflow-y-auto p-3 flex flex-col">
         <div className="flex-1 overflow-y-auto">
           {topLevelNodes.length > 0 ? topLevelNodes.map((item) => (
             <FolderNode key={item.id} node={item} contentNodes={contentNodes} onStructureUpdate={onStructureUpdate} onNavigationClick={onNavigationClick} currentNavId={currentNavId} setShowEditor={setShowEditor} currentPath={currentPath} allRootNodes={topLevelNodes} onSectionNavigate={onSectionNavigate} navigation={navigation} collapseKey={sidebarCollapseKey} initialExpandedFolders={initialSidebarState?.expandedFolders} initialExpandedSections={initialSidebarState?.expandedSections} />
