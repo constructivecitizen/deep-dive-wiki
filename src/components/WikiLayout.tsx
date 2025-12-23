@@ -71,10 +71,10 @@ export const WikiLayout = ({
 
   const sidebarContent = (
     <>
-      <header className="border-b border-sidebar-border section-bg-1 shrink-0">
+      <header className="shrink-0">
         <div className="py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center pl-3 gap-0 overflow-hidden">
+            <div className="flex flex-col pl-3 overflow-hidden">
               <img 
                 src={CompandioLogo} 
                 alt="Compandio" 
