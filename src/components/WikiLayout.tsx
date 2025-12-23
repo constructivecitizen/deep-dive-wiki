@@ -4,7 +4,8 @@ import { HybridNavigationSidebar } from "./HybridNavigationSidebar";
 import { SearchOverlay } from "./SearchOverlay";
 import { NavigationNode, WikiDocument } from "@/services/contentService";
 import { NavigationContextValue } from "@/hooks/useNavigationState";
-import CompandioLogo from "@/assets/Compandio-logo-new.png";
+import CompandioLogo from "@/assets/Compandio-logo.png";
+import ProductLogo from "@/assets/Product-logo.png";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -71,28 +72,30 @@ export const WikiLayout = ({
   const sidebarContent = (
     <>
       <header className="shrink-0">
-        <div className="pt-3 pb-2">
-          <div className="flex items-center justify-between px-3">
-            <img 
-              src={CompandioLogo} 
-              alt="Compandio" 
-              className="h-[37px] w-auto shrink-0"
-            />
+        <div className="py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col pl-3 overflow-hidden">
+              <img 
+                src={CompandioLogo} 
+                alt="Compandio" 
+                className="h-[58px] w-auto shrink-0"
+              />
+              <img 
+                src={ProductLogo} 
+                alt="Product" 
+                className="h-[22px] w-auto"
+              />
+            </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleSignOut}
-              className="text-muted-foreground hover:text-foreground"
+              className="mr-2 text-muted-foreground hover:text-foreground"
               title="Sign out"
             >
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-        <div className="py-1 mb-1" style={{ backgroundColor: '#6e819f' }}>
-          <h2 className="font-avenir font-bold text-sm tracking-wide text-center text-white leading-tight">
-            Product Management
-          </h2>
         </div>
       </header>
       
