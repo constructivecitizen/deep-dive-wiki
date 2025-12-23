@@ -349,7 +349,7 @@ const ContentSectionComponent: React.FC<{
       if (prefix.length <= 40 && rest.length > 0) {
         return (
           <span className="block">
-            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-accent text-hierarchy-hover font-medium relative -top-[1px] whitespace-nowrap mr-1.5">
+            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-hierarchy-hover text-white font-medium relative -top-[1px] whitespace-nowrap mr-1.5">
               {prefix}
             </span>
             <span className={shouldUnderline ? 'underline decoration-1 underline-offset-2' : ''}>
