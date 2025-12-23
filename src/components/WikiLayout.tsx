@@ -77,7 +77,7 @@ export const WikiLayout = ({
               <img 
                 src={CompandioProductLogo} 
                 alt="Compandio Product Management" 
-                className="h-[70px] w-auto"
+                className="h-[56px] w-auto"
               />
             </div>
             <Button
