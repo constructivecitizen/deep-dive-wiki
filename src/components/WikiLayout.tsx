@@ -90,7 +90,7 @@ export const WikiLayout = ({
           </div>
         </div>
         <div className="py-1 mb-1" style={{ backgroundColor: '#6e819f' }}>
-          <h2 className="font-avenir font-bold text-xs tracking-wide text-center text-white">
+          <h2 className="font-avenir font-bold text-sm tracking-wide text-center text-white leading-tight">
             Product Management
           </h2>
         </div>
