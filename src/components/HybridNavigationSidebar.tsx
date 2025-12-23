@@ -327,7 +327,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
   const [isCreating, setIsCreating] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isFiltersPaneOpen, setIsFiltersPaneOpen] = useState(true);
+  const [isFiltersPaneOpen, setIsFiltersPaneOpen] = useState(false);
   const [expandedFilters, setExpandedFilters] = useState({ ventureLevel: false, technology: false, marketProduct: false, content: false });
   const [filters, setFilters] = useState({
     ventureLevel: { early: true, pmf: true, scaleUp: true },
