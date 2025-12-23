@@ -73,12 +73,18 @@ export const WikiLayout = ({
       <header className="shrink-0">
         <div className="pt-3 pb-3">
           <div className="flex items-center justify-between">
-            <div className="pl-3 overflow-hidden">
+            <div className="flex flex-col pl-3 overflow-hidden">
               <img 
                 src={CompandioLogo} 
-                alt="Compandio - Product Management" 
-                className="h-[40px] w-auto shrink-0"
+                alt="Compandio" 
+                className="h-[46px] w-auto shrink-0"
               />
+              <span 
+                className="font-avenir font-bold text-sm tracking-wide"
+                style={{ color: '#6e819f' }}
+              >
+                Product Management
+              </span>
             </div>
             <Button
               variant="ghost"
