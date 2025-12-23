@@ -107,6 +107,9 @@ export default {
           teal: "hsl(var(--tag-teal))",
         },
       },
+      fontFamily: {
+        'avenir': ['"Nunito Sans"', 'system-ui', 'sans-serif'],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
