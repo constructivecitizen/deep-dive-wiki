@@ -239,7 +239,7 @@ const FolderNode: React.FC<{
         <ContextMenuTrigger asChild>
           <div
             className={`relative flex items-center gap-1 py-1 pr-2 rounded-md group transition-colors cursor-pointer min-w-0 border-l-2 ${
-              isActiveNode ? 'bg-primary/10 border-l-primary text-primary' : 'hover:bg-accent/50 border-l-transparent'
+              isActiveNode ? 'bg-accent border-l-primary text-primary' : 'hover:bg-accent/50 border-l-transparent'
             }`}
             onClick={handleNodeClick}
           >
