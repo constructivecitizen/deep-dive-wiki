@@ -71,12 +71,12 @@ export const WikiLayout = ({
   const sidebarContent = (
     <>
       <header className="shrink-0">
-        <div className="pt-3 pb-4">
+        <div className="pt-3 pb-2">
           <div className="flex items-center justify-between px-3">
             <img 
               src={CompandioLogo} 
               alt="Compandio" 
-              className="h-[46px] w-auto shrink-0"
+              className="h-[37px] w-auto shrink-0"
             />
             <Button
               variant="ghost"
@@ -89,11 +89,8 @@ export const WikiLayout = ({
             </Button>
           </div>
         </div>
-        <div className="px-3 pb-3">
-          <h2 
-            className="font-avenir font-bold text-base tracking-wide text-center"
-            style={{ color: '#6e819f' }}
-          >
+        <div className="py-2 mb-1" style={{ backgroundColor: '#6e819f' }}>
+          <h2 className="font-avenir font-bold text-sm tracking-wide text-center text-white">
             Product Management
           </h2>
         </div>
