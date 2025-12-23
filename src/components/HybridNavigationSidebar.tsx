@@ -394,7 +394,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           <button onClick={onSearchOpen} className="w-full flex items-center gap-2 px-2 pt-1 pb-0 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors"><Search className="w-3 h-3" /><span>Search...</span></button>
         </div>
       </div>
-      <div className="border-t border-sidebar-border section-bg-2 p-3">
+      <div className="border-t border-sidebar-border/50 p-3">
         <Collapsible open={isFiltersPaneOpen} onOpenChange={setIsFiltersPaneOpen}>
           <CollapsibleTrigger className="w-full flex items-center gap-1 cursor-pointer hover:bg-accent/30 rounded px-1 py-0.5 -mx-1">
             <ChevronRight className={`w-3 h-3 text-sidebar-foreground/70 transition-transform ${isFiltersPaneOpen ? 'rotate-90' : ''}`} />
@@ -402,7 +402,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           </CollapsibleTrigger>
           <CollapsibleContent><div className="space-y-1 mt-3">{filterSections.map((section) => <FilterSection key={section.sectionKey} title={section.title} sectionKey={section.sectionKey} items={section.items} />)}</div></CollapsibleContent>
         </Collapsible>
-        <div className="py-2 border-t border-sidebar-border flex items-center gap-2 mt-3" style={{ paddingLeft: '2px' }}>
+        <div className="py-2 border-t border-sidebar-border/50 flex items-center gap-2 mt-3" style={{ paddingLeft: '2px' }}>
           <div className="flex items-center gap-1.5"><label className="text-xs text-muted-foreground whitespace-nowrap">Desc:</label><Select value={showDescriptions} onValueChange={(value: string) => { if (value === 'on' || value === 'off') onShowDescriptionsChange?.(value); }}><SelectTrigger className="h-7 w-9 text-sm text-center px-1 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 [&>svg]:hidden"><SelectValue /></SelectTrigger><SelectContent align="end" className="min-w-[3rem]"><SelectItem value="on" className="text-sm text-center justify-center">On</SelectItem><SelectItem value="off" className="text-sm text-center justify-center">Off</SelectItem><SelectItem value="-" disabled className="text-sm text-center justify-center">-</SelectItem></SelectContent></Select></div>
           <div className="flex items-center gap-1.5"><label className="text-xs text-muted-foreground whitespace-nowrap">Depth:</label><Input type="text" value={expandMode === 'mixed' ? '-' : (expandDepth + 1).toString()} onChange={(e) => { const num = parseInt(e.target.value); if (!isNaN(num) && num >= 1) onExpandDepthChange?.(num - 1); }} className="h-7 text-sm w-7 text-center px-0 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0" /></div>
           <Button variant="ghost" size="sm" onClick={() => { onCollapseAll?.(); onShowDescriptionsChange?.('off'); }} className="w-8 h-8 p-0 flex-shrink-0" title="Collapse all sections"><Home className="w-4 h-4" /></Button>
