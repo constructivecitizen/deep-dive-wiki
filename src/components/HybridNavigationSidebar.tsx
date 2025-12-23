@@ -391,7 +391,7 @@ export const HybridNavigationSidebar: React.FC<HybridNavigationSidebarProps> = (
           )) : <div className="p-3 text-center text-muted-foreground"><p className="text-sm">No folders found</p></div>}
         </div>
       </div>
-      <div className="border-t border-sidebar-border/50 p-3 bg-sidebar-accent/30">
+      <div className="border-t border-sidebar-border/50 p-3 bg-sidebar-accent/60">
         <Collapsible open={isFiltersPaneOpen} onOpenChange={setIsFiltersPaneOpen}>
           <CollapsibleTrigger className="w-full flex items-center gap-1 cursor-pointer hover:bg-accent/30 rounded px-1 py-0.5 -mx-1">
             <ChevronRight className={`w-3 h-3 text-sidebar-foreground/70 transition-transform ${isFiltersPaneOpen ? 'rotate-90' : ''}`} />
