@@ -23,7 +23,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="/" element={
+              <Route path="/*" element={
                 <ProtectedRoute>
                   <PersistentLayout />
                 </ProtectedRoute>
@@ -32,8 +32,6 @@ const App = () => (
                 <Route index element={<ContentPage />} />
                 <Route path="*" element={<ContentPage />} />
               </Route>
-              {/* Catch-all route for 404 outside the layout */}
-              <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
