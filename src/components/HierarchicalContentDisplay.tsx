@@ -349,7 +349,7 @@ const ContentSectionComponent: React.FC<{
       if (prefix.length <= 40 && rest.length > 0) {
         return (
           <span className="block">
-            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-medium relative -top-[1px] whitespace-nowrap mr-1.5">
+            <span className="text-[0.7em] px-1.5 py-0.5 rounded bg-accent text-hierarchy-hover font-medium relative -top-[1px] whitespace-nowrap mr-1.5">
               {prefix}
             </span>
             <span className={shouldUnderline ? 'underline decoration-1 underline-offset-2' : ''}>
@@ -426,7 +426,7 @@ const ContentSectionComponent: React.FC<{
   if (isDocumentTitle) {
     return (
       <div id={section.id}>
-        <h1 className="text-4xl font-bold text-foreground mb-6">
+        <h1 className="text-4xl font-bold text-hierarchy-hover mb-6">
           {renderTitleWithRubric(section.title, section.level)}
         </h1>
         
