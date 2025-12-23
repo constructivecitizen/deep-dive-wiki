@@ -70,7 +70,7 @@ export const WikiLayout = ({
 
   const sidebarContent = (
     <>
-      <header className="shrink-0 border-b border-sidebar-border/50">
+      <header className="shrink-0 border-b border-sidebar-border/50 bg-sidebar-accent/60">
         <div className="py-2">
           <div className="flex items-center justify-between">
             <div className="pl-3 overflow-hidden">
