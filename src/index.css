@@ -55,9 +55,9 @@
     --tag-red: 0 75% 60%;
     --tag-teal: 180 65% 45%;
 
-    /* Hierarchy indicators - Teal */
-    --hierarchy-line: 181 30% 70%;
-    --hierarchy-hover: 181 40% 50%;
+    /* Hierarchy indicators - Teal #0097b2 */
+    --hierarchy-line: 191 100% 55%;
+    --hierarchy-hover: 191 100% 35%;
 
     /* Content depth levels */
     --depth-bg-1: 35 20% 98%;
@@ -138,9 +138,9 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Hierarchy indicators - Teal (dark mode) */
-    --hierarchy-line: 181 30% 45%;
-    --hierarchy-hover: 181 40% 55%;
+    /* Hierarchy indicators - Teal #0097b2 (dark mode) */
+    --hierarchy-line: 191 100% 45%;
+    --hierarchy-hover: 191 100% 40%;
 
     /* Deeper dark mode section backgrounds */
     --section-bg-1: 210 35% 12%;  /* Deeper blue */
