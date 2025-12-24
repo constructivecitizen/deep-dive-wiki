@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import logo from '@/assets/Compandio-Product-logo.png';
@@ -87,61 +87,56 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border-primary/20">
-        <CardHeader className="text-center pb-2">
-          <img src={logo} alt="Compandio" className="h-12 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-foreground">
-            {isLogin ? 'Sign In' : 'Create Account'}
-          </h2>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <img src={logo} alt="Compandio" className="h-24 mx-auto" />
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              required
+              autoComplete="email"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete={isLogin ? "current-password" : "new-password"}
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-primary hover:bg-primary/90" 
-              disabled={isLoading}
-            >
-              {isLoading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Sign Up')}
-            </Button>
-          </form>
-          <div className="mt-4 text-center text-sm">
-            <span className="text-muted-foreground">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline font-medium"
-            >
-              {isLogin ? 'Sign up' : 'Sign in'}
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+            required
+            autoComplete={isLogin ? "current-password" : "new-password"}
+          />
+        </div>
+        <Button 
+          type="submit" 
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" 
+          disabled={isLoading}
+        >
+          {isLoading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Sign Up')}
+        </Button>
+      </form>
+      <div className="mt-6 text-center text-sm">
+        <span className="text-muted-foreground">
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+        </span>
+        <button
+          type="button"
+          onClick={() => setIsLogin(!isLogin)}
+          className="text-primary hover:text-primary/80 font-medium"
+        >
+          {isLogin ? 'Sign up' : 'Sign in'}
+        </button>
+      </div>
     </div>
+  </div>
   );
 }
