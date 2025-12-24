@@ -4,9 +4,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import logo from '@/assets/Compandio-Product-logo.png';
 
 const authSchema = z.object({
   email: z.string().trim().email({ message: "Please enter a valid email address" }).max(255),
@@ -86,16 +87,12 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </CardTitle>
-          <CardDescription>
-            {isLogin 
-              ? 'Enter your credentials to access the application' 
-              : 'Sign up for a new account'}
-          </CardDescription>
+      <Card className="w-full max-w-md border-primary/20">
+        <CardHeader className="text-center pb-2">
+          <img src={logo} alt="Compandio" className="h-12 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground">
+            {isLogin ? 'Sign In' : 'Create Account'}
+          </h2>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -123,7 +120,11 @@ export default function Auth() {
                 autoComplete={isLogin ? "current-password" : "new-password"}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full bg-primary hover:bg-primary/90" 
+              disabled={isLoading}
+            >
               {isLoading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </Button>
           </form>
