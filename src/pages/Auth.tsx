@@ -56,23 +56,12 @@ export default function Auth() {
           navigate('/');
         }
       } else {
-        const { error } = await signUp(email, password);
-        if (error) {
-          let message = error.message;
-          if (message.includes('User already registered')) {
-            message = 'An account with this email already exists. Please sign in instead.';
-          }
-          toast({
-            title: "Sign Up Failed",
-            description: message,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Check Your Email",
-            description: "We've sent you a confirmation link. Please check your email to complete registration.",
-          });
-        }
+        // Signups are disabled - show friendly message
+        toast({
+          title: "Registration Closed",
+          description: "New account registration is currently closed. Please contact an administrator for access.",
+          variant: "destructive",
+        });
       }
     } catch (err) {
       toast({
