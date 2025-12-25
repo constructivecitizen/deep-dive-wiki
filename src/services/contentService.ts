@@ -135,31 +135,52 @@ export class ContentService {
   static async searchDocuments(query: string): Promise<WikiDocument[]> {
     // Input validation
     if (!query || typeof query !== 'string') return [];
-    if (query.length > 100) {
-      console.warn('Search query too long');
+    
+    const trimmedQuery = query.trim();
+    if (trimmedQuery.length === 0 || trimmedQuery.length > 100) {
       return [];
     }
 
-    // Sanitize input: escape special SQL pattern characters to prevent injection
-    const sanitizedQuery = query.replace(/[%_\\]/g, '\\$&');
-
-    const { data, error } = await supabase
+    // Use separate .ilike() calls to avoid string interpolation in .or()
+    // This leverages Supabase's built-in parameterization for safer queries
+    const searchPattern = `%${trimmedQuery}%`;
+    
+    // Search in title using parameterized .ilike()
+    const { data: titleMatches, error: titleError } = await supabase
       .from('content_items')
       .select('*')
-      .or(`title.ilike.%${sanitizedQuery}%,content_json::text.ilike.%${sanitizedQuery}%`)
-      .order('title');
+      .ilike('title', searchPattern);
 
-    if (error) {
-      console.error('Error searching documents:', error);
+    if (titleError) {
+      console.error('Error searching documents by title:', titleError);
       return [];
     }
 
-    return (data || [])
+    // For content search, we need to use textSearch or filter on the JSON
+    // Using a separate query to search content_json as text
+    const { data: contentMatches, error: contentError } = await supabase
+      .from('content_items')
+      .select('*')
+      .filter('content_json::text', 'ilike', searchPattern);
+
+    if (contentError) {
+      // Fallback: if the cast filter fails, just use title matches
+      console.error('Error searching documents by content:', contentError);
+    }
+
+    // Merge and deduplicate results by id
+    const allMatches = [...(titleMatches || []), ...(contentMatches || [])];
+    const uniqueMatches = Array.from(
+      new Map(allMatches.map(item => [item.id, item])).values()
+    );
+
+    return uniqueMatches
       .map(doc => ({
         ...doc,
         content_json: this.normalizeContentJson(doc.content_json)
       }))
-      .filter(doc => doc.content_json);
+      .filter(doc => doc.content_json)
+      .sort((a, b) => a.title.localeCompare(b.title));
   }
 
   static async getAllDocuments(): Promise<WikiDocument[]> {
