@@ -495,6 +495,7 @@ const ContentPage: React.FC = () => {
           children={childFolders}
           documents={folderData.documents}
           onCreateDocument={handleCreateDocument}
+          onToggleDocumentEditor={() => setShowEditor(!showEditor)}
         />
       );
     }
